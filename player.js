@@ -6,7 +6,7 @@ export const player = {
   angle: 0,
   vel_x: 0,
   vel_y: 0,
-  thrust: false,
+  thrust: 0, // Changed from boolean to 0.0-1.0 value
   size: 8,
   speed: 0,
   max_speed: 200,
@@ -23,7 +23,7 @@ export const reset_player = () => {
   player.angle = Math.atan2(CENTER_X - player.x, CENTER_Y - player.y)
   player.alive = true
   player.respawn_timer = 0
-  player.thrust = false
+  player.thrust = 0
 }
 
 export const update_player = (dt, keys_pressed, lives, game_state) => {
@@ -64,9 +64,11 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     const thrust_force = 300 * dt
     player.vel_x += Math.sin(player.angle) * thrust_force
     player.vel_y += -Math.cos(player.angle) * thrust_force
-    player.thrust = true
+    // Ramp up thrust smoothly
+    player.thrust = Math.min(player.thrust + dt * 4, 1.0)
   } else {
-    player.thrust = false
+    // Ramp down thrust smoothly
+    player.thrust = Math.max(player.thrust - dt * 8, 0)
   }
 
   if (keys_pressed['s'] || keys_pressed['S']) {

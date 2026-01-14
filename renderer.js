@@ -118,7 +118,7 @@ export const draw_circle = (x, y, radius, segments, transform, color) => {
   gl.drawArrays(gl.LINE_STRIP, 0, segments + 1)
 }
 
-export const draw_ship = (x, y, angle, size, transform, color, show_thrust = false) => {
+export const draw_ship = (x, y, angle, size, transform, color, thrust = 0) => {
   const ship_transform = multiply_matrices(
     multiply_matrices(transform, translate_matrix(x, y)),
     rotate_matrix(angle)
@@ -128,10 +128,14 @@ export const draw_ship = (x, y, angle, size, transform, color, show_thrust = fal
   draw_line(-size * 0.7, size, size * 0.7, size, ship_transform, color)
   draw_line(size * 0.7, size, 0, -size, ship_transform, color)
 
-  if (show_thrust) {
-    const flame_color = [1.0, 0.5, 0.0, 1.0]
-    draw_line(0, size, -size * 0.3, size * 1.8, ship_transform, flame_color)
-    draw_line(0, size, size * 0.3, size * 1.8, ship_transform, flame_color)
+  if (thrust > 0) {
+    // Scale flame based on thrust amount (0.0 to 1.0)
+    const flame_length = 1.0 + thrust * 3.2 // 1.0 to 3.2
+    const flame_width = 0.2 + thrust * 0.1  // 0.2 to 0.3
+    const flame_color = [1.0, 0.5 - thrust * 0.2, 0.0, thrust] // Fades in/out with thrust
+
+    draw_line(0, size, -size * flame_width, size * flame_length, ship_transform, flame_color)
+    draw_line(0, size, size * flame_width, size * flame_length, ship_transform, flame_color)
   }
 }
 

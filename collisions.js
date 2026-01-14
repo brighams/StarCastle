@@ -110,6 +110,8 @@ export const check_collisions = (player, game_state) => {
 
       const face = ring.faces[face_index]
       if (face && !face.destroyed) {
+        // Destroy both the ring face and the player
+        face.destroyed = true
         create_explosion(player.x, player.y, 25, 0.8)
         game_state.lives--
         player.alive = false
