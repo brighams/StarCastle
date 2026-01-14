@@ -175,6 +175,30 @@
     // Enemies
     const enemies = []
 
+    const reset_round = () => {
+      // Reset player position and state
+      player.x = CANVAS_SIZE - 100
+      player.y = CANVAS_SIZE - 100
+      player.vel_x = 0
+      player.vel_y = 0
+      player.speed = 0
+      player.angle = Math.atan2(CENTER_X - player.x, CENTER_Y - player.y)
+      player.alive = true
+      player.respawn_timer = 0
+      player.thrust = false
+
+      // Reset rings
+      init_ring_faces()
+
+      // Clear bullets and enemies
+      player_bullets.length = 0
+      enemies.length = 0
+
+      // Reset round state
+      round_won = false
+    }
+
+
     const init_game = () => {
       lives = 3
       round = 0
@@ -476,7 +500,7 @@
       // Handle deceleration with S key
       if (keys_pressed['s'] || keys_pressed['S']) {
         const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
-        const new_speed = Math.max(current_speed - 400 * dt, 0)
+        const new_speed = Math.max(current_speed - 800 * dt, 0)
         if (current_speed > 0) {
           const speed_ratio = new_speed / current_speed
           player.vel_x *= speed_ratio

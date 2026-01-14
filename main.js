@@ -1,0 +1,110 @@
+import { CANVAS_SIZE, CENTER_X, CENTER_Y } from './constants.js'
+import { identity_matrix } from './math.js'
+import { init_renderer, clear_screen, draw_ship } from './renderer.js'
+import { player, reset_player, update_player } from './player.js'
+import { castle_rings, init_ring_faces, update_castle_rings, draw_castle } from './castle.js'
+import { player_bullets, fire_bullet, update_bullets, draw_bullets, clear_bullets } from './bullets.js'
+import { enemies, spawn_enemy, update_enemies, clear_enemies } from './enemies.js'
+import { explosions, update_explosions, draw_explosions, clear_explosions } from './explosions.js'
+import { check_collisions } from './collisions.js'
+import { draw_ui } from './ui.js'
+
+const canvas = document.getElementById('gameCanvas')
+const gl = init_renderer(canvas)
+
+const game_state = {
+  lives: 3,
+  round: 1,
+  level: 1,
+  game_over: true,
+  game_started: false,
+  round_won: false,
+  enemy_speed_multiplier: 1.0
+}
+
+let keys_pressed = {}
+
+const init_game = () => {
+  game_state.lives = 3
+  game_state.round = 0
+  game_state.level = 1
+  game_state.game_over = false
+  game_state.game_started = true
+  game_state.round_won = false
+  game_state.enemy_speed_multiplier = 1.0
+
+  clear_explosions()
+  clear_enemies()
+  clear_bullets()
+  reset_player()
+  init_ring_faces()
+}
+
+let space_pressed = false
+
+document.addEventListener('keydown', (e) => {
+  keys_pressed[e.key] = true
+
+  if (e.key === ' ') {
+    if (game_state.game_over) {
+      init_game()
+    } else if (!space_pressed && player.alive) {
+      space_pressed = true
+      fire_bullet(player.x, player.y, player.angle, 300)
+    }
+  }
+})
+
+document.addEventListener('keyup', (e) => {
+  keys_pressed[e.key] = false
+
+  if (e.key === ' ') {
+    space_pressed = false
+  }
+})
+
+let last_time = 0
+let enemy_spawn_timer = 3
+
+const game_loop = (current_time) => {
+  const dt = (current_time - last_time) / 1000
+  last_time = current_time
+
+  enemy_spawn_timer -= dt
+  if (enemy_spawn_timer <= 0) {
+    const max_enemies = 3 + game_state.level
+    if (enemies.length < max_enemies && Math.random() < 0.3) {
+      spawn_enemy()
+    }
+    enemy_spawn_timer = 3
+  }
+
+  update_castle_rings(dt)
+  update_player(dt, keys_pressed, game_state.lives, game_state)
+  update_bullets(dt)
+  update_enemies(dt, player, game_state.game_over, game_state.round_won, game_state.enemy_speed_multiplier)
+  check_collisions(player, game_state)
+  update_explosions(dt)
+
+  clear_screen()
+
+  const transform = identity_matrix()
+
+  draw_castle()
+  if (player.alive) {
+    draw_ship(player.x, player.y, player.angle, player.size, transform, [1.0, 1.0, 1.0, 1.0], player.thrust)
+  }
+
+  enemies.forEach(enemy => {
+    draw_ship(enemy.x, enemy.y, enemy.angle, enemy.size, transform, [1.0, 0.0, 1.0, 1.0])
+  })
+
+  draw_bullets([1.0, 1.0, 0.0, 1.0])
+  draw_explosions()
+  draw_ui(game_state.lives, game_state.round, game_state.game_over)
+
+  requestAnimationFrame(game_loop)
+}
+
+init_ring_faces()
+requestAnimationFrame(game_loop)
