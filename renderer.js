@@ -134,3 +134,30 @@ export const draw_ship = (x, y, angle, size, transform, color, show_thrust = fal
     draw_line(0, size, size * 0.3, size * 1.8, ship_transform, flame_color)
   }
 }
+
+
+export const draw_spark = (x, y, angle, size, transform, color, show_thrust = false) => {
+  // Use current time for continuous rotation animation
+  const rotation_speed = 8.0 // radians per second
+  const animated_angle = angle + (performance.now() / 1000) * rotation_speed
+
+  const spark_transform = multiply_matrices(
+    multiply_matrices(transform, translate_matrix(x, y)),
+    rotate_matrix(animated_angle)
+  )
+
+  // Draw 6 lines in a cross/star pattern (3 lines through center at 60° intervals)
+  for (let i = 0; i < 3; i++) {
+    const line_angle = (i * Math.PI) / 3 // 0°, 60°, 120°
+    const cos_a = Math.cos(line_angle)
+    const sin_a = Math.sin(line_angle)
+
+    // Line from -size to +size through center
+    const x1 = -size * cos_a
+    const y1 = -size * sin_a
+    const x2 = size * cos_a
+    const y2 = size * sin_a
+
+    draw_line(x1, y1, x2, y2, spark_transform, color)
+  }
+}

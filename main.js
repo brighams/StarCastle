@@ -1,6 +1,5 @@
-import { CANVAS_SIZE, CENTER_X, CENTER_Y } from './constants.js'
 import { identity_matrix } from './math.js'
-import { init_renderer, clear_screen, draw_ship } from './renderer.js'
+import { init_renderer, clear_screen, draw_ship, draw_spark } from './renderer.js'
 import { player, reset_player, update_player } from './player.js'
 import { castle_rings, init_ring_faces, update_castle_rings, draw_castle } from './castle.js'
 import { player_bullets, fire_bullet, update_bullets, draw_bullets, clear_bullets } from './bullets.js'
@@ -36,6 +35,9 @@ const init_game = () => {
   clear_bullets()
   reset_player()
   init_ring_faces()
+  spawn_enemy()
+  spawn_enemy()
+  spawn_enemy()
 }
 
 let space_pressed = false
@@ -46,7 +48,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === ' ') {
     if (game_state.game_over) {
       init_game()
-    } else if (!space_pressed && player.alive) {
+    } else if (!space_pressed && player.alive && player_bullets.length < 1) {
       space_pressed = true
       fire_bullet(player.x, player.y, player.angle, 300)
     }
@@ -94,7 +96,7 @@ const game_loop = (current_time) => {
   }
 
   enemies.forEach(enemy => {
-    draw_ship(enemy.x, enemy.y, enemy.angle, enemy.size, transform, [1.0, 0.0, 1.0, 1.0])
+    draw_spark(enemy.x, enemy.y, enemy.angle, enemy.size, transform, [1.0, 0.0, 1.0, 1.0])
   })
 
   draw_bullets([1.0, 1.0, 0.0, 1.0])

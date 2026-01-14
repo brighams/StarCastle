@@ -1,6 +1,6 @@
 import { CANVAS_SIZE } from './constants.js'
 import { identity_matrix } from './math.js'
-import { draw_circle } from './renderer.js'
+import {draw_circle, draw_spark} from './renderer.js'
 
 export const player_bullets = []
 
@@ -31,8 +31,9 @@ export const update_bullets = (dt) => {
 
 export const draw_bullets = (color) => {
   const transform = identity_matrix()
+  const golden_color = [1.0, 0.84, 0.0, 1.0] // Golden color
   player_bullets.forEach(bullet => {
-    draw_circle(bullet.x, bullet.y, 2, 4, transform, color)
+    draw_spark(bullet.x, bullet.y, 0, 5, transform, golden_color)
   })
 }
 
