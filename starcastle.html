@@ -139,10 +139,10 @@
 
     // Castle rings
     const castle_rings = [
-      { radius: 120, segments: 12, gaps: [0, 3, 6, 9] },
-      { radius: 90, segments: 8, gaps: [1, 4, 7] },
-      { radius: 60, segments: 6, gaps: [0, 3] },
-      { radius: 30, segments: 4, gaps: [1] }
+      { radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.5, color: [0.0, 1.0, 0.0, 1.0] },
+      { radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.7, color: [0.0, 0.0, 1.0, 1.0] },
+      { radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] },
+      { radius: 30, segments: 4, rotation: 0, rotationSpeed: -1.5, color: [1.0, 0.0, 1.0, 1.0] }
     ]
 
     // Projectiles
@@ -244,23 +244,20 @@
 
     const draw_castle = () => {
       const transform = identity_matrix()
-      const color = [0.0, 1.0, 0.0, 1.0]
 
       castle_rings.forEach(ring => {
         const segment_angle = (Math.PI * 2) / ring.segments
 
         for (let i = 0; i < ring.segments; i++) {
-          if (!ring.gaps.includes(i)) {
-            const start_angle = i * segment_angle
-            const end_angle = (i + 1) * segment_angle
+          const start_angle = i * segment_angle + ring.rotation
+          const end_angle = (i + 1) * segment_angle + ring.rotation
 
-            const x1 = CENTER_X + Math.cos(start_angle) * ring.radius
-            const y1 = CENTER_Y + Math.sin(start_angle) * ring.radius
-            const x2 = CENTER_X + Math.cos(end_angle) * ring.radius
-            const y2 = CENTER_Y + Math.sin(end_angle) * ring.radius
+          const x1 = CENTER_X + Math.cos(start_angle) * ring.radius
+          const y1 = CENTER_Y + Math.sin(start_angle) * ring.radius
+          const x2 = CENTER_X + Math.cos(end_angle) * ring.radius
+          const y2 = CENTER_Y + Math.sin(end_angle) * ring.radius
 
-            draw_line(x1, y1, x2, y2, transform, color)
-          }
+          draw_line(x1, y1, x2, y2, transform, ring.color)
         }
       })
 
@@ -347,22 +344,34 @@
     }
 
     const spawn_enemy = () => {
+      const ring_index = Math.floor(Math.random() * castle_rings.length)
+      const ring = castle_rings[ring_index]
       const angle = Math.random() * Math.PI * 2
-      const distance = 400 + Math.random() * 200
       enemies.push({
-        x: CENTER_X + Math.cos(angle) * distance,
-        y: CENTER_Y + Math.sin(angle) * distance,
+        x: CENTER_X + Math.cos(angle) * ring.radius,
+        y: CENTER_Y + Math.sin(angle) * ring.radius,
         angle: 0,
         vel_x: 0,
         vel_y: 0,
         size: 6,
-        shoot_timer: 0
+        shoot_timer: 0,
+        jitter_timer: 0,
+        jitter_x: 0,
+        jitter_y: 0
       })
     }
 
     const update_enemies = (dt) => {
       enemies.forEach(enemy => {
-        // Move towards player
+        // Update jitter
+        enemy.jitter_timer -= dt
+        if (enemy.jitter_timer <= 0) {
+          enemy.jitter_x = (Math.random() - 0.5) * 30
+          enemy.jitter_y = (Math.random() - 0.5) * 30
+          enemy.jitter_timer = 0.2 + Math.random() * 0.3
+        }
+
+        // Move towards player with jitter
         const dx = player.x - enemy.x
         const dy = player.y - enemy.y
         const distance = Math.sqrt(dx * dx + dy * dy)
@@ -371,6 +380,10 @@
           enemy.vel_x += (dx / distance) * 50 * dt
           enemy.vel_y += (dy / distance) * 50 * dt
         }
+
+        // Add jitter to velocity
+        enemy.vel_x += enemy.jitter_x * dt
+        enemy.vel_y += enemy.jitter_y * dt
 
         enemy.vel_x *= 0.99
         enemy.vel_y *= 0.99
@@ -432,10 +445,15 @@
 
       // Spawn enemies
       enemy_spawn_timer -= dt
-      if (enemy_spawn_timer <= 0 && enemies.length < 5) {
+      if (enemy_spawn_timer <= 0 && enemies.length < 8) {
         spawn_enemy()
-        enemy_spawn_timer = 3 + Math.random() * 5
+        enemy_spawn_timer = 2 + Math.random() * 3
       }
+
+      // Update castle rings rotation
+      castle_rings.forEach(ring => {
+        ring.rotation += ring.rotationSpeed * dt
+      })
 
       // Update game objects
       update_player(dt)
