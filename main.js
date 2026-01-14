@@ -14,8 +14,7 @@ const gl = init_renderer(canvas)
 
 const game_state = {
   lives: 3,
-  round: 1,
-  level: 1,
+  round: 0,
   game_over: true,
   game_started: false,
   round_won: false,
@@ -27,7 +26,6 @@ let keys_pressed = {}
 const init_game = () => {
   game_state.lives = 3
   game_state.round = 0
-  game_state.level = 1
   game_state.game_over = false
   game_state.game_started = true
   game_state.round_won = false
@@ -72,7 +70,7 @@ const game_loop = (current_time) => {
 
   enemy_spawn_timer -= dt
   if (enemy_spawn_timer <= 0) {
-    const max_enemies = 3 + game_state.level
+    const max_enemies = 3 + game_state.round
     if (enemies.length < max_enemies && Math.random() < 0.3) {
       spawn_enemy()
     }
