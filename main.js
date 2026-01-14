@@ -48,9 +48,9 @@ document.addEventListener('keydown', (e) => {
   if (e.key === ' ') {
     if (game_state.game_over) {
       init_game()
-    } else if (!space_pressed && player.alive && player_bullets.length < 1) {
+    } else if (!space_pressed && player.alive && player_bullets.length < 3) {
       space_pressed = true
-      fire_bullet(player.x, player.y, player.angle, 300)
+      fire_bullet(player.x, player.y, player.angle, 400)
     }
   }
 })
