@@ -13,6 +13,7 @@ export const player = {
   size: 8,
   speed: 0,
   max_speed: 200,
+  max_reverse_factor: 0.30, // Reverse speed = max_speed * this factor (adjustable)
   alive: true,
   respawn_timer: 0
 }
@@ -88,14 +89,39 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
 
   if (keys_pressed['s'] || keys_pressed['S']) {
     const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
-    const new_speed = Math.max(current_speed - 800 * dt, 0)
-    if (current_speed > 0) {
+
+    // Determine if we're moving forward or in reverse
+    // Forward direction is (sin(angle), -cos(angle))
+    const forward_x = Math.sin(player.angle)
+    const forward_y = -Math.cos(player.angle)
+    const dot_product = player.vel_x * forward_x + player.vel_y * forward_y
+    const is_moving_forward = dot_product > 0
+    const max_reverse_speed = player.max_speed * player.max_reverse_factor
+
+    if (is_moving_forward && current_speed > 0) {
+      // Still moving forward, decelerate
+      const new_speed = Math.max(current_speed - 800 * dt, 0)
       const speed_ratio = new_speed / current_speed
       player.vel_x *= speed_ratio
       player.vel_y *= speed_ratio
+      player.speed = new_speed
+    } else {
+      // At zero or already in reverse - apply reverse thrust
+      const reverse_force = 200 * dt
+      player.vel_x -= forward_x * reverse_force
+      player.vel_y -= forward_y * reverse_force
+
+      // Clamp to max reverse speed
+      const new_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
+      if (new_speed > max_reverse_speed) {
+        const speed_ratio = max_reverse_speed / new_speed
+        player.vel_x *= speed_ratio
+        player.vel_y *= speed_ratio
+      }
+      player.speed = -Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y) // Negative to indicate reverse
     }
-    player.speed = new_speed
-    player.braking = current_speed > 10 // Only show jet if actually moving
+
+    player.braking = current_speed > 10 || Math.abs(player.speed) > 5 // Show jet if moving forward or in reverse
     if (player.braking) isRotatingOrBraking = true
   } else {
     player.braking = false

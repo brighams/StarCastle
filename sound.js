@@ -129,97 +129,152 @@ const effects = {
 };
 
 
-export const startMainThruster = (volume = 0.3) => {
+export const startMainThruster = (volume = 0.08) => {
   if (audioCtx.state === 'suspended') audioCtx.resume();
   if (mainThrusterOsc) return; // Already playing
 
   const now = audioCtx.currentTime;
   mainThrusterGain = audioCtx.createGain();
   mainThrusterGain.gain.setValueAtTime(0.001, now);
-  mainThrusterGain.gain.exponentialRampToValueAtTime(volume, now + 0.1);
+  mainThrusterGain.gain.exponentialRampToValueAtTime(volume, now + 0.15);
   mainThrusterGain.connect(audioCtx.destination);
 
-  // Main thruster: low rumbling square wave with slight wobble
-  mainThrusterOsc = audioCtx.createOscillator();
-  mainThrusterOsc.type = 'sawtooth';
-  mainThrusterOsc.frequency.setValueAtTime(80, now);
+  // Main thruster: layered triangle waves for smooth rocket rumble
+  const baseFreq = 55; // Low A note
 
-  // Add slight frequency modulation for that 8-bit engine rumble
+  // Base tone - triangle for smooth low rumble
+  mainThrusterOsc = audioCtx.createOscillator();
+  mainThrusterOsc.type = 'triangle';
+  mainThrusterOsc.frequency.setValueAtTime(baseFreq, now);
+
+  // Second harmonic for richness
+  const osc2 = audioCtx.createOscillator();
+  osc2.type = 'triangle';
+  osc2.frequency.setValueAtTime(baseFreq * 2, now);
+
+  // Third harmonic - quieter
+  const osc3 = audioCtx.createOscillator();
+  osc3.type = 'sine';
+  osc3.frequency.setValueAtTime(baseFreq * 3, now);
+
+  // Subtle slow vibrato for that engine throb
   const lfo = audioCtx.createOscillator();
   const lfoGain = audioCtx.createGain();
-  lfo.frequency.setValueAtTime(15, now);
-  lfoGain.gain.setValueAtTime(20, now);
+  lfo.frequency.setValueAtTime(6, now); // Slower wobble
+  lfoGain.gain.setValueAtTime(3, now);  // Subtle pitch variation
   lfo.connect(lfoGain);
   lfoGain.connect(mainThrusterOsc.frequency);
+  lfoGain.connect(osc2.frequency);
   lfo.start(now);
 
-  mainThrusterOsc.connect(mainThrusterGain);
-  mainThrusterOsc.start(now);
+  // Mix the oscillators with different levels
+  const mixer = audioCtx.createGain();
+  mixer.gain.setValueAtTime(1, now);
+  mixer.connect(mainThrusterGain);
 
-  // Store LFO reference for cleanup
+  const osc2Gain = audioCtx.createGain();
+  osc2Gain.gain.setValueAtTime(0.5, now);
+
+  const osc3Gain = audioCtx.createGain();
+  osc3Gain.gain.setValueAtTime(0.25, now);
+
+  mainThrusterOsc.connect(mixer);
+  osc2.connect(osc2Gain);
+  osc2Gain.connect(mixer);
+  osc3.connect(osc3Gain);
+  osc3Gain.connect(mixer);
+
+  mainThrusterOsc.start(now);
+  osc2.start(now);
+  osc3.start(now);
+
+  // Store references for cleanup
   mainThrusterOsc._lfo = lfo;
-  mainThrusterOsc._lfoGain = lfoGain;
+  mainThrusterOsc._osc2 = osc2;
+  mainThrusterOsc._osc3 = osc3;
 };
 
 export const stopMainThruster = () => {
   if (!mainThrusterOsc) return;
 
   const now = audioCtx.currentTime;
-  mainThrusterGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+  mainThrusterGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
 
   const oscToStop = mainThrusterOsc;
   const lfoToStop = mainThrusterOsc._lfo;
+  const osc2ToStop = mainThrusterOsc._osc2;
+  const osc3ToStop = mainThrusterOsc._osc3;
+
   setTimeout(() => {
     oscToStop.stop();
     if (lfoToStop) lfoToStop.stop();
-  }, 150);
+    if (osc2ToStop) osc2ToStop.stop();
+    if (osc3ToStop) osc3ToStop.stop();
+  }, 200);
 
   mainThrusterOsc = null;
   mainThrusterGain = null;
 };
 
-export const startAttitudeThruster = (volume = 0.15) => {
+export const startAttitudeThruster = (volume = 0.03) => {
   if (audioCtx.state === 'suspended') audioCtx.resume();
   if (attitudeThrusterOsc) return; // Already playing
 
   const now = audioCtx.currentTime;
   attitudeThrusterGain = audioCtx.createGain();
   attitudeThrusterGain.gain.setValueAtTime(0.001, now);
-  attitudeThrusterGain.gain.exponentialRampToValueAtTime(volume, now + 0.05);
+  attitudeThrusterGain.gain.exponentialRampToValueAtTime(volume, now + 0.08);
   attitudeThrusterGain.connect(audioCtx.destination);
 
-  // Attitude thrusters: higher pitched, hissy burst
-  attitudeThrusterOsc = audioCtx.createOscillator();
-  attitudeThrusterOsc.type = 'square';
-  attitudeThrusterOsc.frequency.setValueAtTime(220, now);
+  // Attitude thrusters: same rocket sound but higher pitched and quieter
+  const baseFreq = 110; // Higher than main thruster
 
-  // Rapid pulsing for that retro "pft pft pft" attitude jet sound
-  const pulse = audioCtx.createOscillator();
-  const pulseGain = audioCtx.createGain();
-  pulse.frequency.setValueAtTime(30, now);
-  pulseGain.gain.setValueAtTime(60, now);
-  pulse.connect(pulseGain);
-  pulseGain.connect(attitudeThrusterOsc.frequency);
-  pulse.start(now);
+  attitudeThrusterOsc = audioCtx.createOscillator();
+  attitudeThrusterOsc.type = 'triangle';
+  attitudeThrusterOsc.frequency.setValueAtTime(baseFreq, now);
+
+  const osc2 = audioCtx.createOscillator();
+  osc2.type = 'triangle';
+  osc2.frequency.setValueAtTime(baseFreq * 2, now);
+
+  // Faster vibrato for smaller thrusters
+  const lfo = audioCtx.createOscillator();
+  const lfoGain = audioCtx.createGain();
+  lfo.frequency.setValueAtTime(10, now);
+  lfoGain.gain.setValueAtTime(4, now);
+  lfo.connect(lfoGain);
+  lfoGain.connect(attitudeThrusterOsc.frequency);
+  lfo.start(now);
+
+  const osc2Gain = audioCtx.createGain();
+  osc2Gain.gain.setValueAtTime(0.4, now);
 
   attitudeThrusterOsc.connect(attitudeThrusterGain);
-  attitudeThrusterOsc.start(now);
+  osc2.connect(osc2Gain);
+  osc2Gain.connect(attitudeThrusterGain);
 
-  attitudeThrusterOsc._pulse = pulse;
+  attitudeThrusterOsc.start(now);
+  osc2.start(now);
+
+  attitudeThrusterOsc._lfo = lfo;
+  attitudeThrusterOsc._osc2 = osc2;
 };
 
 export const stopAttitudeThruster = () => {
   if (!attitudeThrusterOsc) return;
 
   const now = audioCtx.currentTime;
-  attitudeThrusterGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+  attitudeThrusterGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
 
   const oscToStop = attitudeThrusterOsc;
-  const pulseToStop = attitudeThrusterOsc._pulse;
+  const lfoToStop = attitudeThrusterOsc._lfo;
+  const osc2ToStop = attitudeThrusterOsc._osc2;
+
   setTimeout(() => {
     oscToStop.stop();
-    if (pulseToStop) pulseToStop.stop();
-  }, 100);
+    if (lfoToStop) lfoToStop.stop();
+    if (osc2ToStop) osc2ToStop.stop();
+  }, 120);
 
   attitudeThrusterOsc = null;
   attitudeThrusterGain = null;
