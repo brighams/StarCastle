@@ -12,6 +12,12 @@
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+// Looping sound state
+let mainThrusterOsc = null;
+let mainThrusterGain = null;
+let attitudeThrusterOsc = null;
+let attitudeThrusterGain = null;
+
 const createOscillator = (type, frequency, startTime, duration, gainNode) => {
   const osc = audioCtx.createOscillator();
   osc.type = type;
@@ -120,6 +126,103 @@ const effects = {
     createOscillator('square', 440 * magnitude, now, 0.1, gain);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
   }
+};
+
+
+export const startMainThruster = (volume = 0.3) => {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (mainThrusterOsc) return; // Already playing
+
+  const now = audioCtx.currentTime;
+  mainThrusterGain = audioCtx.createGain();
+  mainThrusterGain.gain.setValueAtTime(0.001, now);
+  mainThrusterGain.gain.exponentialRampToValueAtTime(volume, now + 0.1);
+  mainThrusterGain.connect(audioCtx.destination);
+
+  // Main thruster: low rumbling square wave with slight wobble
+  mainThrusterOsc = audioCtx.createOscillator();
+  mainThrusterOsc.type = 'sawtooth';
+  mainThrusterOsc.frequency.setValueAtTime(80, now);
+
+  // Add slight frequency modulation for that 8-bit engine rumble
+  const lfo = audioCtx.createOscillator();
+  const lfoGain = audioCtx.createGain();
+  lfo.frequency.setValueAtTime(15, now);
+  lfoGain.gain.setValueAtTime(20, now);
+  lfo.connect(lfoGain);
+  lfoGain.connect(mainThrusterOsc.frequency);
+  lfo.start(now);
+
+  mainThrusterOsc.connect(mainThrusterGain);
+  mainThrusterOsc.start(now);
+
+  // Store LFO reference for cleanup
+  mainThrusterOsc._lfo = lfo;
+  mainThrusterOsc._lfoGain = lfoGain;
+};
+
+export const stopMainThruster = () => {
+  if (!mainThrusterOsc) return;
+
+  const now = audioCtx.currentTime;
+  mainThrusterGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+  const oscToStop = mainThrusterOsc;
+  const lfoToStop = mainThrusterOsc._lfo;
+  setTimeout(() => {
+    oscToStop.stop();
+    if (lfoToStop) lfoToStop.stop();
+  }, 150);
+
+  mainThrusterOsc = null;
+  mainThrusterGain = null;
+};
+
+export const startAttitudeThruster = (volume = 0.15) => {
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  if (attitudeThrusterOsc) return; // Already playing
+
+  const now = audioCtx.currentTime;
+  attitudeThrusterGain = audioCtx.createGain();
+  attitudeThrusterGain.gain.setValueAtTime(0.001, now);
+  attitudeThrusterGain.gain.exponentialRampToValueAtTime(volume, now + 0.05);
+  attitudeThrusterGain.connect(audioCtx.destination);
+
+  // Attitude thrusters: higher pitched, hissy burst
+  attitudeThrusterOsc = audioCtx.createOscillator();
+  attitudeThrusterOsc.type = 'square';
+  attitudeThrusterOsc.frequency.setValueAtTime(220, now);
+
+  // Rapid pulsing for that retro "pft pft pft" attitude jet sound
+  const pulse = audioCtx.createOscillator();
+  const pulseGain = audioCtx.createGain();
+  pulse.frequency.setValueAtTime(30, now);
+  pulseGain.gain.setValueAtTime(60, now);
+  pulse.connect(pulseGain);
+  pulseGain.connect(attitudeThrusterOsc.frequency);
+  pulse.start(now);
+
+  attitudeThrusterOsc.connect(attitudeThrusterGain);
+  attitudeThrusterOsc.start(now);
+
+  attitudeThrusterOsc._pulse = pulse;
+};
+
+export const stopAttitudeThruster = () => {
+  if (!attitudeThrusterOsc) return;
+
+  const now = audioCtx.currentTime;
+  attitudeThrusterGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+  const oscToStop = attitudeThrusterOsc;
+  const pulseToStop = attitudeThrusterOsc._pulse;
+  setTimeout(() => {
+    oscToStop.stop();
+    if (pulseToStop) pulseToStop.stop();
+  }, 100);
+
+  attitudeThrusterOsc = null;
+  attitudeThrusterGain = null;
 };
 
 export const playSound = (effectName = 'beep', magnitude = 1.0, volume = 0.5) => {

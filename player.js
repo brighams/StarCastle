@@ -1,5 +1,5 @@
 import { CANVAS_SIZE, CENTER_X, CENTER_Y } from './constants.js'
-import { playSound } from './sound.js'
+import { playSound, startMainThruster, stopMainThruster, startAttitudeThruster, stopAttitudeThruster } from './sound.js'
 
 export const player = {
   x: CENTER_X,
@@ -60,13 +60,17 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
   const rotation_step = Math.PI / 8
   player.rotation = 0 // Reset rotation state each frame
 
+  let isRotatingOrBraking = false
+
   if (keys_pressed['a'] || keys_pressed['A']) {
     player.angle -= rotation_step * dt * 4
     player.rotation = -1
+    isRotatingOrBraking = true
   }
   if (keys_pressed['d'] || keys_pressed['D']) {
     player.angle += rotation_step * dt * 4
     player.rotation = 1
+    isRotatingOrBraking = true
   }
 
   if (keys_pressed['w'] || keys_pressed['W']) {
@@ -75,9 +79,11 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     player.vel_y += -Math.cos(player.angle) * thrust_force
     // Ramp up thrust smoothly
     player.thrust = Math.min(player.thrust + dt * 4, 1.0)
+    startMainThruster()
   } else {
     // Ramp down thrust smoothly
     player.thrust = Math.max(player.thrust - dt * 8, 0)
+    stopMainThruster()
   }
 
   if (keys_pressed['s'] || keys_pressed['S']) {
@@ -90,8 +96,16 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     }
     player.speed = new_speed
     player.braking = current_speed > 10 // Only show jet if actually moving
+    if (player.braking) isRotatingOrBraking = true
   } else {
     player.braking = false
+  }
+
+  // Handle attitude thruster sound
+  if (isRotatingOrBraking) {
+    startAttitudeThruster()
+  } else {
+    stopAttitudeThruster()
   }
 
   const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
