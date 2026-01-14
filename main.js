@@ -91,8 +91,8 @@ const game_loop = (current_time) => {
   const transform = identity_matrix()
 
   draw_castle()
-  if (player.alive) {
-    draw_ship(player.x, player.y, player.angle, player.size, transform, [1.0, 1.0, 1.0, 1.0], player.thrust, player.rotation, player.braking)
+  if (player.alive && !game_state.game_over) {
+    draw_ship(player.x, player.y, player.angle, player.size, transform, player.color, player.thrust, player.rotation, player.braking)
   }
 
   enemies.forEach(enemy => {

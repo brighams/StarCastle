@@ -10,7 +10,8 @@ export const player = {
   thrust: 0,
   rotation: 0, // -1 for left, 0 for none, 1 for right
   braking: false,
-  size: 8,
+  size: 16,
+  color: [0.5, 0.5, 1.0, 1.0],
   speed: 0,
   max_speed: 200,
   max_reverse_factor: 0.30, // Reverse speed = max_speed * this factor (adjustable)
@@ -32,6 +33,13 @@ export const reset_player = () => {
 }
 
 export const update_player = (dt, keys_pressed, lives, game_state) => {
+  // Don't process input when game is over
+  if (game_state.game_over) {
+    stopMainThruster()
+    stopAttitudeThruster()
+    return
+  }
+
   if (!player.alive) {
     player.respawn_timer -= dt
     if (player.respawn_timer <= 0) {
