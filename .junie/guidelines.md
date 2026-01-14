@@ -1,6 +1,4 @@
-# Starplayer Media Client – Coding Rules
-
-Tech stack:
+## Tech stack:
 - **TypeScript**
 - **React**
 - **Tailwind**
