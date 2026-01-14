@@ -7,7 +7,9 @@ export const player = {
   angle: 0,
   vel_x: 0,
   vel_y: 0,
-  thrust: 0, // Changed from boolean to 0.0-1.0 value
+  thrust: 0,
+  rotation: 0, // -1 for left, 0 for none, 1 for right
+  braking: false,
   size: 8,
   speed: 0,
   max_speed: 200,
@@ -56,11 +58,15 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
   }
 
   const rotation_step = Math.PI / 8
+  player.rotation = 0 // Reset rotation state each frame
+
   if (keys_pressed['a'] || keys_pressed['A']) {
     player.angle -= rotation_step * dt * 4
+    player.rotation = -1
   }
   if (keys_pressed['d'] || keys_pressed['D']) {
     player.angle += rotation_step * dt * 4
+    player.rotation = 1
   }
 
   if (keys_pressed['w'] || keys_pressed['W']) {
@@ -83,6 +89,9 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
       player.vel_y *= speed_ratio
     }
     player.speed = new_speed
+    player.braking = current_speed > 10 // Only show jet if actually moving
+  } else {
+    player.braking = false
   }
 
   const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)

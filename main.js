@@ -92,7 +92,7 @@ const game_loop = (current_time) => {
 
   draw_castle()
   if (player.alive) {
-    draw_ship(player.x, player.y, player.angle, player.size, transform, [1.0, 1.0, 1.0, 1.0], player.thrust)
+    draw_ship(player.x, player.y, player.angle, player.size, transform, [1.0, 1.0, 1.0, 1.0], player.thrust, player.rotation, player.braking)
   }
 
   enemies.forEach(enemy => {

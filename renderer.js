@@ -118,7 +118,7 @@ export const draw_circle = (x, y, radius, segments, transform, color) => {
   gl.drawArrays(gl.LINE_STRIP, 0, segments + 1)
 }
 
-export const draw_ship = (x, y, angle, size, transform, color, thrust = 0) => {
+export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotation = 0, braking = false) => {
   const ship_transform = multiply_matrices(
     multiply_matrices(transform, translate_matrix(x, y)),
     rotate_matrix(angle)
@@ -136,6 +136,31 @@ export const draw_ship = (x, y, angle, size, transform, color, thrust = 0) => {
 
     draw_line(0, size, -size * flame_width, size * flame_length, ship_transform, flame_color)
     draw_line(0, size, size * flame_width, size * flame_length, ship_transform, flame_color)
+  }
+
+  // Attitude jets - draw on the opposite side of rotation
+  if (rotation !== 0) {
+    const jet_color = [1.0, 0.0, 0.5, 0.9] // Blue-ish flame for attitude jets
+    const jet_length = size * 0.6
+
+    if (rotation > 0) {
+      // Rotating right, jet fires from left side (pushing right)
+      draw_line(-size * 0.7, size * 0.3, -size * 0.7 - jet_length, size * 0.5, ship_transform, jet_color)
+      draw_line(-size * 0.7, size * 0.3, -size * 0.7 - jet_length, size * 0.1, ship_transform, jet_color)
+    } else {
+      // Rotating left, jet fires from right side (pushing left)
+      draw_line(size * 0.7, size * 0.3, size * 0.7 + jet_length, size * 0.5, ship_transform, jet_color)
+      draw_line(size * 0.7, size * 0.3, size * 0.7 + jet_length, size * 0.1, ship_transform, jet_color)
+    }
+  }
+
+  // Retro-thruster for braking - fires from the nose
+  if (braking) {
+    const jet_color = [1.0, 0.0, 0.5, 0.9] // Blue-ish flame for attitude jets
+    const jet_length = size * 0.8
+
+    draw_line(0, -size, -size * 0.2, -size - jet_length, ship_transform, jet_color)
+    draw_line(0, -size, size * 0.2, -size - jet_length, ship_transform, jet_color)
   }
 }
 
