@@ -123,9 +123,11 @@
     // Game state
     let keys_pressed = {}
     let lives = 3
-    let score = 0
+    let round = 1
     let level = 1
     let explosions = []
+    let game_over = true
+    let game_started = false
 
     // Player state
     const player = {
@@ -147,14 +149,49 @@
       { radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.5, color: [0.0, 1.0, 0.0, 1.0] },
       { radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.7, color: [0.0, 0.0, 1.0, 1.0] },
       { radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] },
-      { radius: 30, segments: 4, rotation: 0, rotationSpeed: -1.5, color: [1.0, 0.0, 1.0, 1.0] }
+      // { radius: 30, segments: 4, rotation: 0, rotationSpeed: -1.5, color: [1.0, 0.0, 1.0, 1.0], faces: [] }
     ]
+
+    // Initialize ring faces
+    const init_ring_faces = () => {
+      castle_rings.forEach(ring => {
+        ring.faces = []
+        for (let i = 0; i < ring.segments; i++) {
+          ring.faces.push({
+            index: i,
+            destroyed: false
+          })
+        }
+      })
+    }
+
+    init_ring_faces()
 
     // Projectiles
     const player_bullets = []
 
     // Enemies
     const enemies = []
+
+    const init_game = () => {
+      lives = 3
+      round = 1
+      level = 1
+      game_over = false
+      game_started = true
+      explosions = []
+      enemies.length = 0
+      player_bullets.length = 0
+      player.x = CANVAS_SIZE - 100
+      player.y = CANVAS_SIZE - 100
+      player.vel_x = 0
+      player.vel_y = 0
+      player.speed = 0
+      player.angle = Math.atan2(CENTER_X - player.x, CENTER_Y - player.y)
+      player.alive = true
+      player.respawn_timer = 0
+      init_ring_faces()
+    }
 
     // Matrix helper functions
     const identity_matrix = () => [
@@ -252,9 +289,11 @@
       castle_rings.forEach(ring => {
         const segment_angle = (Math.PI * 2) / ring.segments
 
-        for (let i = 0; i < ring.segments; i++) {
-          const start_angle = i * segment_angle + ring.rotation
-          const end_angle = (i + 1) * segment_angle + ring.rotation
+        ring.faces.forEach(face => {
+          if (face.destroyed) return
+
+          const start_angle = face.index * segment_angle + ring.rotation
+          const end_angle = (face.index + 1) * segment_angle + ring.rotation
 
           const x1 = CENTER_X + Math.cos(start_angle) * ring.radius
           const y1 = CENTER_Y + Math.sin(start_angle) * ring.radius
@@ -262,7 +301,7 @@
           const y2 = CENTER_Y + Math.sin(end_angle) * ring.radius
 
           draw_line(x1, y1, x2, y2, transform, ring.color)
-        }
+        })
       })
 
       // Castle center
@@ -288,41 +327,37 @@
     const draw_ui = () => {
       const transform = identity_matrix()
 
-      // Draw score (using simple line segments to form numbers)
-      const score_text = `SCORE: ${score}`
-
-      // Draw lives as small ship graphics
+      // Draw lives as small ship graphics on the left
       for (let i = 0; i < lives; i++) {
-        const ship_x = 50 + i * 25
-        const ship_y = 50
-        const ship_size = 4
+        const ship_x = 30 + i * 25
+        const ship_y = 30
+        const ship_size = 8
         const ship_angle = 0
         draw_ship(ship_x, ship_y, ship_angle, ship_size, transform, [1.0, 1.0, 1.0, 1.0])
       }
 
-      // Draw simple score display using lines
-      const score_x = 200
-      const score_y = 50
+      // Draw "ROUND:" label and number on the right
+      const round_x = CANVAS_SIZE - 150
+      const round_y = 25
       const digit_width = 8
       const digit_height = 12
 
-      // Draw "SCORE:" text using lines
-      draw_line(score_x, score_y, score_x, score_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0]) // S
-      draw_line(score_x, score_y, score_x + digit_width, score_y, transform, [1.0, 1.0, 1.0, 1.0])
-      draw_line(score_x, score_y + digit_height/2, score_x + digit_width, score_y + digit_height/2, transform, [1.0, 1.0, 1.0, 1.0])
-      draw_line(score_x + digit_width, score_y + digit_height/2, score_x + digit_width, score_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
-      draw_line(score_x, score_y + digit_height, score_x + digit_width, score_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
+      // Draw "R"
+      draw_line(round_x, round_y, round_x, round_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
+      draw_line(round_x, round_y, round_x + digit_width, round_y, transform, [1.0, 1.0, 1.0, 1.0])
+      draw_line(round_x + digit_width, round_y, round_x + digit_width, round_y + digit_height/2, transform, [1.0, 1.0, 1.0, 1.0])
+      draw_line(round_x, round_y + digit_height/2, round_x + digit_width, round_y + digit_height/2, transform, [1.0, 1.0, 1.0, 1.0])
+      draw_line(round_x, round_y + digit_height/2, round_x + digit_width, round_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
 
-      // Draw score number (simplified - just show the value)
-      const score_num_x = score_x + 60
-      const score_string = score.toString()
-      for (let i = 0; i < score_string.length; i++) {
-        const digit_x = score_num_x + i * (digit_width + 2)
-        // Draw a simple rectangle for each digit (simplified)
-        draw_line(digit_x, score_y, digit_x + digit_width, score_y, transform, [1.0, 1.0, 1.0, 1.0])
-        draw_line(digit_x, score_y, digit_x, score_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
-        draw_line(digit_x + digit_width, score_y, digit_x + digit_width, score_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
-        draw_line(digit_x, score_y + digit_height, digit_x + digit_width, score_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
+      // Draw round number
+      const round_num_x = round_x + 80
+      const round_string = round.toString()
+      for (let i = 0; i < round_string.length; i++) {
+        const digit_x = round_num_x + i * (digit_width + 4)
+        draw_line(digit_x, round_y, digit_x + digit_width, round_y, transform, [1.0, 1.0, 1.0, 1.0])
+        draw_line(digit_x, round_y, digit_x, round_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
+        draw_line(digit_x + digit_width, round_y, digit_x + digit_width, round_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
+        draw_line(digit_x, round_y + digit_height, digit_x + digit_width, round_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
       }
     }
 
@@ -331,23 +366,28 @@
       // Handle respawn timer
       if (!player.alive) {
         player.respawn_timer -= dt
-        if (player.respawn_timer <= 0 && lives > 0) {
-          // Respawn player in random corner
-          const corners = [
-            { x: 50, y: 50 },
-            { x: CANVAS_SIZE - 50, y: 50 },
-            { x: 50, y: CANVAS_SIZE - 50 },
-            { x: CANVAS_SIZE - 50, y: CANVAS_SIZE - 50 }
-          ]
-          const corner = corners[Math.floor(Math.random() * corners.length)]
-          player.x = corner.x
-          player.y = corner.y
-          player.vel_x = 0
-          player.vel_y = 0
-          player.speed = 0
-          // Face towards center
-          player.angle = Math.atan2(CENTER_X - player.x, CENTER_Y - player.y)
-          player.alive = true
+        if (player.respawn_timer <= 0) {
+          if (lives > 0) {
+            // Respawn player in random corner
+            const corners = [
+              { x: 50, y: 50 },
+              { x: CANVAS_SIZE - 50, y: 50 },
+              { x: 50, y: CANVAS_SIZE - 50 },
+              { x: CANVAS_SIZE - 50, y: CANVAS_SIZE - 50 }
+            ]
+            const corner = corners[Math.floor(Math.random() * corners.length)]
+            player.x = corner.x
+            player.y = corner.y
+            player.vel_x = 0
+            player.vel_y = 0
+            player.speed = 0
+            // Face towards center
+            player.angle = Math.atan2(CENTER_X - player.x, CENTER_Y - player.y)
+            player.alive = true
+          } else {
+            // No lives left - game over
+            game_over = true
+          }
         }
         return // Don't process input when dead
       }
@@ -355,10 +395,10 @@
       // Block 1: Handle rotation
       const rotation_step = Math.PI / 8 // 22.5 degrees
       if (keys_pressed['a'] || keys_pressed['A']) {
-        player.angle += rotation_step * dt * 4
+        player.angle -= rotation_step * dt * 4
       }
       if (keys_pressed['d'] || keys_pressed['D']) {
-        player.angle -= rotation_step * dt * 4
+        player.angle += rotation_step * dt * 4
       }
 
       // Block 2: Handle speed changes
@@ -369,22 +409,12 @@
         player.vel_y += -Math.cos(player.angle) * thrust_force
         player.thrust = true
       } else {
-        // Decelerate when no thrust
         player.thrust = false
       }
 
-      // Calculate and limit speed
-      const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
-      if (player.thrust) {
-        // Limit maximum speed when thrusting
-        if (current_speed > player.max_speed) {
-          const speed_ratio = player.max_speed / current_speed
-          player.vel_x *= speed_ratio
-          player.vel_y *= speed_ratio
-        }
-        player.speed = Math.min(current_speed, player.max_speed)
-      } else {
-        // Apply deceleration when not thrusting
+      // Handle deceleration with S key
+      if (keys_pressed['s'] || keys_pressed['S']) {
+        const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
         const new_speed = Math.max(current_speed - 400 * dt, 0)
         if (current_speed > 0) {
           const speed_ratio = new_speed / current_speed
@@ -393,6 +423,15 @@
         }
         player.speed = new_speed
       }
+
+      // Calculate and limit speed
+      const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
+      if (current_speed > player.max_speed) {
+        const speed_ratio = player.max_speed / current_speed
+        player.vel_x *= speed_ratio
+        player.vel_y *= speed_ratio
+      }
+      player.speed = Math.min(current_speed, player.max_speed)
 
       // Block 3: Apply velocity to player position
       player.x += player.vel_x * dt
@@ -465,6 +504,62 @@
     }
 
     const check_collisions = (dt) => {
+      // Check player bullets vs ring faces
+      for (let i = player_bullets.length - 1; i >= 0; i--) {
+        const bullet = player_bullets[i]
+        let bullet_hit = false
+
+        for (let ring of castle_rings) {
+          if (bullet_hit) break
+
+          const segment_angle = (Math.PI * 2) / ring.segments
+
+          for (let face of ring.faces) {
+            if (face.destroyed) continue
+
+            const start_angle = face.index * segment_angle + ring.rotation
+            const end_angle = (face.index + 1) * segment_angle + ring.rotation
+
+            const x1 = CENTER_X + Math.cos(start_angle) * ring.radius
+            const y1 = CENTER_Y + Math.sin(start_angle) * ring.radius
+            const x2 = CENTER_X + Math.cos(end_angle) * ring.radius
+            const y2 = CENTER_Y + Math.sin(end_angle) * ring.radius
+
+            // Point to line segment distance check
+            const line_dx = x2 - x1
+            const line_dy = y2 - y1
+            const line_length_sq = line_dx * line_dx + line_dy * line_dy
+
+            let t = Math.max(0, Math.min(1, ((bullet.x - x1) * line_dx + (bullet.y - y1) * line_dy) / line_length_sq))
+            const closest_x = x1 + t * line_dx
+            const closest_y = y1 + t * line_dy
+
+            const dist_x = bullet.x - closest_x
+            const dist_y = bullet.y - closest_y
+            const distance = Math.sqrt(dist_x * dist_x + dist_y * dist_y)
+
+            if (distance < 8) {
+              // Create explosion at midpoint of segment
+              const mid_x = (x1 + x2) / 2
+              const mid_y = (y1 + y2) / 2
+              explosions.push({
+                x: mid_x,
+                y: mid_y,
+                size: 0,
+                maxSize: 15,
+                life: 0.5
+              })
+
+              face.destroyed = true
+              player_bullets.splice(i, 1)
+              score += 50
+              bullet_hit = true
+              break
+            }
+          }
+        }
+      }
+
       // Check player bullets vs enemies
       for (let i = player_bullets.length - 1; i >= 0; i--) {
         const bullet = player_bullets[i]
@@ -528,29 +623,38 @@
       // Check collision with castle rings
       for (let ring of castle_rings) {
         if (player.alive && Math.abs(player_center_distance - ring.radius) < player.size) {
-          // Player hit ring
-          explosions.push({
-            x: player.x,
-            y: player.y,
-            size: 0,
-            maxSize: 25,
-            life: 0.8
-          })
-          lives--
-          player.alive = false
-          player.respawn_timer = 1.0
+          // Check if player is hitting an active face
+          const segment_angle = (Math.PI * 2) / ring.segments
+          const player_angle_from_center = Math.atan2(player.y - CENTER_Y, player.x - CENTER_X)
+          const normalized_angle = ((player_angle_from_center - ring.rotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)
+          const face_index = Math.floor(normalized_angle / segment_angle)
 
-          // Make enemies retreat to center
-          enemies.forEach(enemy => {
-            const enemy_center_dx = CENTER_X - enemy.x
-            const enemy_center_dy = CENTER_Y - enemy.y
-            const enemy_center_distance = Math.sqrt(enemy_center_dx * enemy_center_dx + enemy_center_dy * enemy_center_dy)
-            if (enemy_center_distance > 0) {
-              enemy.vel_x = (enemy_center_dx / enemy_center_distance) * 100
-              enemy.vel_y = (enemy_center_dy / enemy_center_distance) * 100
-            }
-          })
-          return
+          const face = ring.faces[face_index]
+          if (face && !face.destroyed) {
+            // Player hit ring
+            explosions.push({
+              x: player.x,
+              y: player.y,
+              size: 0,
+              maxSize: 25,
+              life: 0.8
+            })
+            lives--
+            player.alive = false
+            player.respawn_timer = 1.0
+
+            // Make enemies retreat to center
+            enemies.forEach(enemy => {
+              const enemy_center_dx = CENTER_X - enemy.x
+              const enemy_center_dy = CENTER_Y - enemy.y
+              const enemy_center_distance = Math.sqrt(enemy_center_dx * enemy_center_dx + enemy_center_dy * enemy_center_dy)
+              if (enemy_center_distance > 0) {
+                enemy.vel_x = (enemy_center_dx / enemy_center_distance) * 100
+                enemy.vel_y = (enemy_center_dy / enemy_center_distance) * 100
+              }
+            })
+            return
+          }
         }
       }
 
@@ -603,7 +707,60 @@
     }
 
     const update_enemies = (dt) => {
+      const player_is_target = player.alive && !game_over
+
       enemies.forEach((enemy, index) => {
+        if (enemy.docked) {
+          // Rotate with the ring
+          const ring = castle_rings[enemy.dock_ring]
+          enemy.dock_angle += ring.rotationSpeed * dt
+          enemy.x = CENTER_X + Math.cos(enemy.dock_angle) * ring.radius
+          enemy.y = CENTER_Y + Math.sin(enemy.dock_angle) * ring.radius
+          enemy.angle = enemy.dock_angle + Math.PI / 2
+
+          // Undock if player is alive and game active
+          if (player_is_target) {
+            enemy.docked = false
+          }
+          return
+        }
+
+        if (!player_is_target) {
+          // Return to ring and dock
+          if (!enemy.dock_ring) {
+            enemy.dock_ring = Math.floor(Math.random() * castle_rings.length)
+          }
+          const ring = castle_rings[enemy.dock_ring]
+          const angle_to_dock = Math.atan2(enemy.y - CENTER_Y, enemy.x - CENTER_X)
+          const target_x = CENTER_X + Math.cos(angle_to_dock) * ring.radius
+          const target_y = CENTER_Y + Math.sin(angle_to_dock) * ring.radius
+
+          const dx = target_x - enemy.x
+          const dy = target_y - enemy.y
+          const distance = Math.sqrt(dx * dx + dy * dy)
+
+          if (distance < 5) {
+            // Dock to ring
+            enemy.docked = true
+            enemy.dock_angle = angle_to_dock
+            enemy.x = target_x
+            enemy.y = target_y
+            enemy.vel_x = 0
+            enemy.vel_y = 0
+          } else {
+            // Move towards dock position
+            enemy.vel_x = (dx / distance) * 100
+            enemy.vel_y = (dy / distance) * 100
+            enemy.x += enemy.vel_x * dt
+            enemy.y += enemy.vel_y * dt
+            enemy.angle = Math.atan2(enemy.vel_y, enemy.vel_x) + Math.PI / 2
+          }
+          return
+        }
+
+        // Reset dock ring when pursuing
+        enemy.dock_ring = null
+
         const dx = player.x - enemy.x
         const dy = player.y - enemy.y
         const distance_to_player = Math.sqrt(dx * dx + dy * dy)
@@ -618,7 +775,7 @@
           let neighbors = 0
 
           enemies.forEach((other, other_index) => {
-            if (index !== other_index) {
+            if (index !== other_index && !other.docked) {
               const other_dx = other.x - enemy.x
               const other_dy = other.y - enemy.y
               const other_distance = Math.sqrt(other_dx * other_dx + other_dy * other_dy)
@@ -691,10 +848,14 @@
     document.addEventListener('keydown', (e) => {
       keys_pressed[e.key] = true
 
-      // Handle spacebar firing
-      if (e.key === ' ' && !space_pressed && player.alive) {
-        space_pressed = true
-        fire_bullet(player.x, player.y, player.angle, 300, player_bullets)
+      // Handle spacebar
+      if (e.key === ' ') {
+        if (game_over) {
+          init_game()
+        } else if (!space_pressed && player.alive) {
+          space_pressed = true
+          fire_bullet(player.x, player.y, player.angle, 300, player_bullets)
+        }
       }
     })
 
