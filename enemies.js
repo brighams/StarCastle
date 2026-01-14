@@ -109,8 +109,8 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       enemy.vel_x += separate_x * dt * 60
       enemy.vel_y += separate_y * dt * 60
 
-      enemy.vel_x += (dx / distance_to_player) * 30 * dt
-      enemy.vel_y += (dy / distance_to_player) * 30 * dt
+      enemy.vel_x += (dx / distance_to_player) * 10 * dt * enemy_speed_multiplier
+      enemy.vel_y += (dy / distance_to_player) * 10 * dt * enemy_speed_multiplier
 
     } else {
       enemy.jitter_timer -= dt

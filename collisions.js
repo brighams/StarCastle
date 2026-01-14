@@ -131,6 +131,8 @@ export const check_collisions = (player, game_state) => {
 
     if (player.alive && distance < player.size + enemy.size) {
       create_explosion(player.x, player.y, 25, 0.8)
+      create_explosion(enemy.x, enemy.y, 20, 0.5)
+      enemies.splice(i, 1)
       game_state.lives--
       player.alive = false
       player.respawn_timer = 1.0

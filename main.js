@@ -17,7 +17,7 @@ const game_state = {
   game_over: true,
   game_started: false,
   round_won: false,
-  enemy_speed_multiplier: 20.0
+  enemy_speed_multiplier: 1.0
 }
 
 let keys_pressed = {}
@@ -28,7 +28,7 @@ const init_game = () => {
   game_state.game_over = false
   game_state.game_started = true
   game_state.round_won = false
-  game_state.enemy_speed_multiplier = 4.0
+  game_state.enemy_speed_multiplier = 10.0
 
   clear_explosions()
   clear_enemies()
