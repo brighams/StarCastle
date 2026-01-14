@@ -128,6 +128,8 @@
     let explosions = []
     let game_over = true
     let game_started = false
+    let round_won = false
+    let enemy_speed_multiplier = 1.0
 
     // Player state
     const player = {
@@ -175,10 +177,12 @@
 
     const init_game = () => {
       lives = 3
-      round = 1
+      round = 0
       level = 1
       game_over = false
       game_started = true
+      round_won = false
+      enemy_speed_multiplier = 1.0
       explosions = []
       enemies.length = 0
       player_bullets.length = 0
@@ -494,27 +498,17 @@
       player.x += player.vel_x * dt
       player.y += player.vel_y * dt
 
-      // Keep player in bounds
+      // Wrap player around screen edges
       const margin = 20
-      if (player.x < margin) {
-        player.x = margin
-        player.vel_x = Math.abs(player.vel_x) * 0.5
-        player.speed *= 0.5
+      if (player.x < -margin) {
+        player.x = CANVAS_SIZE + margin
+      } else if (player.x > CANVAS_SIZE + margin) {
+        player.x = -margin
       }
-      if (player.x > CANVAS_SIZE - margin) {
-        player.x = CANVAS_SIZE - margin
-        player.vel_x = -Math.abs(player.vel_x) * 0.5
-        player.speed *= 0.5
-      }
-      if (player.y < margin) {
-        player.y = margin
-        player.vel_y = Math.abs(player.vel_y) * 0.5
-        player.speed *= 0.5
-      }
-      if (player.y > CANVAS_SIZE - margin) {
-        player.y = CANVAS_SIZE - margin
-        player.vel_y = -Math.abs(player.vel_y) * 0.5
-        player.speed *= 0.5
+      if (player.y < -margin) {
+        player.y = CANVAS_SIZE + margin
+      } else if (player.y > CANVAS_SIZE + margin) {
+        player.y = -margin
       }
     }
 
@@ -524,7 +518,7 @@
         y: y,
         vel_x: Math.sin(angle) * speed,
         vel_y: -Math.cos(angle) * speed,
-        life: 1000
+        life: 3000
       })
     }
 
@@ -619,6 +613,40 @@
       // Check player bullets vs enemies
       for (let i = player_bullets.length - 1; i >= 0; i--) {
         const bullet = player_bullets[i]
+
+        // Check bullet vs castle center (win condition)
+        const bullet_center_dx = bullet.x - CENTER_X
+        const bullet_center_dy = bullet.y - CENTER_Y
+        const bullet_center_distance = Math.sqrt(bullet_center_dx * bullet_center_dx + bullet_center_dy * bullet_center_dy)
+
+        if (bullet_center_distance < 15 + 2) {
+          // Player wins the round!
+          explosions.push({
+            x: CENTER_X,
+            y: CENTER_Y,
+            size: 0,
+            maxSize: 50,
+            life: 1.0
+          })
+          player_bullets.splice(i, 1)
+          round_won = true
+          round++
+          lives++
+          enemy_speed_multiplier += 0.1
+
+          // Make enemies retreat to center
+          enemies.forEach(enemy => {
+            const enemy_center_dx = CENTER_X - enemy.x
+            const enemy_center_dy = CENTER_Y - enemy.y
+            const enemy_center_distance = Math.sqrt(enemy_center_dx * enemy_center_dx + enemy_center_dy * enemy_center_dy)
+            if (enemy_center_distance > 0) {
+              enemy.vel_x = (enemy_center_dx / enemy_center_distance) * 100
+              enemy.vel_y = (enemy_center_dy / enemy_center_distance) * 100
+            }
+          })
+          continue
+        }
+
         for (let j = enemies.length - 1; j >= 0; j--) {
           const enemy = enemies[j]
           const dx = bullet.x - enemy.x
@@ -762,7 +790,7 @@
     }
 
     const update_enemies = (dt) => {
-      const player_is_target = player.alive && !game_over
+      const player_is_target = player.alive && !game_over && !round_won
 
       enemies.forEach((enemy, index) => {
         if (enemy.docked) {
@@ -876,8 +904,8 @@
           }
 
           // Aggressive movement towards player
-          enemy.vel_x += (dx / distance_to_player) * 80 * dt
-          enemy.vel_y += (dy / distance_to_player) * 80 * dt
+          enemy.vel_x += (dx / distance_to_player) * 80 * dt * enemy_speed_multiplier
+          enemy.vel_y += (dy / distance_to_player) * 80 * dt * enemy_speed_multiplier
 
           // Add jitter to velocity
           enemy.vel_x += enemy.jitter_x * dt
