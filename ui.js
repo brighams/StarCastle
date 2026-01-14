@@ -1,4 +1,4 @@
-import { CANVAS_SIZE, CENTER_X, CENTER_Y } from './constants.js'
+import {CANVAS_SIZE, CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y} from './constants.js'
 import { identity_matrix } from './math.js'
 import { draw_line, draw_ship } from './renderer.js'
 
@@ -40,7 +40,8 @@ const letter_strokes = {
   '7': [[0,0,0.6,0],[0.6,0,0.3,1]],
   '8': [[0,0,0.6,0],[0.6,0,0.6,1],[0.6,1,0,1],[0,1,0,0],[0,0.5,0.6,0.5]],
   '9': [[0,0.5,0.6,0.5],[0,0,0,0.5],[0,0,0.6,0],[0.6,0,0.6,1],[0.6,1,0,1]],
-  '.': [[0.25,0.85,0.35,0.85],[0.35,0.85,0.35,1],[0.35,1,0.25,1],[0.25,1,0.25,0.85]]
+  '.': [[0.25,0.85,0.35,0.85],[0.35,0.85,0.35,1],[0.35,1,0.25,1],[0.25,1,0.25,0.85]],
+  '@': [[0.5,0.5,0.5,0.3],[0.5,0.3,0.3,0.3],[0.3,0.3,0.3,0.6],[0.3,0.6,0.5,0.6],[0.5,0.6,0.5,0.8],[0.5,0.8,0.1,0.8],[0.1,0.8,0.1,0.2],[0.1,0.2,0.5,0],[0.5,0,0.6,0.1]]
 }
 
 export const draw_text = (text, x, y, scale, transform, color) => {
@@ -77,7 +78,10 @@ export const draw_ui = (lives, round, game_over) => {
 
   if (game_over) {
     draw_text("STARKEEPER ONE", CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0])
-    draw_text("INSPIRED BY THE 1980 ARCADE GAME STARCASTLE", CENTER_X, CENTER_Y - 200, 2, transform, [1.0, 0.0, 0.5, 1.0])
+    draw_text("BY BRIGHAMS@STARKEEPER.IO", CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0])
+    draw_text("INSPIRED BY THE 1980 ARCADE GAME STARCASTLE", CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text("PRESS SPACEBAR TO START", CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 0.0, 0.5, 1.0])
+  } else {
+    draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
   }
 }
