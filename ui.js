@@ -64,27 +64,6 @@ export const draw_ui = (lives, round, game_over) => {
     draw_ship(ship_x, ship_y, ship_angle, ship_size, transform, [1.0, 1.0, 1.0, 1.0])
   }
 
-  const round_x = CANVAS_SIZE - 150
-  const round_y = 25
-  const digit_width = 8
-  const digit_height = 12
-
-  draw_line(round_x, round_y, round_x, round_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
-  draw_line(round_x, round_y, round_x + digit_width, round_y, transform, [1.0, 1.0, 1.0, 1.0])
-  draw_line(round_x + digit_width, round_y, round_x + digit_width, round_y + digit_height/2, transform, [1.0, 1.0, 1.0, 1.0])
-  draw_line(round_x, round_y + digit_height/2, round_x + digit_width, round_y + digit_height/2, transform, [1.0, 1.0, 1.0, 1.0])
-  draw_line(round_x, round_y + digit_height/2, round_x + digit_width, round_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
-
-  const round_num_x = round_x + 80
-  const round_string = round.toString()
-  for (let i = 0; i < round_string.length; i++) {
-    const digit_x = round_num_x + i * (digit_width + 4)
-    draw_line(digit_x, round_y, digit_x + digit_width, round_y, transform, [1.0, 1.0, 1.0, 1.0])
-    draw_line(digit_x, round_y, digit_x, round_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
-    draw_line(digit_x + digit_width, round_y, digit_x + digit_width, round_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
-    draw_line(digit_x, round_y + digit_height, digit_x + digit_width, round_y + digit_height, transform, [1.0, 1.0, 1.0, 1.0])
-  }
-
   if (game_over) {
     draw_text("PRESS SPACEBAR TO START", CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 1.0, 1.0, 1.0])
   }
