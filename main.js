@@ -48,6 +48,17 @@ document.addEventListener('keydown', (e) => {
   if (e.key === ' ') {
     if (game_state.game_over) {
       init_game()
+    } else if (game_state.round_won) {
+      // Start next round
+      game_state.round_won = false
+      clear_explosions()
+      clear_enemies()
+      clear_bullets()
+      reset_player()
+      init_ring_faces()
+      spawn_enemy()
+      spawn_enemy()
+      spawn_enemy()
     } else if (!space_pressed && player.alive && player_bullets.length < 3) {
       space_pressed = true
       fire_bullet(player.x, player.y, player.angle, 400)
@@ -101,7 +112,7 @@ const game_loop = (current_time) => {
 
   draw_bullets([1.0, 1.0, 0.0, 1.0])
   draw_explosions()
-  draw_ui(game_state.lives, game_state.round, game_state.game_over)
+  draw_ui(game_state.lives, game_state.round, game_state.game_over, game_state.round_won)
 
   requestAnimationFrame(game_loop)
 }

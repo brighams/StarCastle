@@ -1,7 +1,7 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
-import { castle_rings } from './castle.js'
-import { player_bullets } from './bullets.js'
-import { enemies, retreat_enemies_to_center } from './enemies.js'
+import { castle_rings, init_ring_faces } from './castle.js'
+import { player_bullets, clear_bullets } from './bullets.js'
+import { enemies, retreat_enemies_to_center, clear_enemies } from './enemies.js'
 import { create_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 
@@ -66,6 +66,7 @@ export const check_collisions = (player, game_state) => {
       create_explosion(CENTER_X, CENTER_Y, 50, 1.0)
       playSound('castle_explode')
       player_bullets.splice(i, 1)
+      clear_bullets()
       game_state.round_won = true
       game_state.round++
       game_state.lives++

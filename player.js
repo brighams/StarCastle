@@ -44,19 +44,16 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     player.respawn_timer -= dt
     if (player.respawn_timer <= 0) {
       if (lives > 0) {
-        const corners = [
-          { x: 50, y: 50 },
-          { x: CANVAS_SIZE - 50, y: 50 },
-          { x: 50, y: CANVAS_SIZE - 50 },
-          { x: CANVAS_SIZE - 50, y: CANVAS_SIZE - 50 }
-        ]
-        const corner = corners[Math.floor(Math.random() * corners.length)]
-        player.x = corner.x
-        player.y = corner.y
+        // Spawn on a ring at 80% of game size radius, pointing towards center
+        const spawn_radius = CANVAS_SIZE * 0.4  // 80% of half the canvas = 40% of full size from center
+        const random_angle = Math.random() * Math.PI * 2
+        player.x = CENTER_X + Math.cos(random_angle) * spawn_radius
+        player.y = CENTER_Y + Math.sin(random_angle) * spawn_radius
         player.vel_x = 0
         player.vel_y = 0
         player.speed = 0
-        player.angle = Math.atan2(CENTER_X - player.x, CENTER_Y - player.y)
+        // Point towards the center (castle)
+        player.angle = Math.atan2(CENTER_X - player.x, -(CENTER_Y - player.y))
         player.alive = true
         playSound('player_spawn')
       } else {
