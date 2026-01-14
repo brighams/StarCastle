@@ -1,6 +1,7 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { identity_matrix } from './math.js'
 import { draw_line, draw_circle } from './renderer.js'
+import { playSound } from './sound.js'
 
 export const castle_rings = [
   { radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.5, color: [0.0, 1.0, 0.0, 1.0] },
@@ -11,6 +12,7 @@ export const castle_rings = [
 export const init_ring_faces = () => {
   castle_rings.forEach(ring => {
     ring.faces = []
+    ring.respawn_timer = 0
     for (let i = 0; i < ring.segments; i++) {
       ring.faces.push({
         index: i,
@@ -23,6 +25,24 @@ export const init_ring_faces = () => {
 export const update_castle_rings = (dt) => {
   castle_rings.forEach(ring => {
     ring.rotation += ring.rotationSpeed * dt
+
+    // Check if ring needs respawning
+    if (ring.respawn_timer > 0) {
+      ring.respawn_timer -= dt
+      if (ring.respawn_timer <= 0) {
+        // Respawn all faces
+        ring.faces.forEach(face => {
+          face.destroyed = false
+        })
+        ring.respawn_timer = 0
+      }
+    } else {
+      // Check if all faces are destroyed
+      const all_destroyed = ring.faces.every(face => face.destroyed)
+      if (all_destroyed) {
+        ring.respawn_timer = 1.0
+      }
+    }
   })
 }
 

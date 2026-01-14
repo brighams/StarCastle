@@ -1,10 +1,12 @@
 import { CANVAS_SIZE } from './constants.js'
 import { identity_matrix } from './math.js'
 import {draw_circle, draw_spark} from './renderer.js'
+import { playSound } from './sound.js'
 
 export const player_bullets = []
 
 export const fire_bullet = (x, y, angle, speed) => {
+  playSound('player_shoot')
   player_bullets.push({
     x: x,
     y: y,

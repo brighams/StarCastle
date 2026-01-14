@@ -1,9 +1,11 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { castle_rings } from './castle.js'
+import { playSound } from './sound.js'
 
 export const enemies = []
 
 export const spawn_enemy = () => {
+  playSound('enemy_spawn')
   const ring_index = Math.floor(Math.random() * castle_rings.length)
   const ring = castle_rings[ring_index]
   const angle = Math.random() * Math.PI * 2
@@ -113,15 +115,16 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       enemy.vel_y += (dy / distance_to_player) * 10 * dt * enemy_speed_multiplier
 
     } else {
+      // getting closer to player, speed up
       enemy.jitter_timer -= dt
       if (enemy.jitter_timer <= 0) {
-        enemy.jitter_x = (Math.random() - 0.5) * 30
-        enemy.jitter_y = (Math.random() - 0.5) * 30
+        enemy.jitter_x = (Math.random() - 0.5) * 50
+        enemy.jitter_y = (Math.random() - 0.5) * 50
         enemy.jitter_timer = 0.2 + Math.random() * 0.3
       }
 
-      enemy.vel_x += (dx / distance_to_player) * 80 * dt * enemy_speed_multiplier
-      enemy.vel_y += (dy / distance_to_player) * 80 * dt * enemy_speed_multiplier
+      enemy.vel_x += (dx / distance_to_player) * 30 * dt * enemy_speed_multiplier
+      enemy.vel_y += (dy / distance_to_player) * 30 * dt * enemy_speed_multiplier
 
       enemy.vel_x += enemy.jitter_x * dt
       enemy.vel_y += enemy.jitter_y * dt

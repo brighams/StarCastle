@@ -1,4 +1,5 @@
 import { CANVAS_SIZE, CENTER_X, CENTER_Y } from './constants.js'
+import { playSound } from './sound.js'
 
 export const player = {
   x: CENTER_X,
@@ -24,6 +25,7 @@ export const reset_player = () => {
   player.alive = true
   player.respawn_timer = 0
   player.thrust = 0
+  playSound('player_spawn')
 }
 
 export const update_player = (dt, keys_pressed, lives, game_state) => {
@@ -45,6 +47,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
         player.speed = 0
         player.angle = Math.atan2(CENTER_X - player.x, CENTER_Y - player.y)
         player.alive = true
+        playSound('player_spawn')
       } else {
         game_state.game_over = true
       }

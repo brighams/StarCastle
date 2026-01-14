@@ -3,6 +3,7 @@ import { castle_rings } from './castle.js'
 import { player_bullets } from './bullets.js'
 import { enemies, retreat_enemies_to_center } from './enemies.js'
 import { create_explosion } from './explosions.js'
+import { playSound } from './sound.js'
 
 export const check_collisions = (player, game_state) => {
   // Check player bullets vs ring faces
@@ -42,6 +43,7 @@ export const check_collisions = (player, game_state) => {
           const mid_x = (x1 + x2) / 2
           const mid_y = (y1 + y2) / 2
           create_explosion(mid_x, mid_y, 15, 0.5)
+          playSound('ring_explode')
 
           face.destroyed = true
           player_bullets.splice(i, 1)
@@ -62,6 +64,7 @@ export const check_collisions = (player, game_state) => {
 
     if (bullet_center_distance < 15 + 2) {
       create_explosion(CENTER_X, CENTER_Y, 50, 1.0)
+      playSound('castle_explode')
       player_bullets.splice(i, 1)
       game_state.round_won = true
       game_state.round++
@@ -80,9 +83,10 @@ export const check_collisions = (player, game_state) => {
 
       if (distance < enemy.size + 2) {
         create_explosion(enemy.x, enemy.y, 20, 0.5)
+        playSound('enemy_explode')
         player_bullets.splice(i, 1)
         enemies.splice(j, 1)
-        break
+        break;
       }
     }
   }
@@ -94,6 +98,7 @@ export const check_collisions = (player, game_state) => {
 
   if (player.alive && player_center_distance < 15 + player.size) {
     create_explosion(player.x, player.y, 25, 0.8)
+    playSound('player_explode')
     game_state.lives--
     player.alive = false
     player.respawn_timer = 1.0
@@ -113,6 +118,8 @@ export const check_collisions = (player, game_state) => {
         // Destroy both the ring face and the player
         face.destroyed = true
         create_explosion(player.x, player.y, 25, 0.8)
+        playSound('player_explode')
+        playSound('ring_explode')
         game_state.lives--
         player.alive = false
         player.respawn_timer = 1.0
@@ -132,6 +139,8 @@ export const check_collisions = (player, game_state) => {
     if (player.alive && distance < player.size + enemy.size) {
       create_explosion(player.x, player.y, 25, 0.8)
       create_explosion(enemy.x, enemy.y, 20, 0.5)
+      playSound('player_explode')
+      playSound('enemy_explode')
       enemies.splice(i, 1)
       game_state.lives--
       player.alive = false
