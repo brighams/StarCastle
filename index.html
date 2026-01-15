@@ -65,8 +65,21 @@
     <div class="info" style="color:#00FFFF; font-size: 12px;">
       <a href="https://github.com/brighams/StarCastle">View On GitHub</a>
     </div>
+    <div class="music-info" style="color:#333333; font-size: 12px;">
+      Music from #Uppbeat
+      <a href="https://uppbeat.io/t/d0d/orbit" style="color:#333333; font-size: 12px;">Free Music from #Uppbeat</a>
+      <div style="color:#333333">License code: 8CWB22QJHCXO9EWR</div>
+    </div>
   </div>
 
   <script type="module" src="src/main.js"></script>
+    <script>
+    window.addEventListener('load', () => {
+      const audio = new Audio('sound/orbit-d0d-main-version-29627-02-39.mp3')
+      audio.loop = true
+      audio.volume = 0.1
+      audio.play()
+    })
+  </script>
 </body>
 </html>
