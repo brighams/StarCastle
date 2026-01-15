@@ -58,6 +58,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
         playSound('player_spawn')
       } else {
         game_state.game_over = true
+        playSound('game_over', 1.0, 0.1)
       }
     }
     return

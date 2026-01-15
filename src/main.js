@@ -8,6 +8,7 @@ import { update_explosions, draw_explosions, clear_explosions } from './explosio
 import { check_collisions } from './collisions.js'
 import { draw_ui } from './ui.js'
 import { draw_stars } from './stars.js'
+import { playSound } from "./sound.js";
 
 const canvas = document.getElementById('gameCanvas')
 const gl = init_renderer(canvas)
@@ -37,6 +38,7 @@ const init_game = () => {
   reset_player()
   init_ring_faces()
   spawn_enemy()
+  playSound('game_start', 1.0, 0.1)
 }
 
 let space_pressed = false
