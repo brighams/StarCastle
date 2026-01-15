@@ -2,6 +2,7 @@ import { CENTER_X, CENTER_Y } from './constants.js'
 import { identity_matrix } from './math.js'
 import { draw_line, draw_circle } from './renderer.js'
 import { playSound } from './sound.js'
+import { is_castle_exploding, are_rings_destroyed_by_explosion } from './explosions.js'
 
 export const castle_rings = [
   { radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.5, color: [0.0, 1.0, 0.0, 1.0] },
@@ -47,6 +48,18 @@ export const update_castle_rings = (dt) => {
 }
 
 export const draw_castle = () => {
+  // Don't render castle at all during explosion
+  if (is_castle_exploding()) {
+    // Once explosion reaches inner ring, all rings are gone
+    if (are_rings_destroyed_by_explosion()) {
+      return // Don't render anything
+    }
+
+    // Render only rings that are outside the explosion radius
+    // (This will be handled by the explosion itself - just don't render)
+    return
+  }
+
   const transform = identity_matrix()
 
   castle_rings.forEach(ring => {

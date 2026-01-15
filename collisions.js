@@ -2,7 +2,7 @@ import { CENTER_X, CENTER_Y } from './constants.js'
 import { castle_rings, init_ring_faces } from './castle.js'
 import { player_bullets, clear_bullets } from './bullets.js'
 import { enemies, retreat_enemies_to_center, clear_enemies } from './enemies.js'
-import { create_explosion } from './explosions.js'
+import { create_explosion, create_castle_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 
 export const check_collisions = (player, game_state) => {
@@ -63,7 +63,8 @@ export const check_collisions = (player, game_state) => {
     const bullet_center_distance = Math.sqrt(bullet_center_dx * bullet_center_dx + bullet_center_dy * bullet_center_dy)
 
     if (bullet_center_distance < 15 + 2) {
-      create_explosion(CENTER_X, CENTER_Y, 50, 1.0)
+      // Create the spectacular castle explosion!
+      create_castle_explosion(CENTER_X, CENTER_Y)
       playSound('castle_explode')
       player_bullets.splice(i, 1)
       clear_bullets()

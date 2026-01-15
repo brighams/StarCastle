@@ -78,7 +78,7 @@ export const draw_ui = (lives, round, game_over, round_won) => {
 
   if (game_over) {
     draw_text("STARKEEPER ONE", CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0])
-    draw_text("BY BRIGHAMS@STARKEEPER.IO", CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0])
+    draw_text("BY BRIGHAM@STARKEEPER.IO", CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text("INSPIRED BY THE 1980 ARCADE GAME STARCASTLE", CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text("PRESS SPACEBAR TO START", CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 0.0, 0.5, 1.0])
   } else if (round_won) {
@@ -86,6 +86,7 @@ export const draw_ui = (lives, round, game_over, round_won) => {
     draw_text("PRESS SPACEBAR TO START THE NEXT ROUND", CENTER_X, CENTER_Y + 50, 3, transform, [1.0, 0.84, 0.0, 1.0])
     draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
   } else {
-    draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
+    draw_text(`ROUND ${round+1}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
+    draw_text('STARKEEPER ONE', CENTER_X - 32, 16 , 3, transform, [0.0, 1.0, 1.0, 1.0])
   }
 }
