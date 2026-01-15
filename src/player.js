@@ -68,18 +68,18 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
 
   let isRotatingOrBraking = false
 
-  if (keys_pressed['a'] || keys_pressed['A']) {
+  if (keys_pressed['a'] || keys_pressed['A'] || keys_pressed['ArrowLeft']) {
     player.angle -= rotation_step * dt * 4
     player.rotation = -1
     isRotatingOrBraking = true
   }
-  if (keys_pressed['d'] || keys_pressed['D']) {
+  if (keys_pressed['d'] || keys_pressed['D'] || keys_pressed['ArrowRight']) {
     player.angle += rotation_step * dt * 4
     player.rotation = 1
     isRotatingOrBraking = true
   }
 
-  if (keys_pressed['w'] || keys_pressed['W']) {
+  if (keys_pressed['w'] || keys_pressed['W'] || keys_pressed['ArrowUp']) {
     const thrust_force = 300 * dt
     player.vel_x += Math.sin(player.angle) * thrust_force
     player.vel_y += -Math.cos(player.angle) * thrust_force
@@ -92,7 +92,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     stopMainThruster()
   }
 
-  if (keys_pressed['s'] || keys_pressed['S']) {
+  if (keys_pressed['s'] || keys_pressed['S'] || keys_pressed['ArrowDown']) {
     const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
 
     // Determine if we're moving forward or in reverse
