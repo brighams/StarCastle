@@ -37,8 +37,6 @@ const init_game = () => {
   reset_player()
   init_ring_faces()
   spawn_enemy()
-  spawn_enemy()
-  spawn_enemy()
 }
 
 let space_pressed = false
@@ -57,8 +55,6 @@ document.addEventListener('keydown', (e) => {
       clear_bullets()
       reset_player()
       init_ring_faces()
-      spawn_enemy()
-      spawn_enemy()
       spawn_enemy()
     } else if (!space_pressed && player.alive && player_bullets.length < 3) {
       space_pressed = true
