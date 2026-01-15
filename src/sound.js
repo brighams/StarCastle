@@ -344,23 +344,63 @@ const effects = {
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
   },
 
-  player_spawn: (magnitude, volume) => {
-    const now = audioCtx.currentTime;
-    const gain = createGain(volume * 0.7, now);
-    // Cheerful spawn sound
-    [330, 440, 550].forEach((freq, i) => {
-      createOscillator('triangle', freq * magnitude, now + i * 0.08, 0.08, gain);
-    });
-    gain.gain.setValueAtTime(volume * 0.7, now + 0.2);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-  },
-
   cannon_fire: (magnitude, volume) => {
     const now = audioCtx.currentTime;
-    const duration = 0.25;
+    const duration = 1.2; // Extended to 1.2 seconds
+    const chargeTime = 0.4; // Slightly longer charge-up
+    const fireTime = duration - chargeTime; // ~0.8s for the whoosh
 
-    // Create noise buffer for the "Shhhh" component
-    const bufferSize = audioCtx.sampleRate * duration;
+    // === PHASE 1: CHARGE-UP (Death Star building power) ===
+
+    // Rising oscillator - the iconic charging whine
+    const chargeGain = audioCtx.createGain();
+    chargeGain.gain.setValueAtTime(0.001, now);
+    chargeGain.gain.exponentialRampToValueAtTime(volume * 0.6, now + chargeTime * 0.8);
+    chargeGain.gain.setValueAtTime(volume * 0.7, now + chargeTime);
+    chargeGain.connect(audioCtx.destination);
+
+    const chargeOsc = audioCtx.createOscillator();
+    chargeOsc.type = 'sawtooth';
+    chargeOsc.frequency.setValueAtTime(80 * magnitude, now);
+    chargeOsc.frequency.exponentialRampToValueAtTime(800 * magnitude, now + chargeTime);
+    chargeOsc.connect(chargeGain);
+    chargeOsc.start(now);
+    chargeOsc.stop(now + chargeTime + 0.05);
+
+    // Secondary harmonic for richness during charge
+    const chargeOsc2Gain = audioCtx.createGain();
+    chargeOsc2Gain.gain.setValueAtTime(0.001, now);
+    chargeOsc2Gain.gain.exponentialRampToValueAtTime(volume * 0.3, now + chargeTime * 0.7);
+    chargeOsc2Gain.gain.exponentialRampToValueAtTime(volume * 0.4, now + chargeTime);
+    chargeOsc2Gain.connect(audioCtx.destination);
+
+    const chargeOsc2 = audioCtx.createOscillator();
+    chargeOsc2.type = 'sine';
+    chargeOsc2.frequency.setValueAtTime(160 * magnitude, now);
+    chargeOsc2.frequency.exponentialRampToValueAtTime(1600 * magnitude, now + chargeTime);
+    chargeOsc2.connect(chargeOsc2Gain);
+    chargeOsc2.start(now);
+    chargeOsc2.stop(now + chargeTime + 0.05);
+
+    // Rumbling undertone during charge
+    const rumbleGain = audioCtx.createGain();
+    rumbleGain.gain.setValueAtTime(volume * 0.4, now);
+    rumbleGain.gain.linearRampToValueAtTime(volume * 0.6, now + chargeTime);
+    rumbleGain.connect(audioCtx.destination);
+
+    const rumbleOsc = audioCtx.createOscillator();
+    rumbleOsc.type = 'triangle';
+    rumbleOsc.frequency.setValueAtTime(40 * magnitude, now);
+    rumbleOsc.frequency.linearRampToValueAtTime(60 * magnitude, now + chargeTime);
+    rumbleOsc.connect(rumbleGain);
+    rumbleOsc.start(now);
+    rumbleOsc.stop(now + chargeTime + 0.1);
+
+    // === PHASE 2: THE FIRE/WHOOSH ===
+    const fireStart = now + chargeTime;
+
+    // Create noise buffer for the whoosh
+    const bufferSize = audioCtx.sampleRate * fireTime;
     const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
@@ -370,42 +410,109 @@ const effects = {
     const noiseSource = audioCtx.createBufferSource();
     noiseSource.buffer = noiseBuffer;
 
-    // Bandpass filter for the "rreeet" tonal quality - sweeps up
+    // Bandpass filter sweeping down for the "whoooosh"
     const bandpass = audioCtx.createBiquadFilter();
     bandpass.type = 'bandpass';
-    bandpass.frequency.setValueAtTime(800 * magnitude, now);
-    bandpass.frequency.exponentialRampToValueAtTime(3000 * magnitude, now + duration * 0.6);
-    bandpass.frequency.exponentialRampToValueAtTime(1500 * magnitude, now + duration);
-    bandpass.Q.setValueAtTime(5, now);
+    bandpass.frequency.setValueAtTime(3000 * magnitude, fireStart);
+    bandpass.frequency.exponentialRampToValueAtTime(400 * magnitude, fireStart + fireTime * 0.7);
+    bandpass.frequency.exponentialRampToValueAtTime(150 * magnitude, fireStart + fireTime);
+    bandpass.Q.setValueAtTime(3, fireStart);
 
-    // High frequency oscillator for the "eet" screech
-    const screechGain = audioCtx.createGain();
-    screechGain.gain.setValueAtTime(0, now);
-    screechGain.gain.linearRampToValueAtTime(volume * 0.3, now + duration * 0.3);
-    screechGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-    screechGain.connect(audioCtx.destination);
-
-    const screechOsc = audioCtx.createOscillator();
-    screechOsc.type = 'sawtooth';
-    screechOsc.frequency.setValueAtTime(1200 * magnitude, now);
-    screechOsc.frequency.exponentialRampToValueAtTime(2500 * magnitude, now + duration * 0.5);
-    screechOsc.frequency.exponentialRampToValueAtTime(1800 * magnitude, now + duration);
-    screechOsc.connect(screechGain);
-    screechOsc.start(now);
-    screechOsc.stop(now + duration);
-
-    // Main noise envelope
+    // Main whoosh envelope
     const noiseGain = audioCtx.createGain();
-    noiseGain.gain.setValueAtTime(volume * 0.6, now);
-    noiseGain.gain.setValueAtTime(volume * 0.6, now + duration * 0.7);
-    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    noiseGain.gain.setValueAtTime(volume * 0.8, fireStart);
+    noiseGain.gain.setValueAtTime(volume * 0.7, fireStart + fireTime * 0.3);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, fireStart + fireTime);
 
     noiseSource.connect(bandpass);
     bandpass.connect(noiseGain);
     noiseGain.connect(audioCtx.destination);
 
-    noiseSource.start(now);
-    noiseSource.stop(now + duration);
+    noiseSource.start(fireStart);
+    noiseSource.stop(fireStart + fireTime);
+
+    // Descending tone for the "pew" release
+    const fireOscGain = audioCtx.createGain();
+    fireOscGain.gain.setValueAtTime(volume * 0.5, fireStart);
+    fireOscGain.gain.exponentialRampToValueAtTime(volume * 0.3, fireStart + 0.1);
+    fireOscGain.gain.exponentialRampToValueAtTime(0.001, fireStart + fireTime * 0.6);
+    fireOscGain.connect(audioCtx.destination);
+
+    const fireOsc = audioCtx.createOscillator();
+    fireOsc.type = 'sawtooth';
+    fireOsc.frequency.setValueAtTime(1200 * magnitude, fireStart);
+    fireOsc.frequency.exponentialRampToValueAtTime(200 * magnitude, fireStart + fireTime * 0.5);
+    fireOsc.frequency.exponentialRampToValueAtTime(80 * magnitude, fireStart + fireTime);
+    fireOsc.connect(fireOscGain);
+    fireOsc.start(fireStart);
+    fireOsc.stop(fireStart + fireTime);
+
+    // Sub-bass punch at the moment of fire
+    const punchGain = audioCtx.createGain();
+    punchGain.gain.setValueAtTime(volume * 0.8, fireStart);
+    punchGain.gain.exponentialRampToValueAtTime(0.001, fireStart + 0.15);
+    punchGain.connect(audioCtx.destination);
+
+    const punchOsc = audioCtx.createOscillator();
+    punchOsc.type = 'sine';
+    punchOsc.frequency.setValueAtTime(60 * magnitude, fireStart);
+    punchOsc.frequency.exponentialRampToValueAtTime(30, fireStart + 0.15);
+    punchOsc.connect(punchGain);
+    punchOsc.start(fireStart);
+    punchOsc.stop(fireStart + 0.15);
+
+    // === PHASE 3: TRAILING FUZZ (stronger ending) ===
+    const fuzzStart = fireStart + fireTime * 0.3;
+    const fuzzDuration = fireTime * 0.7;
+
+    // Heavy distorted fuzz noise
+    const fuzzBufferSize = audioCtx.sampleRate * fuzzDuration;
+    const fuzzBuffer = audioCtx.createBuffer(1, fuzzBufferSize, audioCtx.sampleRate);
+    const fuzzOutput = fuzzBuffer.getChannelData(0);
+    for (let i = 0; i < fuzzBufferSize; i++) {
+      // More aggressive noise with some clipping character
+      const noise = Math.random() * 2 - 1;
+      fuzzOutput[i] = Math.sign(noise) * Math.pow(Math.abs(noise), 0.7);
+    }
+
+    const fuzzSource = audioCtx.createBufferSource();
+    fuzzSource.buffer = fuzzBuffer;
+
+    // Lowpass filter for rumbling fuzz texture
+    const fuzzFilter = audioCtx.createBiquadFilter();
+    fuzzFilter.type = 'lowpass';
+    fuzzFilter.frequency.setValueAtTime(800 * magnitude, fuzzStart);
+    fuzzFilter.frequency.exponentialRampToValueAtTime(200, fuzzStart + fuzzDuration);
+    fuzzFilter.Q.setValueAtTime(2, fuzzStart);
+
+    // Fuzz envelope - builds up then fades
+    const fuzzGain = audioCtx.createGain();
+    fuzzGain.gain.setValueAtTime(0.001, fuzzStart);
+    fuzzGain.gain.exponentialRampToValueAtTime(volume * 0.6, fuzzStart + fuzzDuration * 0.2);
+    fuzzGain.gain.setValueAtTime(volume * 0.5, fuzzStart + fuzzDuration * 0.5);
+    fuzzGain.gain.exponentialRampToValueAtTime(0.001, fuzzStart + fuzzDuration);
+
+    fuzzSource.connect(fuzzFilter);
+    fuzzFilter.connect(fuzzGain);
+    fuzzGain.connect(audioCtx.destination);
+
+    fuzzSource.start(fuzzStart);
+    fuzzSource.stop(fuzzStart + fuzzDuration);
+
+    // Low growling oscillator for extra beef at the end
+    const growlGain = audioCtx.createGain();
+    growlGain.gain.setValueAtTime(0.001, fuzzStart);
+    growlGain.gain.exponentialRampToValueAtTime(volume * 0.4, fuzzStart + fuzzDuration * 0.3);
+    growlGain.gain.exponentialRampToValueAtTime(0.001, fuzzStart + fuzzDuration);
+    growlGain.connect(audioCtx.destination);
+
+    const growlOsc = audioCtx.createOscillator();
+    growlOsc.type = 'sawtooth';
+    growlOsc.frequency.setValueAtTime(100 * magnitude, fuzzStart);
+    growlOsc.frequency.exponentialRampToValueAtTime(35, fuzzStart + fuzzDuration);
+    growlOsc.connect(growlGain);
+    growlOsc.start(fuzzStart);
+    growlOsc.stop(fuzzStart + fuzzDuration);
   },
 
   beep: (magnitude, volume) => {
