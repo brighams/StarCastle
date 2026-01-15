@@ -16,7 +16,24 @@ export const player = {
   max_speed: 200,
   max_reverse_factor: 0.30, // Reverse speed = max_speed * this factor (adjustable)
   alive: true,
-  respawn_timer: 0
+  respawn_timer: 0,
+  spawn_anim_timer: 1.5
+}
+
+export const player_spawn = () => {
+  // Spawn on a ring at 80% of game size radius, pointing towards center
+  const spawn_radius = CANVAS_SIZE * 0.4
+  const random_angle = Math.random() * Math.PI * 2
+  player.x = CENTER_X + Math.cos(random_angle) * spawn_radius
+  player.y = CENTER_Y + Math.sin(random_angle) * spawn_radius
+  player.vel_x = 0
+  player.vel_y = 0
+  player.speed = 0
+  // Point towards the center (castle)
+  player.angle = Math.atan2(CENTER_X - player.x, -(CENTER_Y - player.y))
+  player.alive = true
+  player.spawn_anim_timer = 0.5 // duration of the expansion effect
+  playSound('player_spawn')
 }
 
 export const reset_player = () => {

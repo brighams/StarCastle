@@ -38,13 +38,72 @@ const createGain = (volume, startTime) => {
 const effects = {
   game_start: (magnitude, volume) => {
     const now = audioCtx.currentTime;
-    const gain = createGain(volume, now);
-    // Ascending arpeggio
-    [260, 330, 390, 520].forEach((freq, i) => {
-      const osc = createOscillator('square', freq * magnitude, now + i * 0.1, 0.1, gain);
-    });
-    gain.gain.setValueAtTime(volume, now + 0.35);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+    const duration = 0.8;
+
+    // Main Gain Envelope
+    const mainGain = createGain(volume, now);
+    mainGain.gain.setValueAtTime(0.001, now);
+    mainGain.gain.exponentialRampToValueAtTime(volume, now + 0.1);
+    mainGain.gain.setValueAtTime(volume, now + 0.5);
+    mainGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    // 1. "Rounded" Low-Pitch Start (Triangle wave)
+    const roundOsc = audioCtx.createOscillator();
+    roundOsc.type = 'triangle';
+    roundOsc.frequency.setValueAtTime(120 * magnitude, now); // Low starting pitch
+    roundOsc.frequency.exponentialRampToValueAtTime(400 * magnitude, now + 0.4);
+    roundOsc.frequency.linearRampToValueAtTime(500 * magnitude, now + 0.6); // The "L" finish
+    roundOsc.connect(mainGain);
+    roundOsc.start(now);
+    roundOsc.stop(now + duration);
+
+    // 2. Exciting Fuzz Layer (Sawtooth + Noise)
+    const fuzzGain = audioCtx.createGain();
+    fuzzGain.gain.setValueAtTime(0, now);
+    fuzzGain.gain.linearRampToValueAtTime(volume * 0.5, now + 0.15); // Fade in the grit
+    fuzzGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    fuzzGain.connect(audioCtx.destination);
+
+    const sawtoothOsc = audioCtx.createOscillator();
+    sawtoothOsc.type = 'sawtooth';
+    sawtoothOsc.frequency.setValueAtTime(120 * magnitude, now);
+    sawtoothOsc.frequency.exponentialRampToValueAtTime(400 * magnitude, now + 0.4);
+    sawtoothOsc.connect(fuzzGain);
+    sawtoothOsc.start(now);
+    sawtoothOsc.stop(now + 0.6);
+
+    // Noise buffer for the texture
+    const bufferSize = audioCtx.sampleRate * 0.5;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'bandpass';
+    noiseFilter.frequency.setValueAtTime(400 * magnitude, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(800 * magnitude, now + 0.4);
+    noiseFilter.Q.setValueAtTime(1, now);
+
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(fuzzGain);
+    noiseSource.start(now);
+    noiseSource.stop(now + 0.5);
+
+    // 3. High-pitched stinger at the end
+    const stingerStartTime = now + 0.55;
+    const stingerGain = createGain(0.001, stingerStartTime);
+    stingerGain.gain.exponentialRampToValueAtTime(volume * 0.7, stingerStartTime + 0.05);
+    stingerGain.gain.exponentialRampToValueAtTime(0.001, stingerStartTime + 0.2);
+
+    const stingerOsc = audioCtx.createOscillator();
+    stingerOsc.type = 'sine';
+    stingerOsc.frequency.setValueAtTime(1500 * magnitude, stingerStartTime);
+    stingerOsc.frequency.exponentialRampToValueAtTime(2200 * magnitude, stingerStartTime + 0.1);
+    stingerOsc.connect(stingerGain);
+    stingerOsc.start(stingerStartTime);
+    stingerOsc.stop(stingerStartTime + 0.2);
   },
 
   game_over: (magnitude, volume) => {
@@ -60,74 +119,118 @@ const effects = {
 
   player_shoot: (magnitude, volume) => {
     const now = audioCtx.currentTime;
-    const duration = 0.35;
+    const duration = 0.2; // Shorter and snappier for a laser
 
-    // Initial "thwip" attack - quick rising tone
-    const attackGain = audioCtx.createGain();
-    attackGain.gain.setValueAtTime(volume * 0.8, now);
-    attackGain.gain.exponentialRampToValueAtTime(volume * 0.3, now + 0.05);
-    attackGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-    attackGain.connect(audioCtx.destination);
+    // 1. The Laser "Pew" - Fast downward sweep
+    const laserGain = createGain(volume * 0.8, now);
+    laserGain.gain.setValueAtTime(volume * 0.8, now);
+    laserGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
-    const attackOsc = audioCtx.createOscillator();
-    attackOsc.type = 'sine';
-    attackOsc.frequency.setValueAtTime(200 * magnitude, now);
-    attackOsc.frequency.exponentialRampToValueAtTime(800 * magnitude, now + 0.04);
-    attackOsc.frequency.exponentialRampToValueAtTime(400 * magnitude, now + duration);
-    attackOsc.connect(attackGain);
-    attackOsc.start(now);
-    attackOsc.stop(now + duration);
+    const laserOsc = audioCtx.createOscillator();
+    laserOsc.type = 'square'; // Square wave gives it that retro sci-fi "bite"
+    laserOsc.frequency.setValueAtTime(1200 * magnitude, now);
+    laserOsc.frequency.exponentialRampToValueAtTime(400 * magnitude, now + duration);
+    laserOsc.connect(laserGain);
+    laserOsc.start(now);
+    laserOsc.stop(now + duration);
 
-    // Warbling "photon" sustain with vibrato
-    const photonGain = audioCtx.createGain();
-    photonGain.gain.setValueAtTime(0.001, now);
-    photonGain.gain.exponentialRampToValueAtTime(volume * 0.5, now + 0.03);
-    photonGain.gain.setValueAtTime(volume * 0.4, now + 0.1);
-    photonGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-    photonGain.connect(audioCtx.destination);
+    // 2. The "Whoosh" - High-pass noise
+    const bufferSize = audioCtx.sampleRate * duration;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
 
-    const photonOsc = audioCtx.createOscillator();
-    photonOsc.type = 'triangle';
-    photonOsc.frequency.setValueAtTime(600 * magnitude, now);
-    photonOsc.frequency.setValueAtTime(550 * magnitude, now + 0.1);
-    photonOsc.frequency.exponentialRampToValueAtTime(300 * magnitude, now + duration);
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
 
-    // Vibrato LFO for the warble effect
-    const lfo = audioCtx.createOscillator();
-    const lfoGain = audioCtx.createGain();
-    lfo.frequency.setValueAtTime(25, now);
-    lfoGain.gain.setValueAtTime(30 * magnitude, now);
-    lfo.connect(lfoGain);
-    lfoGain.connect(photonOsc.frequency);
-    lfo.start(now);
-    lfo.stop(now + duration);
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'highpass';
+    noiseFilter.frequency.setValueAtTime(2000 * magnitude, now);
 
-    photonOsc.connect(photonGain);
-    photonOsc.start(now);
-    photonOsc.stop(now + duration);
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(volume * 0.3, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration * 1.5);
 
-    // Sub-bass punch for weight
-    const subGain = audioCtx.createGain();
-    subGain.gain.setValueAtTime(volume * 0.6, now);
-    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-    subGain.connect(audioCtx.destination);
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+    noiseSource.start(now);
+    noiseSource.stop(now + duration * 1.5);
 
-    const subOsc = audioCtx.createOscillator();
-    subOsc.type = 'sine';
-    subOsc.frequency.setValueAtTime(80 * magnitude, now);
-    subOsc.frequency.exponentialRampToValueAtTime(40 * magnitude, now + 0.15);
-    subOsc.connect(subGain);
-    subOsc.start(now);
-    subOsc.stop(now + 0.15);
+    // 3. Initial "Thump" - For mechanical feel
+    const thumpGain = createGain(volume * 0.5, now);
+    thumpGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+    const thumpOsc = audioCtx.createOscillator();
+    thumpOsc.type = 'sine';
+    thumpOsc.frequency.setValueAtTime(150 * magnitude, now);
+    thumpOsc.connect(thumpGain);
+    thumpOsc.start(now);
+    thumpOsc.stop(now + 0.05);
+  },
+
+  sound_ping: (magnitude, volume) => {
+    const now = audioCtx.currentTime;
+    const gain = createGain(volume * 0.5, now);
+    // Shimmery explosion (formerly ring_explode)
+    const osc = createOscillator('triangle', 600 * magnitude, now, 0.3, gain);
+    osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
   },
 
   ring_explode: (magnitude, volume) => {
     const now = audioCtx.currentTime;
-    const gain = createGain(volume * 0.5, now);
-    // Shimmery explosion
-    const osc = createOscillator('triangle', 600 * magnitude, now, 0.3, gain);
-    osc.frequency.exponentialRampToValueAtTime(100, now + 0.3);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+    const duration = 0.5; // Slightly longer but still punchy
+
+    // 1. Crashing Boom (Low frequency sawtooth)
+    const boomGain = createGain(volume * 0.8, now);
+    boomGain.gain.setValueAtTime(volume * 0.8, now);
+    boomGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    const boomOsc = audioCtx.createOscillator();
+    boomOsc.type = 'sawtooth';
+    boomOsc.frequency.setValueAtTime(150 * magnitude, now);
+    boomOsc.frequency.exponentialRampToValueAtTime(40 * magnitude, now + duration);
+    boomOsc.connect(boomGain);
+    boomOsc.start(now);
+    boomOsc.stop(now + duration);
+
+    // 2. Fuzzy Crash (Filtered Noise)
+    const bufferSize = audioCtx.sampleRate * duration;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.setValueAtTime(2000 * magnitude, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(500, now + duration);
+
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(volume * 0.6, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+    noiseSource.start(now);
+    noiseSource.stop(now + duration);
+
+    // 3. Sub-bass punch for initial impact
+    const subGain = createGain(volume, now);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+    const subOsc = audioCtx.createOscillator();
+    subOsc.type = 'sine';
+    subOsc.frequency.setValueAtTime(80 * magnitude, now);
+    subOsc.connect(subGain);
+    subOsc.start(now);
+    subOsc.stop(now + 0.15);
   },
 
   castle_explode: (magnitude, volume) => {

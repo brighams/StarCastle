@@ -6,7 +6,7 @@ import { playSound } from './sound.js'
 export const player_bullets = []
 
 export const fire_bullet = (x, y, angle, speed) => {
-  playSound('player_shoot')
+  playSound('player_shoot', 0.1)
   player_bullets.push({
     x: x,
     y: y,
