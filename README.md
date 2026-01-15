@@ -33,3 +33,6 @@ Clone this repository and open the `index.html` file in a modern web browser wit
 
 ## Need a Contractor for your Project?
 Contact me at contact@starkeeper.io
+
+---
+Created by me with AI Assistance from Claude Opus 4.5
