@@ -149,11 +149,88 @@ const effects = {
 
   player_explode: (magnitude, volume) => {
     const now = audioCtx.currentTime;
-    const gain = createGain(volume, now);
-    // Dramatic death sound
-    const osc = createOscillator('sawtooth', 440 * magnitude, now, 0.4, gain);
-    osc.frequency.exponentialRampToValueAtTime(20, now + 0.4);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    const duration = 1.2; // Much longer for dramatic effect
+
+    // Create noise buffer for the fuzz/explosion texture
+    const bufferSize = audioCtx.sampleRate * duration;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+
+    // Noise source with lowpass for rumble
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.setValueAtTime(2000 * magnitude, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(200, now + duration);
+    noiseFilter.Q.setValueAtTime(1, now);
+
+    const noiseGain = audioCtx.createGain();
+    // Envelope: quick attack, sustain, then decay
+    noiseGain.gain.setValueAtTime(0.001, now);
+    noiseGain.gain.exponentialRampToValueAtTime(volume * 0.7, now + 0.02); // Fast attack
+    noiseGain.gain.setValueAtTime(volume * 0.6, now + 0.1);
+    noiseGain.gain.exponentialRampToValueAtTime(volume * 0.4, now + 0.3);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+
+    noiseSource.start(now);
+    noiseSource.stop(now + duration);
+
+    // Deep bass "boom" - the kaboom foundation
+    const boomGain = audioCtx.createGain();
+    boomGain.gain.setValueAtTime(0.001, now);
+    boomGain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+    boomGain.gain.exponentialRampToValueAtTime(volume * 0.5, now + 0.15);
+    boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+    boomGain.connect(audioCtx.destination);
+
+    const boomOsc = audioCtx.createOscillator();
+    boomOsc.type = 'sine';
+    boomOsc.frequency.setValueAtTime(80 * magnitude, now);
+    boomOsc.frequency.exponentialRampToValueAtTime(25, now + 0.8);
+    boomOsc.connect(boomGain);
+    boomOsc.start(now);
+    boomOsc.stop(now + 0.8);
+
+    // Mid-frequency crunch - adds the harsh explosion character
+    const crunchGain = audioCtx.createGain();
+    crunchGain.gain.setValueAtTime(0.001, now);
+    crunchGain.gain.exponentialRampToValueAtTime(volume * 0.8, now + 0.01);
+    crunchGain.gain.exponentialRampToValueAtTime(volume * 0.3, now + 0.2);
+    crunchGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    crunchGain.connect(audioCtx.destination);
+
+    const crunchOsc = audioCtx.createOscillator();
+    crunchOsc.type = 'sawtooth';
+    crunchOsc.frequency.setValueAtTime(300 * magnitude, now);
+    crunchOsc.frequency.exponentialRampToValueAtTime(40, now + 0.5);
+    crunchOsc.connect(crunchGain);
+    crunchOsc.start(now);
+    crunchOsc.stop(now + 0.6);
+
+    // Secondary explosion "echo" for added drama
+    const echoDelay = 0.15;
+    const echoGain = audioCtx.createGain();
+    echoGain.gain.setValueAtTime(0.001, now + echoDelay);
+    echoGain.gain.exponentialRampToValueAtTime(volume * 0.4, now + echoDelay + 0.02);
+    echoGain.gain.exponentialRampToValueAtTime(0.001, now + echoDelay + 0.5);
+    echoGain.connect(audioCtx.destination);
+
+    const echoOsc = audioCtx.createOscillator();
+    echoOsc.type = 'sawtooth';
+    echoOsc.frequency.setValueAtTime(200 * magnitude, now + echoDelay);
+    echoOsc.frequency.exponentialRampToValueAtTime(30, now + echoDelay + 0.5);
+    echoOsc.connect(echoGain);
+    echoOsc.start(now + echoDelay);
+    echoOsc.stop(now + echoDelay + 0.5);
   },
 
   enemy_spawn: (magnitude, volume) => {
