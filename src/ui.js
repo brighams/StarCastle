@@ -105,12 +105,14 @@ export const draw_text = (text, x, y, scale, transform, color) => {
 export const draw_ui = (lives, round, game_over, round_won) => {
   const transform = identity_matrix()
 
-  for (let i = 0; i < lives; i++) {
-    const ship_x = 30 + i * 25
-    const ship_y = 30
-    const ship_size = 8
-    const ship_angle = 0
-    draw_ship(ship_x, ship_y, ship_angle, ship_size, transform, [1.0, 0.5, 1.0, 1.0])
+  if (!game_over) {
+    for (let i = 0; i < lives; i++) {
+      const ship_x = 30 + i * 25
+      const ship_y = 30
+      const ship_size = 8
+      const ship_angle = 0
+      draw_ship(ship_x, ship_y, ship_angle, ship_size, transform, [1.0, 0.5, 1.0, 1.0])
+    }
   }
 
   if (game_over) {
