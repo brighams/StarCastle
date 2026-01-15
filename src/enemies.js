@@ -216,6 +216,14 @@ export const clear_enemies = () => {
   enemies.length = 0
 }
 
+export const spawn_enemies = (max_enemies) => {
+  for (let i = 0; i < max_enemies; i++) {
+    if (Math.random() < 0.5) {
+      spawn_enemy()
+    }
+  }
+}
+
 export const retreat_enemies_to_center = () => {
   enemies.forEach(enemy => {
     const enemy_center_dx = CENTER_X - enemy.x

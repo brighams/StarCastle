@@ -3,7 +3,7 @@ import { init_renderer, clear_screen, draw_ship, draw_spark } from './renderer.j
 import { player, reset_player, update_player } from './player.js'
 import { init_ring_faces, update_castle_rings, draw_castle } from './castle.js'
 import { player_bullets, fire_bullet, update_bullets, draw_bullets, clear_bullets } from './bullets.js'
-import { enemies, spawn_enemy, update_enemies, clear_enemies } from './enemies.js'
+import { enemies, spawn_enemy, spawn_enemies, update_enemies, clear_enemies } from './enemies.js'
 import { update_explosions, draw_explosions, clear_explosions } from './explosions.js'
 import { check_collisions } from './collisions.js'
 import { draw_ui } from './ui.js'
@@ -15,6 +15,7 @@ const gl = init_renderer(canvas)
 const game_state = {
   lives: 3,
   round: 0,
+  max_enemies: 4,
   game_over: true,
   game_started: false,
   round_won: false,
@@ -25,7 +26,8 @@ let keys_pressed = {}
 
 const init_game = () => {
   game_state.lives = 3
-  game_state.round = 0
+  game_state.round = 1
+  game_state.max_enemies = 4 + game_state.round
   game_state.game_over = false
   game_state.game_started = true
   game_state.round_won = false
@@ -36,10 +38,7 @@ const init_game = () => {
   clear_bullets()
   reset_player()
   init_ring_faces()
-  spawn_enemy()
-  spawn_enemy()
-  spawn_enemy()
-  spawn_enemy()
+  spawn_enemies(game_state.max_enemies)
 }
 
 let space_pressed = false
@@ -65,7 +64,7 @@ document.addEventListener('keydown', (e) => {
       clear_bullets()
       reset_player()
       init_ring_faces()
-      for (let i = 0; i < (game_state.round + 1) * 2; i++) {
+      for (let i = 0; i < (game_state.round + 2) * 2; i++) {
         spawn_enemy()
       }
     }
@@ -88,9 +87,8 @@ const game_loop = (current_time) => {
   last_time = current_time
 
   enemy_spawn_timer -= dt
-  if (enemy_spawn_timer <= 0) {
-    const max_enemies = 3 + game_state.round
-    if (enemies.length < max_enemies && Math.random() < 0.3) {
+  if (enemy_spawn_timer <= 0 && enemies.length < game_state.max_enemies) {
+    if (Math.random() < 0.3) {
       spawn_enemy()
     }
     enemy_spawn_timer = 3
