@@ -10,7 +10,7 @@ export const player = {
   thrust: 0,
   rotation: 0, // -1 for left, 0 for none, 1 for right
   braking: false,
-  size: 16,
+  size: 12,
   color: [0.5, 0.5, 1.0, 1.0],
   speed: 0,
   max_speed: 200,
