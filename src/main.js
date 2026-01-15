@@ -7,6 +7,7 @@ import { enemies, spawn_enemy, update_enemies, clear_enemies } from './enemies.j
 import { update_explosions, draw_explosions, clear_explosions } from './explosions.js'
 import { check_collisions } from './collisions.js'
 import { draw_ui } from './ui.js'
+import { draw_stars } from './stars.js'
 
 const canvas = document.getElementById('gameCanvas')
 const gl = init_renderer(canvas)
@@ -98,6 +99,9 @@ const game_loop = (current_time) => {
   update_explosions(dt)
 
   clear_screen()
+
+  // Draw stars first (background layer)
+  draw_stars()
 
   const transform = identity_matrix()
 
