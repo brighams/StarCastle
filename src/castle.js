@@ -2,6 +2,7 @@ import { CENTER_X, CENTER_Y } from './constants.js'
 import { identity_matrix } from './math.js'
 import { draw_line, draw_circle, draw_spark } from './renderer.js'
 import { is_castle_exploding, are_rings_destroyed_by_explosion } from './explosions.js'
+import { playSound } from './sound.js'
 
 // Glow animation state
 let glow_time = 0
@@ -121,6 +122,7 @@ export const update_castle_rings = (dt, player = null) => {
         vy: Math.sin(cannon.angle) * CANNON_SPARK_SPEED,
         size: CANNON_SPARK_SIZE
       }
+      playSound('cannon_fire')
     }
   }
 

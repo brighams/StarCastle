@@ -60,10 +60,65 @@ const effects = {
 
   player_shoot: (magnitude, volume) => {
     const now = audioCtx.currentTime;
-    const gain = createGain(volume, now);
-    const osc = createOscillator('square', 880 * magnitude, now, 0.1, gain);
-    osc.frequency.exponentialRampToValueAtTime(110, now + 0.1);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+    const duration = 0.35;
+
+    // Initial "thwip" attack - quick rising tone
+    const attackGain = audioCtx.createGain();
+    attackGain.gain.setValueAtTime(volume * 0.8, now);
+    attackGain.gain.exponentialRampToValueAtTime(volume * 0.3, now + 0.05);
+    attackGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    attackGain.connect(audioCtx.destination);
+
+    const attackOsc = audioCtx.createOscillator();
+    attackOsc.type = 'sine';
+    attackOsc.frequency.setValueAtTime(200 * magnitude, now);
+    attackOsc.frequency.exponentialRampToValueAtTime(800 * magnitude, now + 0.04);
+    attackOsc.frequency.exponentialRampToValueAtTime(400 * magnitude, now + duration);
+    attackOsc.connect(attackGain);
+    attackOsc.start(now);
+    attackOsc.stop(now + duration);
+
+    // Warbling "photon" sustain with vibrato
+    const photonGain = audioCtx.createGain();
+    photonGain.gain.setValueAtTime(0.001, now);
+    photonGain.gain.exponentialRampToValueAtTime(volume * 0.5, now + 0.03);
+    photonGain.gain.setValueAtTime(volume * 0.4, now + 0.1);
+    photonGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    photonGain.connect(audioCtx.destination);
+
+    const photonOsc = audioCtx.createOscillator();
+    photonOsc.type = 'triangle';
+    photonOsc.frequency.setValueAtTime(600 * magnitude, now);
+    photonOsc.frequency.setValueAtTime(550 * magnitude, now + 0.1);
+    photonOsc.frequency.exponentialRampToValueAtTime(300 * magnitude, now + duration);
+
+    // Vibrato LFO for the warble effect
+    const lfo = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    lfo.frequency.setValueAtTime(25, now);
+    lfoGain.gain.setValueAtTime(30 * magnitude, now);
+    lfo.connect(lfoGain);
+    lfoGain.connect(photonOsc.frequency);
+    lfo.start(now);
+    lfo.stop(now + duration);
+
+    photonOsc.connect(photonGain);
+    photonOsc.start(now);
+    photonOsc.stop(now + duration);
+
+    // Sub-bass punch for weight
+    const subGain = audioCtx.createGain();
+    subGain.gain.setValueAtTime(volume * 0.6, now);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    subGain.connect(audioCtx.destination);
+
+    const subOsc = audioCtx.createOscillator();
+    subOsc.type = 'sine';
+    subOsc.frequency.setValueAtTime(80 * magnitude, now);
+    subOsc.frequency.exponentialRampToValueAtTime(40 * magnitude, now + 0.15);
+    subOsc.connect(subGain);
+    subOsc.start(now);
+    subOsc.stop(now + 0.15);
   },
 
   ring_explode: (magnitude, volume) => {
@@ -118,6 +173,59 @@ const effects = {
     });
     gain.gain.setValueAtTime(volume * 0.7, now + 0.2);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+  },
+
+  cannon_fire: (magnitude, volume) => {
+    const now = audioCtx.currentTime;
+    const duration = 0.25;
+
+    // Create noise buffer for the "Shhhh" component
+    const bufferSize = audioCtx.sampleRate * duration;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+
+    // Bandpass filter for the "rreeet" tonal quality - sweeps up
+    const bandpass = audioCtx.createBiquadFilter();
+    bandpass.type = 'bandpass';
+    bandpass.frequency.setValueAtTime(800 * magnitude, now);
+    bandpass.frequency.exponentialRampToValueAtTime(3000 * magnitude, now + duration * 0.6);
+    bandpass.frequency.exponentialRampToValueAtTime(1500 * magnitude, now + duration);
+    bandpass.Q.setValueAtTime(5, now);
+
+    // High frequency oscillator for the "eet" screech
+    const screechGain = audioCtx.createGain();
+    screechGain.gain.setValueAtTime(0, now);
+    screechGain.gain.linearRampToValueAtTime(volume * 0.3, now + duration * 0.3);
+    screechGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    screechGain.connect(audioCtx.destination);
+
+    const screechOsc = audioCtx.createOscillator();
+    screechOsc.type = 'sawtooth';
+    screechOsc.frequency.setValueAtTime(1200 * magnitude, now);
+    screechOsc.frequency.exponentialRampToValueAtTime(2500 * magnitude, now + duration * 0.5);
+    screechOsc.frequency.exponentialRampToValueAtTime(1800 * magnitude, now + duration);
+    screechOsc.connect(screechGain);
+    screechOsc.start(now);
+    screechOsc.stop(now + duration);
+
+    // Main noise envelope
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(volume * 0.6, now);
+    noiseGain.gain.setValueAtTime(volume * 0.6, now + duration * 0.7);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    noiseSource.connect(bandpass);
+    bandpass.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+
+    noiseSource.start(now);
+    noiseSource.stop(now + duration);
   },
 
   beep: (magnitude, volume) => {
