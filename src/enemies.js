@@ -9,16 +9,25 @@ export const spawn_enemy = () => {
   const ring_index = Math.floor(Math.random() * castle_rings.length)
   const ring = castle_rings[ring_index]
   const angle = Math.random() * Math.PI * 2
+  const target_x = CENTER_X + Math.cos(angle) * ring.radius
+  const target_y = CENTER_Y + Math.sin(angle) * ring.radius
+
   enemies.push({
-    x: CENTER_X + Math.cos(angle) * ring.radius,
-    y: CENTER_Y + Math.sin(angle) * ring.radius,
+    x: CENTER_X,
+    y: CENTER_Y,
     angle: 0,
     vel_x: 0,
     vel_y: 0,
     size: 6,
     jitter_timer: 0,
     jitter_x: 0,
-    jitter_y: 0
+    jitter_y: 0,
+    spawning: true,
+    spawn_target_x: target_x,
+    spawn_target_y: target_y,
+    spawn_ring_index: ring_index,
+    spawn_angle: angle,
+    linger_timer: 2 + Math.random() * 3
   })
 }
 
@@ -26,6 +35,45 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
   const player_is_target = player.alive && !game_over && !round_won
 
   enemies.forEach((enemy, index) => {
+    // Handle spawning state - move from center to target position
+    if (enemy.spawning) {
+      const dx = enemy.spawn_target_x - enemy.x
+      const dy = enemy.spawn_target_y - enemy.y
+      const distance = Math.sqrt(dx * dx + dy * dy)
+
+      if (distance < 5) {
+        enemy.spawning = false
+        enemy.lingering = true
+        enemy.x = enemy.spawn_target_x
+        enemy.y = enemy.spawn_target_y
+        enemy.vel_x = 0
+        enemy.vel_y = 0
+      } else {
+        const spawn_speed = 150
+        enemy.vel_x = (dx / distance) * spawn_speed
+        enemy.vel_y = (dy / distance) * spawn_speed
+        enemy.x += enemy.vel_x * dt
+        enemy.y += enemy.vel_y * dt
+        enemy.angle = Math.atan2(enemy.vel_y, enemy.vel_x) + Math.PI / 2
+      }
+      return
+    }
+
+    // Handle lingering state - orbit on spawn ring
+    if (enemy.lingering) {
+      const ring = castle_rings[enemy.spawn_ring_index]
+      enemy.spawn_angle += ring.rotationSpeed * dt
+      enemy.x = CENTER_X + Math.cos(enemy.spawn_angle) * ring.radius
+      enemy.y = CENTER_Y + Math.sin(enemy.spawn_angle) * ring.radius
+      enemy.angle = enemy.spawn_angle + Math.PI / 2
+
+      enemy.linger_timer -= dt
+      if (enemy.linger_timer <= 0) {
+        enemy.lingering = false
+      }
+      return
+    }
+
     if (enemy.docked) {
       const ring = castle_rings[enemy.dock_ring]
       enemy.dock_angle += ring.rotationSpeed * dt
