@@ -1,7 +1,7 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
-import { castle_rings, init_ring_faces, cannon_projectile, clear_cannon_projectile } from './castle.js'
+import { castle_rings, cannon_projectile, clear_cannon_projectile } from './castle.js'
 import { player_bullets, clear_bullets } from './bullets.js'
-import { enemies, retreat_enemies_to_center, clear_enemies } from './enemies.js'
+import { enemies, retreat_enemies_to_center } from './enemies.js'
 import { create_explosion, create_castle_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 

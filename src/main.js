@@ -1,10 +1,10 @@
 import { identity_matrix } from './math.js'
 import { init_renderer, clear_screen, draw_ship, draw_spark } from './renderer.js'
 import { player, reset_player, update_player } from './player.js'
-import { castle_rings, init_ring_faces, update_castle_rings, draw_castle } from './castle.js'
+import { init_ring_faces, update_castle_rings, draw_castle } from './castle.js'
 import { player_bullets, fire_bullet, update_bullets, draw_bullets, clear_bullets } from './bullets.js'
 import { enemies, spawn_enemy, update_enemies, clear_enemies } from './enemies.js'
-import { explosions, update_explosions, draw_explosions, clear_explosions } from './explosions.js'
+import { update_explosions, draw_explosions, clear_explosions } from './explosions.js'
 import { check_collisions } from './collisions.js'
 import { draw_ui } from './ui.js'
 

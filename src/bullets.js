@@ -1,6 +1,6 @@
 import { CANVAS_SIZE } from './constants.js'
 import { identity_matrix } from './math.js'
-import {draw_circle, draw_spark} from './renderer.js'
+import { draw_spark } from './renderer.js'
 import { playSound } from './sound.js'
 
 export const player_bullets = []

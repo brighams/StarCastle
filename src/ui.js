@@ -1,4 +1,4 @@
-import {CANVAS_SIZE, CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y} from './constants.js'
+import { CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y } from './constants.js'
 import { identity_matrix } from './math.js'
 import { draw_line, draw_ship } from './renderer.js'
 
