@@ -79,7 +79,7 @@ export const draw_ui = (lives, round, game_over, round_won) => {
   if (game_over) {
     draw_text("STARKEEPER ONE", CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text("BY BRIGHAM@STARKEEPER.IO", CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0])
-    draw_text("INSPIRED BY THE 1980 ARCADE GAME STAR CASTLE", CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0])
+    draw_text("INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE", CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text("INSERT BITCOIN OR PRESS SPACEBAR TO START", CENTER_X, CENTER_Y + 200, 3, transform, [0.0, 0.9, 0.9, 1.0])
   } else if (round_won) {
     draw_text("YOU HAVE WON", CENTER_X, CENTER_Y - 50, 5, transform, [1.0, 0.84, 0.0, 1.0])
