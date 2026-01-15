@@ -176,7 +176,7 @@ export const draw_castle = () => {
   const perp_y = Math.sin(cannon.angle + Math.PI / 2)
 
   for (let i = -thickness; i <= thickness; i++) {
-    const offset = i * 1.5
+    const offset = i * 1
     draw_line(
       CENTER_X + perp_x * offset,
       CENTER_Y + perp_y * offset,
