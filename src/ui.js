@@ -82,8 +82,8 @@ export const draw_ui = (lives, round, game_over, round_won) => {
     draw_text("INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE", CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text("INSERT BITCOIN OR PRESS SPACEBAR TO START", CENTER_X, CENTER_Y + 200, 3, transform, [0.0, 0.9, 0.9, 1.0])
   } else if (round_won) {
-    draw_text("YOU HAVE WON", CENTER_X, CENTER_Y - 50, 5, transform, [1.0, 0.84, 0.0, 1.0])
-    draw_text("PRESS SPACEBAR TO START THE NEXT ROUND", CENTER_X, CENTER_Y + 50, 3, transform, [1.0, 0.84, 0.0, 1.0])
+    draw_text("YOU HAVE WON", CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0])
+    draw_text("PRESS SPACEBAR TO START THE NEXT ROUND", CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 0.84, 0.0, 1.0])
     draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
   } else {
     draw_text(`ROUND ${round+1}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
