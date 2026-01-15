@@ -2,7 +2,7 @@ import { CENTER_X, CENTER_Y } from './constants.js'
 import { castle_rings, init_ring_faces } from './castle.js'
 import { player_bullets, clear_bullets } from './bullets.js'
 import { enemies, retreat_enemies_to_center, clear_enemies } from './enemies.js'
-import { create_explosion, create_castle_explosion } from './explosions.js'
+import { create_explosion, create_castle_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 
 export const check_collisions = (player, game_state) => {
@@ -99,7 +99,7 @@ export const check_collisions = (player, game_state) => {
   const player_center_distance = Math.sqrt(player_center_dx * player_center_dx + player_center_dy * player_center_dy)
 
   if (player.alive && player_center_distance < 15 + player.size) {
-    create_explosion(player.x, player.y, 25, 0.8)
+    create_ship_explosion(player.x, player.y)
     playSound('player_explode')
     game_state.lives--
     player.alive = false
@@ -139,7 +139,7 @@ export const check_collisions = (player, game_state) => {
     const distance = Math.sqrt(dx * dx + dy * dy)
 
     if (player.alive && distance < player.size + enemy.size) {
-      create_explosion(player.x, player.y, 25, 0.8)
+      create_ship_explosion(player.x, player.y)
       create_explosion(enemy.x, enemy.y, 20, 0.5)
       playSound('player_explode')
       playSound('enemy_explode')
