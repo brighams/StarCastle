@@ -57,6 +57,30 @@ const letter_strokes = {
   '@': [[0.5,0.5,0.5,0.3],[0.5,0.3,0.3,0.3],[0.3,0.3,0.3,0.6],[0.3,0.6,0.5,0.6],[0.5,0.6,0.5,0.8],[0.5,0.8,0.1,0.8],[0.1,0.8,0.1,0.2],[0.1,0.2,0.5,0],[0.5,0,0.6,0.1]]
 }
 
+let animationStartTime = null
+
+export const resetTextAnimation = () => {
+  animationStartTime = null
+}
+
+export const draw_animated_text = (text, x, y, scale, transform, color, duration) => {
+  if (animationStartTime === null) {
+    animationStartTime = performance.now()
+  }
+
+  const elapsed = (performance.now() - animationStartTime) / 1000 // convert to seconds
+  const progress = Math.min(elapsed / duration, 1.0) // clamp to 0-1
+
+  // Ease-out cubic for a nice deceleration effect
+  const eased = 1 - Math.pow(1 - progress, 3)
+
+  const currentScale = scale * eased
+
+  if (currentScale > 0.01) { // avoid drawing at near-zero scale
+    draw_text(text, x, y, currentScale, transform, color)
+  }
+}
+
 export const draw_text = (text, x, y, scale, transform, color) => {
   const char_width = 0.8 * scale * 6
   const char_height = scale * 6
@@ -90,10 +114,10 @@ export const draw_ui = (lives, round, game_over, round_won) => {
   }
 
   if (game_over) {
-    draw_text("STARKEEPER ONE", CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0])
-    draw_text("BY BRIGHAM@STARKEEPER.IO", CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0])
-    draw_text("INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE", CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0])
-    draw_text("INSERT BITCOIN OR PRESS ENTER TO START", CENTER_X, CENTER_Y + 200, 3, transform, [0.0, 0.9, 0.9, 1.0])
+    draw_animated_text("STARKEEPER ONE", CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
+    draw_animated_text("BY BRIGHAM@STARKEEPER.IO", CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
+    draw_animated_text("INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE", CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
+    draw_animated_text("INSERT BITCOIN OR PRESS ENTER TO START", CENTER_X, CENTER_Y + 200, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0)
     draw_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 260, 2, transform, [1.0, 1.0, 0.0, 1.0])
   } else if (round_won) {
     draw_text("YOU HAVE WON", CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0])
