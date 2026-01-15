@@ -29,7 +29,7 @@ export const reset_player = () => {
   player.alive = true
   player.respawn_timer = 0
   player.thrust = 0
-  playSound('player_spawn')
+  playSound('game_start', 1.0, 0.1)
 }
 
 export const update_player = (dt, keys_pressed, lives, game_state) => {

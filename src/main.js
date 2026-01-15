@@ -38,7 +38,6 @@ const init_game = () => {
   reset_player()
   init_ring_faces()
   spawn_enemy()
-  playSound('game_start', 1.0, 0.1)
 }
 
 let space_pressed = false
