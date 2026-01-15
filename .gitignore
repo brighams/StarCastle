@@ -140,3 +140,5 @@ vite.config.ts.timestamp-*
 
 # for local testing
 app/**
+
+.idea

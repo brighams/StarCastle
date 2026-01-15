@@ -7,6 +7,10 @@ import { playSound } from './sound.js'
 // Glow animation state
 let glow_time = 0
 
+// Center castle rotation
+let center_rotation = 0
+const CENTER_ROTATION_SPEED = 0.8 // radians per second
+
 export const castle_rings = [
   { radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.5, color: [0.0, 1.0, 0.0, 1.0] },
   { radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.7, color: [0.0, 0.0, 1.0, 1.0] },
@@ -17,7 +21,7 @@ export const castle_rings = [
 export const cannon = {
   angle: 0,
   rotation_speed: 2.0, // radians per second
-  length: 23 // extends beyond inner castle radius of 15
+  length: 18 // extends beyond inner castle radius of 15
 }
 
 // Cannon projectile
@@ -72,6 +76,10 @@ export const init_ring_faces = () => {
 export const update_castle_rings = (dt, player = null) => {
   // Update glow animation
   glow_time += dt
+
+  // Update center castle rotation
+  center_rotation += CENTER_ROTATION_SPEED * dt
+
   castle_rings.forEach(ring => {
     ring.rotation += ring.rotationSpeed * dt
 
@@ -201,12 +209,12 @@ export const draw_castle = () => {
   })
 
   // Draw cannon as a thick line (multiple parallel lines for thickness)
-  const cannon_color = [1.0, 0.5, 0.0, 1.0] // Orange
+  const cannon_color = [0.5, 0.5, 0.5, 1.0] // Orange
   const cannon_end_x = CENTER_X + Math.cos(cannon.angle) * cannon.length
   const cannon_end_y = CENTER_Y + Math.sin(cannon.angle) * cannon.length
 
   // Draw multiple offset lines to create thickness
-  const thickness = 1
+  const thickness = 0.8
   const perp_x = Math.cos(cannon.angle + Math.PI / 2)
   const perp_y = Math.sin(cannon.angle + Math.PI / 2)
 
@@ -222,7 +230,47 @@ export const draw_castle = () => {
     )
   }
 
-  draw_circle(CENTER_X, CENTER_Y, 15, 8, transform, [1.0, 0.0, 0.0, 1.0])
+  // Draw rotating hexagon center
+  const hex_color = [1.0, 0.0, 0.0, 1.0]
+  const hex_radius = 15
+  const num_sides = 6
+
+  for (let i = 0; i < num_sides; i++) {
+    const angle1 = center_rotation + (i / num_sides) * Math.PI * 2
+    const angle2 = center_rotation + ((i + 1) / num_sides) * Math.PI * 2
+
+    const x1 = CENTER_X + Math.cos(angle1) * hex_radius
+    const y1 = CENTER_Y + Math.sin(angle1) * hex_radius
+    const x2 = CENTER_X + Math.cos(angle2) * hex_radius
+    const y2 = CENTER_Y + Math.sin(angle2) * hex_radius
+
+    draw_line(x1, y1, x2, y2, transform, hex_color)
+  }
+
+  // Draw 6-pointed star center with rotation
+  const star_color = [1.0, 0.5, 0.0, 1.0]
+  const outer_radius = 15
+  const inner_radius = 7
+  const num_points = 6
+
+  for (let i = 0; i < num_points; i++) {
+    // Outer point
+    const outer_angle = center_rotation + (i / num_points) * Math.PI * 2
+    // Inner points between outer points
+    const inner_angle1 = center_rotation + ((i - 0.5) / num_points) * Math.PI * 2
+    const inner_angle2 = center_rotation + ((i + 0.5) / num_points) * Math.PI * 2
+
+    const outer_x = CENTER_X + Math.cos(outer_angle) * outer_radius
+    const outer_y = CENTER_Y + Math.sin(outer_angle) * outer_radius
+    const inner_x1 = CENTER_X + Math.cos(inner_angle1) * inner_radius
+    const inner_y1 = CENTER_Y + Math.sin(inner_angle1) * inner_radius
+    const inner_x2 = CENTER_X + Math.cos(inner_angle2) * inner_radius
+    const inner_y2 = CENTER_Y + Math.sin(inner_angle2) * inner_radius
+
+    // Draw lines from inner points to outer point
+    draw_line(inner_x1, inner_y1, outer_x, outer_y, transform, star_color)
+    draw_line(outer_x, outer_y, inner_x2, inner_y2, transform, star_color)
+  }
 
   // Draw cannon projectile
   if (cannon_projectile) {
