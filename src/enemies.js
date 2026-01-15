@@ -18,7 +18,7 @@ export const spawn_enemy = () => {
     angle: 0,
     vel_x: 0,
     vel_y: 0,
-    size: 6,
+    size: 8,
     jitter_timer: 0,
     jitter_x: 0,
     jitter_y: 0,
@@ -69,7 +69,17 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
 
       enemy.linger_timer -= dt
       if (enemy.linger_timer <= 0) {
-        enemy.lingering = false
+        // 60% chance to jump to a random ring/face and restart linger
+        if (Math.random() < 0.6) {
+          enemy.spawn_ring_index = Math.floor(Math.random() * castle_rings.length)
+          const new_ring = castle_rings[enemy.spawn_ring_index]
+          enemy.spawn_angle = Math.random() * Math.PI * 2
+          enemy.x = CENTER_X + Math.cos(enemy.spawn_angle) * new_ring.radius
+          enemy.y = CENTER_Y + Math.sin(enemy.spawn_angle) * new_ring.radius
+          enemy.linger_timer = 2 + Math.random() * 2
+        } else {
+          enemy.lingering = false
+        }
       }
       return
     }
