@@ -231,7 +231,7 @@ export const draw_castle = () => {
   }
 
   // Draw rotating hexagon center
-  const hex_color = [1.0, 0.0, 0.0, 1.0]
+  const hex_color = [1.0, 1.0, 1.0, 1.0]
   const hex_radius = 15
   const num_sides = 6
 
@@ -248,10 +248,10 @@ export const draw_castle = () => {
   }
 
   // Draw 6-pointed star center with rotation
-  const star_color = [1.0, 0.5, 0.0, 1.0]
-  const outer_radius = 15
-  const inner_radius = 7
-  const num_points = 6
+  // const star_color = [1.0, 0.5, 0.0, 1.0]
+  // const outer_radius = 15
+  // const inner_radius = 7
+  // const num_points = 6
 
   // for (let i = 0; i < num_points; i++) {
   //   // Outer point

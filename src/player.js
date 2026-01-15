@@ -20,9 +20,9 @@ export const player = {
   spawn_anim_timer: 1.5
 }
 
-export const player_spawn = () => {
-  // Spawn on a ring at 80% of game size radius, pointing towards center
-  const spawn_radius = CANVAS_SIZE * 0.4
+// Helper function to set random spawn position within 80% inset circle
+const set_random_spawn_position = () => {
+  const spawn_radius = CANVAS_SIZE * 0.4  // 80% inset = 40% from center
   const random_angle = Math.random() * Math.PI * 2
   player.x = CENTER_X + Math.cos(random_angle) * spawn_radius
   player.y = CENTER_Y + Math.sin(random_angle) * spawn_radius
@@ -31,18 +31,17 @@ export const player_spawn = () => {
   player.speed = 0
   // Point towards the center (castle)
   player.angle = Math.atan2(CENTER_X - player.x, -(CENTER_Y - player.y))
+}
+
+export const player_spawn = () => {
+  set_random_spawn_position()
   player.alive = true
   player.spawn_anim_timer = 0.5 // duration of the expansion effect
   playSound('player_spawn')
 }
 
 export const reset_player = () => {
-  player.x = CANVAS_SIZE - 100
-  player.y = CANVAS_SIZE - 100
-  player.vel_x = 0
-  player.vel_y = 0
-  player.speed = 0
-  player.angle = Math.atan2(CENTER_X - player.x, CENTER_Y - player.y)
+  set_random_spawn_position()
   player.alive = true
   player.respawn_timer = 0
   player.thrust = 0
@@ -66,16 +65,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     player.respawn_timer -= dt
     if (player.respawn_timer <= 0) {
       if (lives > 0) {
-        // Spawn on a ring at 80% of game size radius, pointing towards center
-        const spawn_radius = CANVAS_SIZE * 0.4  // 80% of half the canvas = 40% of full size from center
-        const random_angle = Math.random() * Math.PI * 2
-        player.x = CENTER_X + Math.cos(random_angle) * spawn_radius
-        player.y = CENTER_Y + Math.sin(random_angle) * spawn_radius
-        player.vel_x = 0
-        player.vel_y = 0
-        player.speed = 0
-        // Point towards the center (castle)
-        player.angle = Math.atan2(CENTER_X - player.x, -(CENTER_Y - player.y))
+        set_random_spawn_position()
         player.alive = true
         playSound('player_spawn')
       } else {
