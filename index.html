@@ -77,7 +77,15 @@
       const audio = new Audio('sound/orbit-d0d-main-version-29627-02-39.mp3')
       audio.loop = true
       audio.volume = 0.1
-      audio.play()
+
+      const startAudio = () => {
+        audio.play().catch(() => {})
+        document.removeEventListener('click', startAudio)
+        document.removeEventListener('keydown', startAudio)
+      }
+
+      document.addEventListener('click', startAudio)
+      document.addEventListener('keydown', startAudio)
     })
   </script>
 </body>
