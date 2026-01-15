@@ -90,7 +90,7 @@ const game_loop = (current_time) => {
     enemy_spawn_timer = 3
   }
 
-  update_castle_rings(dt)
+  update_castle_rings(dt, player)
   update_player(dt, keys_pressed, game_state.lives, game_state)
   update_bullets(dt)
   update_enemies(dt, player, game_state.game_over, game_state.round_won, game_state.enemy_speed_multiplier)

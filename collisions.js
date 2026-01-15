@@ -1,11 +1,29 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
-import { castle_rings, init_ring_faces } from './castle.js'
+import { castle_rings, init_ring_faces, cannon_projectile, clear_cannon_projectile } from './castle.js'
 import { player_bullets, clear_bullets } from './bullets.js'
 import { enemies, retreat_enemies_to_center, clear_enemies } from './enemies.js'
 import { create_explosion, create_castle_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 
 export const check_collisions = (player, game_state) => {
+  // Check cannon projectile vs player
+  if (cannon_projectile && player.alive) {
+    const dx = player.x - cannon_projectile.x
+    const dy = player.y - cannon_projectile.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+
+    if (distance < player.size + cannon_projectile.size) {
+      create_ship_explosion(player.x, player.y)
+      playSound('player_explode')
+      clear_cannon_projectile()
+      game_state.lives--
+      player.alive = false
+      player.respawn_timer = 1.0
+      retreat_enemies_to_center()
+      return
+    }
+  }
+
   // Check player bullets vs ring faces
   for (let i = player_bullets.length - 1; i >= 0; i--) {
     const bullet = player_bullets[i]

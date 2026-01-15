@@ -1,7 +1,6 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { identity_matrix } from './math.js'
-import { draw_line, draw_circle } from './renderer.js'
-import { playSound } from './sound.js'
+import { draw_line, draw_circle, draw_spark } from './renderer.js'
 import { is_castle_exploding, are_rings_destroyed_by_explosion } from './explosions.js'
 
 export const castle_rings = [
@@ -9,6 +8,46 @@ export const castle_rings = [
   { radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.7, color: [0.0, 0.0, 1.0, 1.0] },
   { radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] }
 ]
+
+// Cannon state
+export const cannon = {
+  angle: 0,
+  rotation_speed: 2.0, // radians per second
+  length: 23 // extends beyond inner castle radius of 15
+}
+
+// Cannon projectile
+export let cannon_projectile = null
+
+export const clear_cannon_projectile = () => {
+  cannon_projectile = null
+}
+
+const CANNON_SPARK_SIZE = 24 // 3x normal spark size of 8
+const CANNON_SPARK_SPEED = 300
+const CANNON_SPARK_COLOR = [0.0, 1.0, 1.0, 1.0] // Cyan
+
+// Check if a given angle has a clear path through all rings
+const has_clear_shot = (angle) => {
+  for (const ring of castle_rings) {
+    const segment_angle = (Math.PI * 2) / ring.segments
+
+    // Normalize angle relative to ring rotation
+    let rel_angle = angle - ring.rotation
+    while (rel_angle < 0) rel_angle += Math.PI * 2
+    while (rel_angle >= Math.PI * 2) rel_angle -= Math.PI * 2
+
+    // Find which face this angle would pass through
+    const face_index = Math.floor(rel_angle / segment_angle)
+    const face = ring.faces[face_index]
+
+    // If this face is NOT destroyed, there's no clear shot
+    if (face && !face.destroyed) {
+      return false
+    }
+  }
+  return true
+}
 
 export const init_ring_faces = () => {
   castle_rings.forEach(ring => {
@@ -21,9 +60,12 @@ export const init_ring_faces = () => {
       })
     }
   })
+  // Reset cannon angle and projectile
+  cannon.angle = 0
+  cannon_projectile = null
 }
 
-export const update_castle_rings = (dt) => {
+export const update_castle_rings = (dt, player = null) => {
   castle_rings.forEach(ring => {
     ring.rotation += ring.rotationSpeed * dt
 
@@ -45,6 +87,49 @@ export const update_castle_rings = (dt) => {
       }
     }
   })
+
+  // Update cannon to track player
+  if (player && player.alive) {
+    const target_angle = Math.atan2(player.y - CENTER_Y, player.x - CENTER_X)
+
+    // Calculate shortest angle difference
+    let angle_diff = target_angle - cannon.angle
+    while (angle_diff > Math.PI) angle_diff -= Math.PI * 2
+    while (angle_diff < -Math.PI) angle_diff += Math.PI * 2
+
+    // Rotate towards player at limited speed
+    const max_rotation = cannon.rotation_speed * dt
+    if (Math.abs(angle_diff) < max_rotation) {
+      cannon.angle = target_angle
+    } else {
+      cannon.angle += Math.sign(angle_diff) * max_rotation
+    }
+
+    // Try to fire if no projectile exists and we have a clear shot
+    if (!cannon_projectile && has_clear_shot(cannon.angle)) {
+      // Fire the cannon!
+      cannon_projectile = {
+        x: CENTER_X + Math.cos(cannon.angle) * cannon.length,
+        y: CENTER_Y + Math.sin(cannon.angle) * cannon.length,
+        angle: cannon.angle,
+        vx: Math.cos(cannon.angle) * CANNON_SPARK_SPEED,
+        vy: Math.sin(cannon.angle) * CANNON_SPARK_SPEED,
+        size: CANNON_SPARK_SIZE
+      }
+    }
+  }
+
+  // Update cannon projectile
+  if (cannon_projectile) {
+    cannon_projectile.x += cannon_projectile.vx * dt
+    cannon_projectile.y += cannon_projectile.vy * dt
+
+    // Remove if off screen
+    if (cannon_projectile.x < -50 || cannon_projectile.x > 1074 ||
+        cannon_projectile.y < -50 || cannon_projectile.y > 1074) {
+      cannon_projectile = null
+    }
+  }
 }
 
 export const draw_castle = () => {
@@ -80,5 +165,39 @@ export const draw_castle = () => {
     })
   })
 
+  // Draw cannon as a thick line (multiple parallel lines for thickness)
+  const cannon_color = [1.0, 0.5, 0.0, 1.0] // Orange
+  const cannon_end_x = CENTER_X + Math.cos(cannon.angle) * cannon.length
+  const cannon_end_y = CENTER_Y + Math.sin(cannon.angle) * cannon.length
+
+  // Draw multiple offset lines to create thickness
+  const thickness = 1
+  const perp_x = Math.cos(cannon.angle + Math.PI / 2)
+  const perp_y = Math.sin(cannon.angle + Math.PI / 2)
+
+  for (let i = -thickness; i <= thickness; i++) {
+    const offset = i * 1.5
+    draw_line(
+      CENTER_X + perp_x * offset,
+      CENTER_Y + perp_y * offset,
+      cannon_end_x + perp_x * offset,
+      cannon_end_y + perp_y * offset,
+      transform,
+      cannon_color
+    )
+  }
+
   draw_circle(CENTER_X, CENTER_Y, 15, 8, transform, [1.0, 0.0, 0.0, 1.0])
+
+  // Draw cannon projectile
+  if (cannon_projectile) {
+    draw_spark(
+      cannon_projectile.x,
+      cannon_projectile.y,
+      cannon_projectile.angle,
+      cannon_projectile.size,
+      transform,
+      CANNON_SPARK_COLOR
+    )
+  }
 }
