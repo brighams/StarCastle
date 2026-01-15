@@ -58,6 +58,11 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
   }
 
   if (!player.alive) {
+    // Don't auto-respawn during round_won - wait for Enter key
+    if (game_state.round_won) {
+      return
+    }
+
     player.respawn_timer -= dt
     if (player.respawn_timer <= 0) {
       if (lives > 0) {

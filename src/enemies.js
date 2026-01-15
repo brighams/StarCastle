@@ -49,7 +49,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
         enemy.vel_x = 0
         enemy.vel_y = 0
       } else {
-        const spawn_speed = 150
+        const spawn_speed = 200
         enemy.vel_x = (dx / distance) * spawn_speed
         enemy.vel_y = (dy / distance) * spawn_speed
         enemy.x += enemy.vel_x * dt
@@ -69,14 +69,13 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
 
       enemy.linger_timer -= dt
       if (enemy.linger_timer <= 0) {
-        // 60% chance to jump to a random ring/face and restart linger
-        if (Math.random() < 0.6) {
-          enemy.spawn_ring_index = Math.floor(Math.random() * castle_rings.length)
+        if (Math.random() < 0.30) {
+          enemy.spawn_ring_index = (enemy.spawn_ring_index + 1) % castle_rings.length
           const new_ring = castle_rings[enemy.spawn_ring_index]
           enemy.spawn_angle = Math.random() * Math.PI * 2
           enemy.x = CENTER_X + Math.cos(enemy.spawn_angle) * new_ring.radius
           enemy.y = CENTER_Y + Math.sin(enemy.spawn_angle) * new_ring.radius
-          enemy.linger_timer = 2 + Math.random() * 2
+          enemy.linger_timer = 1 + Math.random() * 2
         } else {
           enemy.lingering = false
         }
@@ -98,11 +97,24 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
     }
 
     if (!player_is_target) {
-      if (!enemy.dock_ring) {
+      if (!enemy.dock_ring && enemy.dock_ring !== 0) {
         enemy.dock_ring = Math.floor(Math.random() * castle_rings.length)
       }
       const ring = castle_rings[enemy.dock_ring]
       const angle_to_dock = Math.atan2(enemy.y - CENTER_Y, enemy.x - CENTER_X)
+
+      // Check if the segment at this angle is destroyed
+      const segment_angle = (Math.PI * 2) / ring.segments
+      const normalized_angle = ((angle_to_dock - ring.rotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)
+      const face_index = Math.floor(normalized_angle / segment_angle)
+      const face = ring.faces[face_index]
+
+      // If segment is destroyed, pick a different ring or keep moving
+      if (face && face.destroyed) {
+        enemy.dock_ring = (enemy.dock_ring + 1) % castle_rings.length
+        return
+      }
+
       const target_x = CENTER_X + Math.cos(angle_to_dock) * ring.radius
       const target_y = CENTER_Y + Math.sin(angle_to_dock) * ring.radius
 
@@ -140,7 +152,8 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       let separate_y = 0
       let neighbors = 0
 
-      enemies.forEach((other, other_index) => {
+      for (let other_index = 0; other_index < enemies.length; other_index++) {
+        const other = enemies[other_index];
         if (index !== other_index && !other.docked) {
           const other_dx = other.x - enemy.x
           const other_dy = other.y - enemy.y
@@ -157,7 +170,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
             neighbors++
           }
         }
-      })
+      }
 
       if (neighbors > 0) {
         align_x /= neighbors
@@ -169,8 +182,9 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       enemy.vel_x += separate_x * dt * 60
       enemy.vel_y += separate_y * dt * 60
 
-      enemy.vel_x += (dx / distance_to_player) * 10 * dt * enemy_speed_multiplier
-      enemy.vel_y += (dy / distance_to_player) * 10 * dt * enemy_speed_multiplier
+      // enemy speed when not close to player
+      enemy.vel_x += (dx / distance_to_player) * 20 * dt * enemy_speed_multiplier
+      enemy.vel_y += (dy / distance_to_player) * 20 * dt * enemy_speed_multiplier
 
     } else {
       // getting closer to player, speed up
@@ -212,4 +226,13 @@ export const retreat_enemies_to_center = () => {
       enemy.vel_y = (enemy_center_dy / enemy_center_distance) * 100
     }
   })
+}
+
+// Undock one enemy when a wall is destroyed
+export const undock_one_enemy = () => {
+  const docked_enemy = enemies.find(enemy => enemy.docked)
+  if (docked_enemy) {
+    docked_enemy.docked = false
+    docked_enemy.dock_ring = null
+  }
 }

@@ -8,7 +8,6 @@ import { update_explosions, draw_explosions, clear_explosions } from './explosio
 import { check_collisions } from './collisions.js'
 import { draw_ui } from './ui.js'
 import { draw_stars } from './stars.js'
-import { playSound } from "./sound.js";
 
 const canvas = document.getElementById('gameCanvas')
 const gl = init_renderer(canvas)
@@ -38,6 +37,9 @@ const init_game = () => {
   reset_player()
   init_ring_faces()
   spawn_enemy()
+  spawn_enemy()
+  spawn_enemy()
+  spawn_enemy()
 }
 
 let space_pressed = false
@@ -46,6 +48,13 @@ document.addEventListener('keydown', (e) => {
   keys_pressed[e.key] = true
 
   if (e.key === ' ') {
+    if (!game_state.game_over && !game_state.round_won && !space_pressed && player.alive && player_bullets.length < 3) {
+      space_pressed = true
+      fire_bullet(player.x, player.y, player.angle, 400)
+    }
+  }
+
+  if (e.key === 'Enter') {
     if (game_state.game_over) {
       init_game()
     } else if (game_state.round_won) {
@@ -56,10 +65,9 @@ document.addEventListener('keydown', (e) => {
       clear_bullets()
       reset_player()
       init_ring_faces()
-      spawn_enemy()
-    } else if (!space_pressed && player.alive && player_bullets.length < 3) {
-      space_pressed = true
-      fire_bullet(player.x, player.y, player.angle, 400)
+      for (let i = 0; i < (game_state.round + 1) * 2; i++) {
+        spawn_enemy()
+      }
     }
   }
 })
@@ -73,7 +81,7 @@ document.addEventListener('keyup', (e) => {
 })
 
 let last_time = 0
-let enemy_spawn_timer = 3
+let enemy_spawn_timer = 1.2
 
 const game_loop = (current_time) => {
   const dt = (current_time - last_time) / 1000

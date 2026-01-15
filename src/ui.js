@@ -1,6 +1,19 @@
 import { CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y } from './constants.js'
 import { identity_matrix } from './math.js'
-import { draw_line, draw_ship } from './renderer.js'
+import { draw_ship, draw_line } from './renderer.js'
+import { getHighScore, getIsNewHighScore } from './score.js'
+
+let isNewHighScore = false
+
+export const setNewHighScore = (value) => {
+  isNewHighScore = value
+}
+
+export const checkForNewHighScore = (round) => {
+  if (checkAndUpdateHighScore(round)) {
+    isNewHighScore = true
+  }
+}
 
 const letter_strokes = {
   'P': [[0,0,0,1],[0,0,0.6,0],[0.6,0,0.6,0.5],[0.6,0.5,0,0.5]],
@@ -80,10 +93,12 @@ export const draw_ui = (lives, round, game_over, round_won) => {
     draw_text("STARKEEPER ONE", CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text("BY BRIGHAM@STARKEEPER.IO", CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text("INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE", CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0])
-    draw_text("INSERT BITCOIN OR PRESS SPACEBAR TO START", CENTER_X, CENTER_Y + 200, 3, transform, [0.0, 0.9, 0.9, 1.0])
+    draw_text("INSERT BITCOIN OR PRESS ENTER TO START", CENTER_X, CENTER_Y + 200, 3, transform, [0.0, 0.9, 0.9, 1.0])
+    draw_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 260, 2, transform, [1.0, 1.0, 0.0, 1.0])
   } else if (round_won) {
     draw_text("YOU HAVE WON", CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0])
-    draw_text("PRESS SPACEBAR TO START THE NEXT ROUND", CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 0.84, 0.0, 1.0])
+    draw_text("PRESS ENTER TO START THE NEXT ROUND", CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 0.84, 0.0, 1.0])
+    draw_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 260, 2, transform, [1.0, 1.0, 0.0, 1.0])
     draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
   } else {
     draw_text(`ROUND ${round+1}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
