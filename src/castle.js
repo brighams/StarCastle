@@ -3,6 +3,9 @@ import { identity_matrix } from './math.js'
 import { draw_line, draw_circle, draw_spark } from './renderer.js'
 import { is_castle_exploding, are_rings_destroyed_by_explosion } from './explosions.js'
 
+// Glow animation state
+let glow_time = 0
+
 export const castle_rings = [
   { radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.5, color: [0.0, 1.0, 0.0, 1.0] },
   { radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.7, color: [0.0, 0.0, 1.0, 1.0] },
@@ -66,6 +69,8 @@ export const init_ring_faces = () => {
 }
 
 export const update_castle_rings = (dt, player = null) => {
+  // Update glow animation
+  glow_time += dt
   castle_rings.forEach(ring => {
     ring.rotation += ring.rotationSpeed * dt
 
@@ -147,6 +152,9 @@ export const draw_castle = () => {
 
   const transform = identity_matrix()
 
+  // Calculate glow intensity with pulse effect
+  const glow_pulse = 0.15 + Math.sin(glow_time * 2.5) * 0.08 // Subtle pulse between 0.07 and 0.23
+
   castle_rings.forEach(ring => {
     const segment_angle = (Math.PI * 2) / ring.segments
 
@@ -161,6 +169,31 @@ export const draw_castle = () => {
       const x2 = CENTER_X + Math.cos(end_angle) * ring.radius
       const y2 = CENTER_Y + Math.sin(end_angle) * ring.radius
 
+      // Draw glow layers (outer to inner)
+      const glow_color = [ring.color[0], ring.color[1], ring.color[2], glow_pulse * 0.3]
+      const glow_color_inner = [ring.color[0], ring.color[1], ring.color[2], glow_pulse * 0.5]
+
+      // Outer glow - offset outward from center
+      const mid_angle = (start_angle + end_angle) / 2
+      const offset_outer = 4
+      const offset_inner = 2
+
+      const ox1_outer = x1 + Math.cos(start_angle) * offset_outer - Math.cos(mid_angle) * offset_outer * 0.3
+      const oy1_outer = y1 + Math.sin(start_angle) * offset_outer - Math.sin(mid_angle) * offset_outer * 0.3
+      const ox2_outer = x2 + Math.cos(end_angle) * offset_outer - Math.cos(mid_angle) * offset_outer * 0.3
+      const oy2_outer = y2 + Math.sin(end_angle) * offset_outer - Math.sin(mid_angle) * offset_outer * 0.3
+
+      draw_line(ox1_outer, oy1_outer, ox2_outer, oy2_outer, transform, glow_color)
+
+      // Inner glow layer
+      const ox1_inner = x1 + Math.cos(start_angle) * offset_inner - Math.cos(mid_angle) * offset_inner * 0.3
+      const oy1_inner = y1 + Math.sin(start_angle) * offset_inner - Math.sin(mid_angle) * offset_inner * 0.3
+      const ox2_inner = x2 + Math.cos(end_angle) * offset_inner - Math.cos(mid_angle) * offset_inner * 0.3
+      const oy2_inner = y2 + Math.sin(end_angle) * offset_inner - Math.sin(mid_angle) * offset_inner * 0.3
+
+      draw_line(ox1_inner, oy1_inner, ox2_inner, oy2_inner, transform, glow_color_inner)
+
+      // Main ring segment
       draw_line(x1, y1, x2, y2, transform, ring.color)
     })
   })
