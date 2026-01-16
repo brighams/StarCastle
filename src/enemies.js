@@ -1,11 +1,10 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { castle_rings } from './castle.js'
-import { playSound } from './sound.js'
 
 export const enemies = []
 
 export const spawn_enemy = () => {
-  playSound('enemy_spawn')
+  // playSound('enemy_spawn') silent spawn ok for now
   const ring_index = Math.floor(Math.random() * castle_rings.length)
   const ring = castle_rings[ring_index]
   const angle = Math.random() * Math.PI * 2

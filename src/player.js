@@ -33,19 +33,12 @@ const set_random_spawn_position = () => {
   player.angle = Math.atan2(CENTER_X - player.x, -(CENTER_Y - player.y))
 }
 
-export const player_spawn = () => {
-  set_random_spawn_position()
-  player.alive = true
-  player.spawn_anim_timer = 0.5 // duration of the expansion effect
-  playSound('player_spawn')
-}
-
 export const reset_player = () => {
   set_random_spawn_position()
   player.alive = true
   player.respawn_timer = 0
   player.thrust = 0
-  playSound('game_start', 1.0, 0.1)
+  playSound('game_start', 0.5, 0.08)
 }
 
 export const update_player = (dt, keys_pressed, lives, game_state) => {
@@ -67,7 +60,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
       if (lives > 0) {
         set_random_spawn_position()
         player.alive = true
-        playSound('player_spawn')
+        playSound('game_start', 0.5, 0.08)
       } else {
         game_state.game_over = true
         playSound('game_over', 1.0, 0.1)

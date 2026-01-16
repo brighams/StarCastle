@@ -1,15 +1,4 @@
 
-
-// game_start
-// game_over
-// player_shoot
-// ring_explode
-// castle_explode
-// enemy_explode
-// player_explode
-// enemy_spawn
-// player_spawn
-
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 // Looping sound state
@@ -339,11 +328,69 @@ const effects = {
 
   enemy_spawn: (magnitude, volume) => {
     const now = audioCtx.currentTime;
-    const gain = createGain(volume * 0.6, now);
-    const osc = createOscillator('square', 100 * magnitude, now, 0.15, gain);
-    osc.frequency.exponentialRampToValueAtTime(400, now + 0.15);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-  },
+    const duration = 0.2;
+
+    // === FILTERED NOISE SWEEP - the "shhhhrrr" ===
+    const bufferSize = audioCtx.sampleRate * duration;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      output[i] = Math.random() * 2 - 1;
+    }
+
+    const noiseSource = audioCtx.createBufferSource();
+    noiseSource.buffer = noiseBuffer;
+
+    // Lowpass filter sweeping down for ominous "materializing from nothing"
+    const noiseFilter = audioCtx.createBiquadFilter();
+    noiseFilter.type = 'lowpass';
+    noiseFilter.frequency.setValueAtTime(3000 * magnitude, now);
+    noiseFilter.frequency.exponentialRampToValueAtTime(200 * magnitude, now + duration * 0.8);
+    noiseFilter.Q.setValueAtTime(2, now);
+
+    const noiseGain = audioCtx.createGain();
+    noiseGain.gain.setValueAtTime(0.001, now);
+    noiseGain.gain.exponentialRampToValueAtTime(volume * 0.5, now + 0.05);
+    noiseGain.gain.setValueAtTime(volume * 0.4, now + duration * 0.5);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    noiseSource.connect(noiseFilter);
+    noiseFilter.connect(noiseGain);
+    noiseGain.connect(audioCtx.destination);
+
+    noiseSource.start(now);
+    noiseSource.stop(now + duration);
+
+    // === LOW OMINOUS TONE - the "wurp" ===
+    const toneGain = audioCtx.createGain();
+    toneGain.gain.setValueAtTime(0.001, now);
+    toneGain.gain.exponentialRampToValueAtTime(volume * 0.6, now + 0.08);
+    toneGain.gain.exponentialRampToValueAtTime(volume * 0.3, now + duration * 0.6);
+    toneGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    toneGain.connect(audioCtx.destination);
+
+    const toneOsc = audioCtx.createOscillator();
+    toneOsc.type = 'sawtooth';
+    toneOsc.frequency.setValueAtTime(300 * magnitude, now);
+    toneOsc.frequency.exponentialRampToValueAtTime(60 * magnitude, now + duration);
+    toneOsc.connect(toneGain);
+    toneOsc.start(now);
+    toneOsc.stop(now + duration);
+
+    // === SUB THUMP - menacing presence ===
+    const subGain = audioCtx.createGain();
+    subGain.gain.setValueAtTime(volume * 0.5, now);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    subGain.connect(audioCtx.destination);
+
+    const subOsc = audioCtx.createOscillator();
+    subOsc.type = 'sine';
+    subOsc.frequency.setValueAtTime(80 * magnitude, now);
+    subOsc.frequency.exponentialRampToValueAtTime(40 * magnitude, now + 0.15);
+    subOsc.connect(subGain);
+    subOsc.start(now);
+    subOsc.stop(now + 0.15);
+    },
 
   cannon_fire: (magnitude, volume) => {
     const now = audioCtx.currentTime;
