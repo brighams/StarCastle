@@ -85,25 +85,26 @@
 
     /* Popup styles */
     .help-popup {
-      display: none;
+      display: block;
       position: absolute;
-      width: 240px;
+      width: auto;
       height: auto;
       background-color: rgba(0, 0, 0, 0.9);
       border: 2px solid #00FFFF;
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
       padding: 10px;
-      top: 55px;
-      right: 20px;
+      bottom: 112px;
+      right: 240px;
       color: white;
       font-size: 12px;
-      text-align: center;
+      text-align: left;
       z-index: 110;
     }
 
     .help-icon:hover + .help-popup {
-      display: flex;
+      display: none;
+      display: block;
       justify-content: center;
       align-items: center;
     }
@@ -114,14 +115,12 @@
     <canvas id="gameCanvas" width="800" height="800"></canvas>
 
     <!-- Help icon and popup -->
-    <div id="infoBox" class="help-icon">?</div>
-    <div class="help-popup">
-      <div>Score 1 point by destroying the castle core</div>
+    <div id="infoBox" class="help-popup">
+      <div>✧ Score 1 point by destroying the castle core.</div>
+      <div>✧ Earn an extra life by winning the round!</div>
+      <div>✧ Each round is harder then the first.</div>
+      <div>✧ Can you beat your high score?</div>
     </div>
-
-
-
-
 
     <div class="info" style="color:#00FFFF; font-size: 24px;">
       Arrow keys or WASD: Move/Rotate | Spacebar: Fire
