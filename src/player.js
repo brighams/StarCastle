@@ -55,7 +55,7 @@ export const reset_player = () => {
   playSound('game_start', 0.5, 0.08)
 }
 
-export const update_player = (dt, keys_pressed, lives, game_state) => {
+export const update_player = (dt, keys_pressed, lives, game_state, mouse_pos = null) => {
 
   if (game_state.game_over) {
     stopMainThruster()
@@ -64,7 +64,6 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
   }
 
   if (!player.alive) {
-    // Don't auto-respawn during round_won - wait for Enter key
     if (game_state.round_won) {
       return
     }
@@ -89,18 +88,40 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
 
   let isRotatingOrBraking = false
 
-  if (keys_pressed['a'] || keys_pressed['A'] || keys_pressed['ArrowLeft']) {
+  const keyboard_rotating = keys_pressed['q'] || keys_pressed['Q'] ||
+    keys_pressed['e'] || keys_pressed['E']
+
+  if (keys_pressed['q'] || keys_pressed['Q']) {
     player.angle -= rotation_step * dt * 4
     player.rotation = -1
     isRotatingOrBraking = true
   }
-  if (keys_pressed['d'] || keys_pressed['D'] || keys_pressed['ArrowRight']) {
+  if (keys_pressed['e'] || keys_pressed['E']) {
     player.angle += rotation_step * dt * 4
     player.rotation = 1
     isRotatingOrBraking = true
   }
 
-  if (keys_pressed['w'] || keys_pressed['W'] || keys_pressed['ArrowUp']) {
+  if (!keyboard_rotating && mouse_pos) {
+    const dx = mouse_pos.x - player.x
+    const dy = mouse_pos.y - player.y
+    const target_angle = Math.atan2(dx, -dy)
+
+    let angle_diff = target_angle - player.angle
+    while (angle_diff > Math.PI) angle_diff -= Math.PI * 2
+    while (angle_diff < -Math.PI) angle_diff += Math.PI * 2
+
+    const dead_zone = 0.02
+    if (Math.abs(angle_diff) > dead_zone) {
+      const max_rotation = rotation_step * dt * 6
+      const rotation_amount = Math.sign(angle_diff) * Math.min(Math.abs(angle_diff), max_rotation)
+      player.angle += rotation_amount
+      player.rotation = Math.sign(angle_diff)
+      isRotatingOrBraking = true
+    }
+  }
+
+  if (keys_pressed['w'] || keys_pressed['W']) {
     const thrust_force = 300 * dt
     player.vel_x += Math.sin(player.angle) * thrust_force
     player.vel_y += -Math.cos(player.angle) * thrust_force
@@ -113,7 +134,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     stopMainThruster()
   }
 
-  if (keys_pressed['s'] || keys_pressed['S'] || keys_pressed['ArrowDown']) {
+  if (keys_pressed['s'] || keys_pressed['S']) {
     const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
 
     // Determine if we're moving forward or in reverse
@@ -155,7 +176,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
 
   player.strafing = 0
 
-  if (keys_pressed['q'] || keys_pressed['Q']) {
+  if (keys_pressed['a'] || keys_pressed['A']) {
     player.strafing = -1
 
     const strafe_x = -Math.cos(player.angle)
@@ -166,7 +187,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
 
     player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
     isRotatingOrBraking = true
-  } else if (keys_pressed['e'] || keys_pressed['E']) {
+  } else if (keys_pressed['d'] || keys_pressed['D']) {
     player.strafing = 1
 
     const strafe_x = Math.cos(player.angle)

@@ -9,6 +9,7 @@ import { check_collisions } from './collisions.js'
 import { draw_ui, toggle_info_box } from './ui.js'
 import { draw_stars } from './stars.js'
 
+
 const canvas = document.getElementById('gameCanvas')
 init_renderer(canvas)
 
@@ -27,7 +28,7 @@ let keys_pressed = {}
 let space_pressed = false
 let last_time = 0
 let enemy_spawn_timer = 1.2
-
+let mouse_pos = null // null means no mouse tracking
 
 const reset_game = (new_game = true) => {
   if (new_game) {
@@ -45,7 +46,6 @@ const reset_game = (new_game = true) => {
 
   toggle_info_box(game_state.game_over)
 
-
   clear_explosions()
   clear_enemies()
   clear_bullets()
@@ -53,9 +53,7 @@ const reset_game = (new_game = true) => {
   reset_player()
   init_ring_faces()
 
-
   enemy_spawn_timer = 1.2
-
 
   setTimeout(() => spawn_enemies(game_state.max_enemies, 1.0), 5000)
 }
@@ -87,6 +85,18 @@ document.addEventListener('keyup', (e) => {
   }
 })
 
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect()
+  mouse_pos = {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top
+  }
+})
+
+canvas.addEventListener('mouseleave', () => {
+  mouse_pos = null
+})
+
 const game_loop = (current_time) => {
   const dt = (current_time - last_time) / 1000
   last_time = current_time
@@ -100,14 +110,13 @@ const game_loop = (current_time) => {
   }
 
   update_castle_rings(dt, player)
-  update_player(dt, keys_pressed, game_state.lives, game_state)
+  update_player(dt, keys_pressed, game_state.lives, game_state, mouse_pos)
   update_bullets(dt)
   update_enemies(dt, player, game_state.game_over, game_state.round_won, game_state.enemy_speed_multiplier)
   check_collisions(player, game_state)
   update_explosions(dt)
 
   clear_screen()
-
 
   draw_stars()
 
