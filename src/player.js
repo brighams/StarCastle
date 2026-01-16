@@ -1,9 +1,9 @@
-import { CANVAS_SIZE, CENTER_X, CENTER_Y } from './constants.js';
-import { playSound, startAttitudeThruster, startMainThruster, stopAttitudeThruster, stopMainThruster } from './sound.js';
-import { retreat_enemies_to_center } from './enemies.js';
-import { toggle_info_box } from './ui.js';
-import { multiply_matrices, rotate_matrix, translate_matrix } from './math.js';
-import { draw_line } from './renderer.js';
+import { CANVAS_SIZE, CENTER_X, CENTER_Y } from './constants.js'
+import { playSound, startAttitudeThruster, startMainThruster, stopAttitudeThruster, stopMainThruster } from './sound.js'
+import { retreat_enemies_to_center } from './enemies.js'
+import { toggle_info_box } from './ui.js'
+import { multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
+import { draw_line } from './renderer.js'
 
 
 export const player = {
@@ -26,268 +26,268 @@ export const player = {
   alive: true,
   respawn_timer: 0,
   spawn_anim_timer: 1.5
-};
+}
 
 export const destroy_player = (player, game_state) => {
-  game_state.lives--;
-  player.alive = false;
-  player.respawn_timer = 1.0;
-  retreat_enemies_to_center();
-};
+  game_state.lives--
+  player.alive = false
+  player.respawn_timer = 1.0
+  retreat_enemies_to_center()
+}
 
 const set_random_spawn_position = () => {
-  const spawn_radius = CANVAS_SIZE * 0.4;
-  const random_angle = Math.random() * Math.PI * 2;
-  player.x = CENTER_X + Math.cos(random_angle) * spawn_radius;
-  player.y = CENTER_Y + Math.sin(random_angle) * spawn_radius;
-  player.vel_x = 0;
-  player.vel_y = 0;
-  player.speed = 0;
+  const spawn_radius = CANVAS_SIZE * 0.4
+  const random_angle = Math.random() * Math.PI * 2
+  player.x = CENTER_X + Math.cos(random_angle) * spawn_radius
+  player.y = CENTER_Y + Math.sin(random_angle) * spawn_radius
+  player.vel_x = 0
+  player.vel_y = 0
+  player.speed = 0
   // Point towards the center (castle)
-  player.angle = Math.atan2(CENTER_X - player.x, -(CENTER_Y - player.y));
-};
+  player.angle = Math.atan2(CENTER_X - player.x, -(CENTER_Y - player.y))
+}
 
 export const reset_player = () => {
-  set_random_spawn_position();
-  player.alive = true;
-  player.respawn_timer = 0;
-  player.thrust = 0;
-  playSound('game_start', 0.5, 0.08);
-};
+  set_random_spawn_position()
+  player.alive = true
+  player.respawn_timer = 0
+  player.thrust = 0
+  playSound('game_start', 0.5, 0.08)
+}
 
 export const update_player = (dt, keys_pressed, lives, game_state) => {
 
   if (game_state.game_over) {
-    stopMainThruster();
-    stopAttitudeThruster();
-    return;
+    stopMainThruster()
+    stopAttitudeThruster()
+    return
   }
 
   if (!player.alive) {
     // Don't auto-respawn during round_won - wait for Enter key
     if (game_state.round_won) {
-      return;
+      return
     }
 
-    player.respawn_timer -= dt;
+    player.respawn_timer -= dt
     if (player.respawn_timer <= 0) {
       if (lives > 0) {
-        set_random_spawn_position();
-        player.alive = true;
-        playSound('game_start', 0.5, 0.08);
+        set_random_spawn_position()
+        player.alive = true
+        playSound('game_start', 0.5, 0.08)
       } else {
-        game_state.game_over = true;
-        playSound('game_over', 1.0, 0.1);
-        toggle_info_box(game_state.game_over);
+        game_state.game_over = true
+        playSound('game_over', 1.0, 0.1)
+        toggle_info_box(game_state.game_over)
       }
     }
-    return;
+    return
   }
 
-  const rotation_step = Math.PI / 8;
-  player.rotation = 0;
+  const rotation_step = Math.PI / 8
+  player.rotation = 0
 
-  let isRotatingOrBraking = false;
+  let isRotatingOrBraking = false
 
   if (keys_pressed['a'] || keys_pressed['A'] || keys_pressed['ArrowLeft']) {
-    player.angle -= rotation_step * dt * 4;
-    player.rotation = -1;
-    isRotatingOrBraking = true;
+    player.angle -= rotation_step * dt * 4
+    player.rotation = -1
+    isRotatingOrBraking = true
   }
   if (keys_pressed['d'] || keys_pressed['D'] || keys_pressed['ArrowRight']) {
-    player.angle += rotation_step * dt * 4;
-    player.rotation = 1;
-    isRotatingOrBraking = true;
+    player.angle += rotation_step * dt * 4
+    player.rotation = 1
+    isRotatingOrBraking = true
   }
 
   if (keys_pressed['w'] || keys_pressed['W'] || keys_pressed['ArrowUp']) {
-    const thrust_force = 300 * dt;
-    player.vel_x += Math.sin(player.angle) * thrust_force;
-    player.vel_y += -Math.cos(player.angle) * thrust_force;
+    const thrust_force = 300 * dt
+    player.vel_x += Math.sin(player.angle) * thrust_force
+    player.vel_y += -Math.cos(player.angle) * thrust_force
 
-    player.thrust = Math.min(player.thrust + dt * 4, 1.0);
-    startMainThruster();
+    player.thrust = Math.min(player.thrust + dt * 4, 1.0)
+    startMainThruster()
   } else {
 
-    player.thrust = Math.max(player.thrust - dt * 8, 0);
-    stopMainThruster();
+    player.thrust = Math.max(player.thrust - dt * 8, 0)
+    stopMainThruster()
   }
 
   if (keys_pressed['s'] || keys_pressed['S'] || keys_pressed['ArrowDown']) {
-    const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y);
+    const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
 
     // Determine if we're moving forward or in reverse
     // Forward direction is (sin(angle), -cos(angle))
-    const forward_x = Math.sin(player.angle);
-    const forward_y = -Math.cos(player.angle);
-    const dot_product = player.vel_x * forward_x + player.vel_y * forward_y;
-    const is_moving_forward = dot_product > 0;
-    const max_reverse_speed = player.max_speed * player.max_reverse_factor;
+    const forward_x = Math.sin(player.angle)
+    const forward_y = -Math.cos(player.angle)
+    const dot_product = player.vel_x * forward_x + player.vel_y * forward_y
+    const is_moving_forward = dot_product > 0
+    const max_reverse_speed = player.max_speed * player.max_reverse_factor
 
     if (is_moving_forward && current_speed > 0) {
 
-      const new_speed = Math.max(current_speed - 800 * dt, 0);
-      const speed_ratio = new_speed / current_speed;
-      player.vel_x *= speed_ratio;
-      player.vel_y *= speed_ratio;
-      player.speed = new_speed;
+      const new_speed = Math.max(current_speed - 800 * dt, 0)
+      const speed_ratio = new_speed / current_speed
+      player.vel_x *= speed_ratio
+      player.vel_y *= speed_ratio
+      player.speed = new_speed
     } else {
       // At zero or already in reverse - apply reverse thrust
-      const reverse_force = 200 * dt;
-      player.vel_x -= forward_x * reverse_force;
-      player.vel_y -= forward_y * reverse_force;
+      const reverse_force = 200 * dt
+      player.vel_x -= forward_x * reverse_force
+      player.vel_y -= forward_y * reverse_force
 
       // Clamp to max reverse speed
-      const new_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y);
+      const new_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
       if (new_speed > max_reverse_speed) {
-        const speed_ratio = max_reverse_speed / new_speed;
-        player.vel_x *= speed_ratio;
-        player.vel_y *= speed_ratio;
+        const speed_ratio = max_reverse_speed / new_speed
+        player.vel_x *= speed_ratio
+        player.vel_y *= speed_ratio
       }
-      player.speed = -Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y);
+      player.speed = -Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
 
     }
 
-    player.braking = current_speed > 10 || Math.abs(player.speed) > 5;
-    if (player.braking) isRotatingOrBraking = true;
+    player.braking = current_speed > 10 || Math.abs(player.speed) > 5
+    if (player.braking) isRotatingOrBraking = true
   } else {
-    player.braking = false;
+    player.braking = false
   }
 
 
-  player.strafing = 0;
+  player.strafing = 0
 
   if (keys_pressed['q'] || keys_pressed['Q']) {
-    player.strafing = -1;
+    player.strafing = -1
 
-    const strafe_x = -Math.cos(player.angle);
-    const strafe_y = -Math.sin(player.angle);
-    const strafe_force = 250 * dt;
-    player.vel_x += strafe_x * strafe_force;
-    player.vel_y += strafe_y * strafe_force;
+    const strafe_x = -Math.cos(player.angle)
+    const strafe_y = -Math.sin(player.angle)
+    const strafe_force = 250 * dt
+    player.vel_x += strafe_x * strafe_force
+    player.vel_y += strafe_y * strafe_force
 
-    player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0);
-    isRotatingOrBraking = true;
+    player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
+    isRotatingOrBraking = true
   } else if (keys_pressed['e'] || keys_pressed['E']) {
-    player.strafing = 1;
+    player.strafing = 1
 
-    const strafe_x = Math.cos(player.angle);
-    const strafe_y = Math.sin(player.angle);
-    const strafe_force = 250 * dt;
-    player.vel_x += strafe_x * strafe_force;
-    player.vel_y += strafe_y * strafe_force;
+    const strafe_x = Math.cos(player.angle)
+    const strafe_y = Math.sin(player.angle)
+    const strafe_force = 250 * dt
+    player.vel_x += strafe_x * strafe_force
+    player.vel_y += strafe_y * strafe_force
 
-    player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0);
-    isRotatingOrBraking = true;
+    player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
+    isRotatingOrBraking = true
   } else {
 
-    player.strafe_thrust = Math.max(player.strafe_thrust - dt * 6, 0);
+    player.strafe_thrust = Math.max(player.strafe_thrust - dt * 6, 0)
   }
 
 
   if (isRotatingOrBraking) {
-    startAttitudeThruster();
+    startAttitudeThruster()
   } else {
-    stopAttitudeThruster();
+    stopAttitudeThruster()
   }
 
-  const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y);
+  const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
   if (current_speed > player.max_speed) {
-    const speed_ratio = player.max_speed / current_speed;
-    player.vel_x *= speed_ratio;
-    player.vel_y *= speed_ratio;
+    const speed_ratio = player.max_speed / current_speed
+    player.vel_x *= speed_ratio
+    player.vel_y *= speed_ratio
   }
-  player.speed = Math.min(current_speed, player.max_speed);
+  player.speed = Math.min(current_speed, player.max_speed)
 
-  player.x += player.vel_x * dt;
-  player.y += player.vel_y * dt;
+  player.x += player.vel_x * dt
+  player.y += player.vel_y * dt
 
-  const margin = 20;
+  const margin = 20
   if (player.x < -margin) {
-    player.x = CANVAS_SIZE + margin;
+    player.x = CANVAS_SIZE + margin
   } else if (player.x > CANVAS_SIZE + margin) {
-    player.x = -margin;
+    player.x = -margin
   }
   if (player.y < -margin) {
-    player.y = CANVAS_SIZE + margin;
+    player.y = CANVAS_SIZE + margin
   } else if (player.y > CANVAS_SIZE + margin) {
-    player.y = -margin;
+    player.y = -margin
   }
-};
+}
 
 
 export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotation = 0, braking = false, strafing = 0, strafe_thrust = 0) => {
   const ship_transform = multiply_matrices(
     multiply_matrices(transform, translate_matrix(x, y)),
     rotate_matrix(angle)
-  );
+  )
 
 
-  const offsets = [-0.5, 0, 0.5];
+  const offsets = [-0.5, 0, 0.5]
   for (const offset of offsets) {
-    draw_line(offset, -size, -size * 0.7 + offset, size, ship_transform, color);
-    draw_line(-size * 0.7 + offset, size, size * 0.7 + offset, size, ship_transform, color);
-    draw_line(size * 0.7 + offset, size, offset, -size, ship_transform, color);
+    draw_line(offset, -size, -size * 0.7 + offset, size, ship_transform, color)
+    draw_line(-size * 0.7 + offset, size, size * 0.7 + offset, size, ship_transform, color)
+    draw_line(size * 0.7 + offset, size, offset, -size, ship_transform, color)
   }
 
 
-  const tail_height = size * 0.4;
-  const tail_width = size * 0.35;
+  const tail_height = size * 0.4
+  const tail_width = size * 0.35
   for (const offset of offsets) {
-    draw_line(-tail_width + offset, size, offset, size - tail_height, ship_transform, color);
-    draw_line(tail_width + offset, size, offset, size - tail_height, ship_transform, color);
+    draw_line(-tail_width + offset, size, offset, size - tail_height, ship_transform, color)
+    draw_line(tail_width + offset, size, offset, size - tail_height, ship_transform, color)
   }
 
   if (thrust > 0) {
 
-    const flame_length = 1.0 + thrust * 3.2;
-    const flame_width = 0.2 + thrust * 0.1;
-    const flame_color = [1.0, 0.5 - thrust * 0.2, 0.0, thrust];
+    const flame_length = 1.0 + thrust * 3.2
+    const flame_width = 0.2 + thrust * 0.1
+    const flame_color = [1.0, 0.5 - thrust * 0.2, 0.0, thrust]
 
-    draw_line(0, size, -size * flame_width, size * flame_length, ship_transform, flame_color);
-    draw_line(0, size, size * flame_width, size * flame_length, ship_transform, flame_color);
+    draw_line(0, size, -size * flame_width, size * flame_length, ship_transform, flame_color)
+    draw_line(0, size, size * flame_width, size * flame_length, ship_transform, flame_color)
   }
 
 
   if (rotation !== 0) {
-    const jet_color = [1.0, 0.0, 0.5, 0.9];
-    const jet_length = size * 0.6;
+    const jet_color = [1.0, 0.0, 0.5, 0.9]
+    const jet_length = size * 0.6
 
     if (rotation > 0) {
 
-      draw_line(-size * 0.7, -size * 0.5, -size * 0.7 - jet_length, -size * 0.3, ship_transform, jet_color);
-      draw_line(-size * 0.7, -size * 0.5, -size * 0.7 - jet_length, -size * 0.7, ship_transform, jet_color);
+      draw_line(-size * 0.7, -size * 0.5, -size * 0.7 - jet_length, -size * 0.3, ship_transform, jet_color)
+      draw_line(-size * 0.7, -size * 0.5, -size * 0.7 - jet_length, -size * 0.7, ship_transform, jet_color)
     } else {
 
-      draw_line(size * 0.7, -size * 0.5, size * 0.7 + jet_length, -size * 0.3, ship_transform, jet_color);
-      draw_line(size * 0.7, -size * 0.5, size * 0.7 + jet_length, -size * 0.7, ship_transform, jet_color);
+      draw_line(size * 0.7, -size * 0.5, size * 0.7 + jet_length, -size * 0.3, ship_transform, jet_color)
+      draw_line(size * 0.7, -size * 0.5, size * 0.7 + jet_length, -size * 0.7, ship_transform, jet_color)
     }
   }
 
 
   if (braking) {
-    const jet_color = [1.0, 0.0, 0.5, 0.9];
-    const jet_length = size * 0.8;
+    const jet_color = [1.0, 0.0, 0.5, 0.9]
+    const jet_length = size * 0.8
 
-    draw_line(0, -size, -size * 0.2, -size - jet_length, ship_transform, jet_color);
-    draw_line(0, -size, size * 0.2, -size - jet_length, ship_transform, jet_color);
+    draw_line(0, -size, -size * 0.2, -size - jet_length, ship_transform, jet_color)
+    draw_line(0, -size, size * 0.2, -size - jet_length, ship_transform, jet_color)
   }
 
 
   if (strafe_thrust > 0) {
-    const strafe_color = [1.0, 0.3, 0.0, strafe_thrust * 0.9];
-    const strafe_jet_length = size * 1.2 * strafe_thrust;
+    const strafe_color = [1.0, 0.3, 0.0, strafe_thrust * 0.9]
+    const strafe_jet_length = size * 1.2 * strafe_thrust
 
     if (strafing > 0) {
 
-      draw_line(-size * 0.5, 0, -size * 0.5 - strafe_jet_length, size * 0.2, ship_transform, strafe_color);
-      draw_line(-size * 0.5, 0, -size * 0.5 - strafe_jet_length, -size * 0.2, ship_transform, strafe_color);
-      draw_line(-size * 0.5, 0, -size * 0.5 - strafe_jet_length * 0.7, 0, ship_transform, strafe_color);
+      draw_line(-size * 0.5, 0, -size * 0.5 - strafe_jet_length, size * 0.2, ship_transform, strafe_color)
+      draw_line(-size * 0.5, 0, -size * 0.5 - strafe_jet_length, -size * 0.2, ship_transform, strafe_color)
+      draw_line(-size * 0.5, 0, -size * 0.5 - strafe_jet_length * 0.7, 0, ship_transform, strafe_color)
     } else if (strafing < 0) {
 
-      draw_line(size * 0.5, 0, size * 0.5 + strafe_jet_length, size * 0.2, ship_transform, strafe_color);
-      draw_line(size * 0.5, 0, size * 0.5 + strafe_jet_length, -size * 0.2, ship_transform, strafe_color);
-      draw_line(size * 0.5, 0, size * 0.5 + strafe_jet_length * 0.7, 0, ship_transform, strafe_color);
+      draw_line(size * 0.5, 0, size * 0.5 + strafe_jet_length, size * 0.2, ship_transform, strafe_color)
+      draw_line(size * 0.5, 0, size * 0.5 + strafe_jet_length, -size * 0.2, ship_transform, strafe_color)
+      draw_line(size * 0.5, 0, size * 0.5 + strafe_jet_length * 0.7, 0, ship_transform, strafe_color)
     }
   }
-};
+}

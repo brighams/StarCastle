@@ -1,6 +1,6 @@
-const HIGH_SCORE_KEY = 'starkeeper_high_score';
+const HIGH_SCORE_KEY = 'starkeeper_high_score'
 
-export const getHighScore = () => parseInt(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
+export const getHighScore = () => parseInt(localStorage.getItem(HIGH_SCORE_KEY)) || 0
 
 // ==== FOR LATER
 
@@ -32,11 +32,11 @@ export const getHighScore = () => parseInt(localStorage.getItem(HIGH_SCORE_KEY))
 // }
 
 export const resetHighScore = () => {
-  localStorage.removeItem(HIGH_SCORE_KEY);
-};
+  localStorage.removeItem(HIGH_SCORE_KEY)
+}
 
 // Set up the reset link handler
 document.getElementById('resetHighScore')?.addEventListener('click', (e) => {
-  e.preventDefault();
-  resetHighScore();
-});
+  e.preventDefault()
+  resetHighScore()
+})

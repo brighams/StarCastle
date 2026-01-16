@@ -1,19 +1,19 @@
-import { CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y } from './constants.js';
-import { identity_matrix } from './math.js';
-import { draw_line } from './renderer.js';
-import { getHighScore } from './score.js';
-import { game_state } from './main.js';
-import { draw_ship } from './player.js';
+import { CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y } from './constants.js'
+import { identity_matrix } from './math.js'
+import { draw_line } from './renderer.js'
+import { getHighScore } from './score.js'
+import { game_state } from './main.js'
+import { draw_ship } from './player.js'
 
-let infoBox = document.getElementById('infoBox');
+let infoBox = document.getElementById('infoBox')
 
 export const toggle_info_box = (show) => {
   if (show) {
-    infoBox.style.display = 'block';
+    infoBox.style.display = 'block'
   } else {
-    infoBox.style.display = 'none';
+    infoBox.style.display = 'none'
   }
-};
+}
 
 const letter_strokes = {
   'P': [[0, 0, 0, 1], [0, 0, 0.6, 0], [0.6, 0, 0.6, 0.5], [0.6, 0.5, 0, 0.5]],
@@ -55,82 +55,82 @@ const letter_strokes = {
   '9': [[0, 0.5, 0.6, 0.5], [0, 0, 0, 0.5], [0, 0, 0.6, 0], [0.6, 0, 0.6, 1], [0.6, 1, 0, 1]],
   '.': [[0.25, 0.85, 0.35, 0.85], [0.35, 0.85, 0.35, 1], [0.35, 1, 0.25, 1], [0.25, 1, 0.25, 0.85]],
   '@': [[0.5, 0.5, 0.5, 0.3], [0.5, 0.3, 0.3, 0.3], [0.3, 0.3, 0.3, 0.6], [0.3, 0.6, 0.5, 0.6], [0.5, 0.6, 0.5, 0.8], [0.5, 0.8, 0.1, 0.8], [0.1, 0.8, 0.1, 0.2], [0.1, 0.2, 0.5, 0], [0.5, 0, 0.6, 0.1]]
-};
+}
 
-let animationStartTime = null;
+let animationStartTime = null
 
 export const draw_animated_text = (text, x, y, scale, transform, color, duration) => {
   if (animationStartTime === null) {
-    animationStartTime = performance.now();
+    animationStartTime = performance.now()
   }
 
-  const elapsed = (performance.now() - animationStartTime) / 1000;
-  const progress = Math.min(elapsed / duration, 1.0);
+  const elapsed = (performance.now() - animationStartTime) / 1000
+  const progress = Math.min(elapsed / duration, 1.0)
 
 
-  const eased = 1 - Math.pow(1 - progress, 3);
+  const eased = 1 - Math.pow(1 - progress, 3)
 
-  const currentScale = scale * eased;
+  const currentScale = scale * eased
 
   if (currentScale > 0.01) {
-    draw_text(text, x, y, currentScale, transform, color);
+    draw_text(text, x, y, currentScale, transform, color)
   }
-};
+}
 
 export const draw_text = (text, x, y, scale, transform, color) => {
-  const char_width = 0.8 * scale * 6;
-  const char_height = scale * 6;
-  const total_width = text.length * char_width;
-  let cursor_x = x - total_width / 2;
+  const char_width = 0.8 * scale * 6
+  const char_height = scale * 6
+  const total_width = text.length * char_width
+  let cursor_x = x - total_width / 2
 
   for (const char of text) {
-    const strokes = letter_strokes[char];
+    const strokes = letter_strokes[char]
     if (strokes) {
       for (const stroke of strokes) {
-        const x1 = cursor_x + stroke[0] * char_width;
-        const y1 = y + stroke[1] * char_height;
-        const x2 = cursor_x + stroke[2] * char_width;
-        const y2 = y + stroke[3] * char_height;
-        draw_line(x1, y1, x2, y2, transform, color);
+        const x1 = cursor_x + stroke[0] * char_width
+        const y1 = y + stroke[1] * char_height
+        const x2 = cursor_x + stroke[2] * char_width
+        const y2 = y + stroke[3] * char_height
+        draw_line(x1, y1, x2, y2, transform, color)
       }
     }
-    cursor_x += char_width;
+    cursor_x += char_width
   }
-};
+}
 
 export const draw_ui = ({ lives, round, game_over, round_won }) => {
-  const transform = identity_matrix();
+  const transform = identity_matrix()
 
   if (!game_over) {
     for (let i = 0; i < lives; i++) {
-      const ship_x = 30 + i * 25;
-      const ship_y = 30;
-      const ship_size = 8;
-      const ship_angle = 0;
-      draw_ship(ship_x, ship_y, ship_angle, ship_size, transform, [1.0, 0.5, 1.0, 1.0]);
+      const ship_x = 30 + i * 25
+      const ship_y = 30
+      const ship_size = 8
+      const ship_angle = 0
+      draw_ship(ship_x, ship_y, ship_angle, ship_size, transform, [1.0, 0.5, 1.0, 1.0])
     }
   }
 
   if (game_over) {
-    draw_animated_text('STARKEEPER ONE', CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0], 3.0);
-    draw_animated_text('BY BRIGHAM@STARKEEPER.IO', CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0], 3.0);
-    draw_animated_text('INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE', CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0], 3.0);
-    draw_animated_text('INSERT BITCOIN OR PRESS ENTER TO START', CENTER_X, CENTER_Y + 150, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0);
-    draw_animated_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 190, 2, transform, [1.0, 1.0, 0.0, 1.0], 3.0);
+    draw_animated_text('STARKEEPER ONE', CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
+    draw_animated_text('BY BRIGHAM@STARKEEPER.IO', CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
+    draw_animated_text('INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE', CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
+    draw_animated_text('INSERT BITCOIN OR PRESS ENTER TO START', CENTER_X, CENTER_Y + 150, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0)
+    draw_animated_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 190, 2, transform, [1.0, 1.0, 0.0, 1.0], 3.0)
   } else if (round_won) {
     if (!game_state.pyrrhic_victory) {
-      draw_text('ROUND WON', CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0]);
-      draw_text('YOU ARE GRANTED ANOTHER SHIP', CENTER_X, CENTER_Y - 300, 5, transform, [1.0, 0.84, 0.0, 1.0]);
+      draw_text('ROUND WON', CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0])
+      draw_text('YOU ARE GRANTED ANOTHER SHIP', CENTER_X, CENTER_Y - 300, 5, transform, [1.0, 0.84, 0.0, 1.0])
     } else {
-      draw_text('PYRRHIC VICTORY!', CENTER_X, CENTER_Y - 312, 5, transform, [1.0, 0.84, 0.0, 1.0]);
-      draw_text('A WORTHY SACRIFICE MY STARKEEPER', CENTER_X, CENTER_Y - 262, 3, transform, [1.0, 0.84, 0.0, 1.0]);
-      draw_text('NEXT TIME TRY TO SURVIVE', CENTER_X, CENTER_Y - 222, 3, transform, [1.0, 0.0, 0.5, 1.0]);
+      draw_text('PYRRHIC VICTORY!', CENTER_X, CENTER_Y - 312, 5, transform, [1.0, 0.84, 0.0, 1.0])
+      draw_text('A WORTHY SACRIFICE MY STARKEEPER', CENTER_X, CENTER_Y - 262, 3, transform, [1.0, 0.84, 0.0, 1.0])
+      draw_text('NEXT TIME TRY TO SURVIVE', CENTER_X, CENTER_Y - 222, 3, transform, [1.0, 0.0, 0.5, 1.0])
     }
-    draw_text('PRESS ENTER TO START THE NEXT ROUND', CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 0.84, 0.0, 1.0]);
-    draw_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 260, 2, transform, [1.0, 1.0, 0.0, 1.0]);
-    draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y, 3, transform, [1.0, 0.0, 0.5, 1.0]);
+    draw_text('PRESS ENTER TO START THE NEXT ROUND', CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 0.84, 0.0, 1.0])
+    draw_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 260, 2, transform, [1.0, 1.0, 0.0, 1.0])
+    draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y, 3, transform, [1.0, 0.0, 0.5, 1.0])
   } else {
-    draw_text(`HIGH ${getHighScore()} SCORE ${round}`, TOP_RIGHT_X - 120, TOP_RIGHT_Y, 3, transform, [1.0, 0.0, 0.5, 1.0]);
-    draw_text('STARKEEPER ONE', CENTER_X - 32, 16, 3, transform, [0.0, 1.0, 1.0, 1.0]);
+    draw_text(`HIGH ${getHighScore()} SCORE ${round}`, TOP_RIGHT_X - 120, TOP_RIGHT_Y, 3, transform, [1.0, 0.0, 0.5, 1.0])
+    draw_text('STARKEEPER ONE', CENTER_X - 32, 16, 3, transform, [0.0, 1.0, 1.0, 1.0])
   }
-};
+}

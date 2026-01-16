@@ -2,5 +2,34 @@
   "devDependencies": {
     "eslint": "^9.39.2",
     "eslint-plugin-import": "^2.32.0"
+  },
+  "name": "starkeeper_one",
+  "version": "1.0.0",
+  "description": "A modern take of the 1980 clasic StarCastle",
+  "scripts": {
+    "eslint": "eslint src --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brighams/starkeeper.io.git"
+  },
+  "keywords": [
+    "webgl",
+    "starcastle",
+    "starkeeper",
+    "starkeeper.io",
+    "games",
+    "1980",
+    "arcade"
+  ],
+  "author": "brigham stevens",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/brighams/starkeeper.io/issues"
+  },
+  "homepage": "https://github.com/brighams/starkeeper.io#readme",
+  "devDependencies": {
+    "eslint": "^9.39.2",
+    "eslint-plugin-import": "^2.32.0"
   }
 }
