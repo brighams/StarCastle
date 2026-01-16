@@ -26,7 +26,6 @@ export const castle_rings = [{
   color: [1.0, 1.0, 0.0, 1.0]
 }]
 
-
 export const cannon = {
   angle: 0, rotation_speed: 2.0,
   length: 18,
@@ -64,21 +63,17 @@ const CANNON_SPARK_SIZE = 24
 const CANNON_SPARK_SPEED = 300
 const CANNON_SPARK_COLOR = [0.0, 1.0, 1.0, 1.0]
 
-
 const has_clear_shot = (angle) => {
   if (cannon.is_destroyed) return false
   for (const ring of castle_rings) {
     const segment_angle = (Math.PI * 2) / ring.segments
 
-
     let rel_angle = angle - ring.rotation
     while (rel_angle < 0) rel_angle += Math.PI * 2
     while (rel_angle >= Math.PI * 2) rel_angle -= Math.PI * 2
 
-
     const face_index = Math.floor(rel_angle / segment_angle)
     const face = ring.faces[face_index]
-
 
     if (face && !face.destroyed) {
       return false
@@ -104,7 +99,6 @@ export const init_ring_faces = () => {
   cannon_projectile = null
 }
 
-
 export const ring_spawning = () => {
   return castle_rings.some(ring => ring.spawn_radius < ring.radius)
 }
@@ -113,17 +107,14 @@ export const update_castle_rings = (dt, player = null) => {
 
   glow_time += dt
 
-
   center_rotation += CENTER_ROTATION_SPEED * dt
 
   for (const ring of castle_rings) {
     ring.rotation += ring.rotationSpeed * dt
 
-
     if (ring.spawn_radius < ring.radius) {
       ring.spawn_radius += dt * ring.radius
     }
-
 
     if (ring.respawn_timer > 0) {
       ring.respawn_timer -= dt
@@ -144,7 +135,6 @@ export const update_castle_rings = (dt, player = null) => {
     }
   }
 
-
   if (player && player.alive) {
     const target_angle = Math.atan2(player.y - CENTER_Y, player.x - CENTER_X)
 
@@ -158,7 +148,6 @@ export const update_castle_rings = (dt, player = null) => {
     } else {
       cannon.angle += Math.sign(angle_diff) * max_rotation
     }
-
 
     if (!cannon_projectile && has_clear_shot(cannon.angle)) {
 
@@ -174,11 +163,9 @@ export const update_castle_rings = (dt, player = null) => {
     }
   }
 
-
   if (cannon_projectile) {
     cannon_projectile.x += cannon_projectile.vx * dt
     cannon_projectile.y += cannon_projectile.vy * dt
-
 
     if (cannon_projectile.x < -50 || cannon_projectile.x > 1074 || cannon_projectile.y < -50 || cannon_projectile.y > 1074) {
       cannon_projectile = null
@@ -194,8 +181,6 @@ export const draw_castle = () => {
     }
     return
   }
-
-  if (cannon.is_destroyed) return
 
   const transform = identity_matrix()
 
@@ -238,7 +223,6 @@ export const draw_castle = () => {
       draw_line(x1, y1, x2, y2, transform, ring.color)
     }
   }
-
 
   const cannon_color = [0.5, 0.5, 0.5, 1.0]
   const cannon_end_x = CENTER_X + Math.cos(cannon.angle) * cannon.length
