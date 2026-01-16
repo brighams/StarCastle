@@ -6,8 +6,10 @@
   <title>STARKEEPER ONE</title>
 
   <!-- SEO meta tags -->
-  <meta name="description" content="STARKEEPER ONE - A WebGL recreation of the classic 1980 arcade game Star Castle. Play this retro vector-graphics shooter in your browser. Created by Brigham at STARKEEPER.IO">
-  <meta name="keywords" content="STARCASTLE, STARKEEPER, STARKEEPERONE, STARKEEPER ONE, STARKEEPER.IO, BRIGHAM, Star Castle, arcade game, WebGL game, retro game, vector graphics, browser game">
+  <meta name="description"
+        content="STARKEEPER ONE - A WebGL recreation of the classic 1980 arcade game Star Castle. Play this retro vector-graphics shooter in your browser. Created by Brigham at STARKEEPER.IO">
+  <meta name="keywords"
+        content="STARCASTLE, STARKEEPER, STARKEEPERONE, STARKEEPER ONE, STARKEEPER.IO, BRIGHAM, Star Castle, arcade game, WebGL game, retro game, vector graphics, browser game">
   <meta name="author" content="Brigham Stevens - STARKEEPER.IO">
 
   <!-- Favicon -->
@@ -16,7 +18,8 @@
 
   <!-- Open Graph meta tags for social preview -->
   <meta property="og:title" content="STARKEEPER ONE">
-  <meta property="og:description" content="A WebGL recreation of the classic 1980 arcade game Star Castle. Blast through defensive rings and destroy the reactor core!">
+  <meta property="og:description"
+        content="A WebGL recreation of the classic 1980 arcade game Star Castle. Blast through defensive rings and destroy the reactor core!">
   <meta property="og:image" content="https://brighams.github.io/StarCastle/README.png">
   <meta property="og:url" content="https://brighams.github.io/StarCastle/">
   <meta property="og:type" content="website">
@@ -24,7 +27,8 @@
   <!-- Twitter Card meta tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="STARKEEPER ONE">
-  <meta name="twitter:description" content="A WebGL recreation of the classic 1980 arcade game Star Castle. Blast through defensive rings and destroy the reactor core!">
+  <meta name="twitter:description"
+        content="A WebGL recreation of the classic 1980 arcade game Star Castle. Blast through defensive rings and destroy the reactor core!">
   <meta name="twitter:image" content="https://brighams.github.io/StarCastle/README.png">
 
   <style>
@@ -109,54 +113,55 @@
   </style>
 </head>
 <body>
-  <div id="gameContainer">
-    <canvas id="gameCanvas" width="800" height="800"></canvas>
+<div id="gameContainer">
+  <canvas id="gameCanvas" width="800" height="800"></canvas>
 
-    <!-- Help icon and popup -->
-    <div id="infoBox" class="help-popup" style="bottom: -12px; right: 252px;">
-      <div>✧ Score 1 point by destroying the castle core</div>
-      <div>✧ BEWARE: the castle has a mighty cannon!!</div>
-      <div>✧ Earn an extra life by winning the round!</div>
-      <div>✧ Difficulty increases every round</div>
-      <div>✧ Can you beat your high score?</div>
-      <div>&nbsp;</div>
-      <div style="font-weight: bold; tex-size:18px; margin-bottom: 2px; margin-top:2px;">Controls</div>
-      <div>W: Thrust</div>
-      <div>S: Reverse Thrust</div>
-      <div>A: Rotate Left</div>
-      <div>D: Rotate Right</div>
-      <div>Q: Strafe Lateral Left Thrust</div>
-      <div>E: Strafe Lateral Right Thrust</div>
-      <div>Spacebar: Fire</div>
-    </div>
+  <!-- Help icon and popup -->
+  <div id="infoBox" class="help-popup" style="bottom: -30px; right: 252px;">
+    <div>✧ Score 1 point by destroying the castle core</div>
+    <div>✧ BEWARE: the castle has a mighty cannon!!</div>
+    <div>✧ Earn an extra life by winning the round!</div>
+    <div>✧ Difficulty increases every round</div>
+    <div>✧ Can you beat your high score?</div>
+    <div>&nbsp;</div>
+    <div style="font-weight: bold; tex-size:18px; margin-bottom: 2px; margin-top:2px;">Controls</div>
+    <div>W: Thrust</div>
+    <div>S: Reverse Thrust</div>
+    <div>A: Rotate Left</div>
+    <div>D: Rotate Right</div>
+    <div>Q: Strafe Lateral Left Thrust</div>
+    <div>E: Strafe Lateral Right Thrust</div>
+    <div>Spacebar: Fire</div>
+  </div>
 
-    <div class="info" style="color:#00FFFF; font-size: 12px; position: relative; bottom: -80px;">
-      <a target="_GITHUB" href="https://github.com/brighams/StarCastle">View On GitHub</a>
-      |
-      <a href="#" id="resetHighScore" style="color:#FFFF00; font-size: 12px;">Reset High Score</a>
-      <div class="music-info" style="color:#333333; font-size: 12px;">
-        <a target="_UPBEAT" href="https://uppbeat.io/t/d0d/orbit" style="color:#333333; font-size: 12px;">
-          Free Music from #Uppbeat</a>
-        <div style="color:#333333">License code: 8CWB22QJHCXO9EWR</div>
-      </div>
+  <div class="info" style="color:#00FFFF; font-size: 12px; position: relative; bottom: -80px;">
+    <a target="_GITHUB" href="https://github.com/brighams/StarCastle">View On GitHub</a>
+    |
+    <a href="#" id="resetHighScore" style="color:#FFFF00; font-size: 12px;">Reset High Score</a>
+    <div class="music-info" style="color:#333333; font-size: 12px;">
+      <a target="_UPBEAT" href="https://uppbeat.io/t/d0d/orbit" style="color:#333333; font-size: 12px;">
+        Free Music from #Uppbeat</a>
+      <div style="color:#333333">License code: 8CWB22QJHCXO9EWR</div>
     </div>
   </div>
-  <script type="module" src="src/main.js"></script>
-    <script>
-    window.addEventListener('load', () => {
-      const audio = new Audio('sound/orbit-d0d-main-version-29627-02-39.mp3')
-      audio.loop = true
-      audio.volume = 0.1
+</div>
+<script type="module" src="src/main.js"></script>
+<script>
+  window.addEventListener('load', () => {
+    const audio = new Audio('sound/orbit-d0d-main-version-29627-02-39.mp3');
+    audio.loop = true;
+    audio.volume = 0.1;
 
-      const startAudio = () => {
-        audio.play().catch(() => {})
-        document.removeEventListener('click', startAudio)
-        document.removeEventListener('keydown', startAudio)
-      }
+    const startAudio = () => {
+      audio.play().catch(() => {
+      });
+      document.removeEventListener('click', startAudio);
+      document.removeEventListener('keydown', startAudio);
+    };
 
-      document.addEventListener('click', startAudio)
-      document.addEventListener('keydown', startAudio)
-    })
-  </script>
+    document.addEventListener('click', startAudio);
+    document.addEventListener('keydown', startAudio);
+  });
+</script>
 </body>
 </html>
