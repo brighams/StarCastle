@@ -145,7 +145,6 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
         player.vel_y *= speed_ratio
       }
       player.speed = -Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
-
     }
 
     player.braking = current_speed > 10 || Math.abs(player.speed) > 5
@@ -153,7 +152,6 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
   } else {
     player.braking = false
   }
-
 
   player.strafing = 0
 
@@ -183,7 +181,6 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
 
     player.strafe_thrust = Math.max(player.strafe_thrust - dt * 6, 0)
   }
-
 
   if (isRotatingOrBraking) {
     startAttitudeThruster()
@@ -215,13 +212,11 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
   }
 }
 
-
 export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotation = 0, braking = false, strafing = 0, strafe_thrust = 0) => {
   const ship_transform = multiply_matrices(
     multiply_matrices(transform, translate_matrix(x, y)),
     rotate_matrix(angle)
   )
-
 
   const offsets = [-0.5, 0, 0.5]
   for (const offset of offsets) {
@@ -229,7 +224,6 @@ export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotat
     draw_line(-size * 0.7 + offset, size, size * 0.7 + offset, size, ship_transform, color)
     draw_line(size * 0.7 + offset, size, offset, -size, ship_transform, color)
   }
-
 
   const tail_height = size * 0.4
   const tail_width = size * 0.35
@@ -248,7 +242,6 @@ export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotat
     draw_line(0, size, size * flame_width, size * flame_length, ship_transform, flame_color)
   }
 
-
   if (rotation !== 0) {
     const jet_color = [1.0, 0.0, 0.5, 0.9]
     const jet_length = size * 0.6
@@ -264,7 +257,6 @@ export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotat
     }
   }
 
-
   if (braking) {
     const jet_color = [1.0, 0.0, 0.5, 0.9]
     const jet_length = size * 0.8
@@ -272,7 +264,6 @@ export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotat
     draw_line(0, -size, -size * 0.2, -size - jet_length, ship_transform, jet_color)
     draw_line(0, -size, size * 0.2, -size - jet_length, ship_transform, jet_color)
   }
-
 
   if (strafe_thrust > 0) {
     const strafe_color = [1.0, 0.3, 0.0, strafe_thrust * 0.9]

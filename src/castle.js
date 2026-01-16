@@ -16,13 +16,13 @@ export const castle_rings = [{
   radius: 120,
   segments: 12,
   rotation: 0,
-  rotationSpeed: 0.5,
+  rotationSpeed: 0.75,  // was 0.5
   color: [0.0, 1.0, 0.0, 1.0]
-}, { radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.7, color: [0.0, 0.0, 1.0, 1.0] }, {
+}, { radius: 90, segments: 8, rotation: 0, rotationSpeed: -1.05, color: [0.0, 0.0, 1.0, 1.0] }, {  // was -0.7
   radius: 60,
   segments: 6,
   rotation: 0,
-  rotationSpeed: 1.0,
+  rotationSpeed: 1.5,  // was 1.0
   color: [1.0, 1.0, 0.0, 1.0]
 }]
 

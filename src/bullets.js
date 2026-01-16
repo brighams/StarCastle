@@ -3,9 +3,11 @@ import { identity_matrix } from './math.js'
 import { draw_spark } from './renderer.js'
 import { playSound } from './sound.js'
 
+
 export const player_bullets = []
 
 export const fire_bullet = (x, y, angle, speed) => {
+  if (player_bullets.length > 0) return
   playSound('player_shoot', 0.1)
   player_bullets.push({
     x: x,
