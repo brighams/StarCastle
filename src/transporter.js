@@ -115,3 +115,28 @@
 //   chimeOsc.start(chimeStart);
 //   chimeOsc.stop(chimeStart + 0.3);
 // },
+
+// Draw 6-pointed star center with rotation
+// const star_color = [1.0, 0.5, 0.0, 1.0]
+// const outer_radius = 15
+// const inner_radius = 7
+// const num_points = 6
+
+// for (let i = 0; i < num_points; i++) {
+//   // Outer point
+//   const outer_angle = center_rotation + (i / num_points) * Math.PI * 2
+//   // Inner points between outer points
+//   const inner_angle1 = center_rotation + ((i - 0.5) / num_points) * Math.PI * 2
+//   const inner_angle2 = center_rotation + ((i + 0.5) / num_points) * Math.PI * 2
+//
+//   const outer_x = CENTER_X + Math.cos(outer_angle) * outer_radius
+//   const outer_y = CENTER_Y + Math.sin(outer_angle) * outer_radius
+//   const inner_x1 = CENTER_X + Math.cos(inner_angle1) * inner_radius
+//   const inner_y1 = CENTER_Y + Math.sin(inner_angle1) * inner_radius
+//   const inner_x2 = CENTER_X + Math.cos(inner_angle2) * inner_radius
+//   const inner_y2 = CENTER_Y + Math.sin(inner_angle2) * inner_radius
+//
+//   // Draw lines from inner points to outer point
+//   draw_line(inner_x1, inner_y1, outer_x, outer_y, transform, star_color)
+//   draw_line(outer_x, outer_y, inner_x2, inner_y2, transform, star_color)
+// }

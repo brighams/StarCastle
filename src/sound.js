@@ -1,4 +1,3 @@
-
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 // Looping sound state
@@ -390,7 +389,7 @@ const effects = {
     subOsc.connect(subGain);
     subOsc.start(now);
     subOsc.stop(now + 0.15);
-    },
+  },
 
   cannon_fire: (magnitude, volume) => {
     const now = audioCtx.currentTime;

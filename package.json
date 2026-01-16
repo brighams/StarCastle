@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "eslint": "^9.39.2",
+    "eslint-plugin-import": "^2.32.0"
+  }
+}
