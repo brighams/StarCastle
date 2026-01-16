@@ -124,9 +124,21 @@ export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotat
     rotate_matrix(angle)
   )
 
-  draw_line(0, -size, -size * 0.7, size, ship_transform, color)
-  draw_line(-size * 0.7, size, size * 0.7, size, ship_transform, color)
-  draw_line(size * 0.7, size, 0, -size, ship_transform, color)
+  // Draw thicker lines by drawing multiple times with slight offsets
+  const offsets = [-0.5, 0, 0.5]
+  for (const offset of offsets) {
+    draw_line(offset, -size, -size * 0.7 + offset, size, ship_transform, color)
+    draw_line(-size * 0.7 + offset, size, size * 0.7 + offset, size, ship_transform, color)
+    draw_line(size * 0.7 + offset, size, offset, -size, ship_transform, color)
+  }
+
+  // Draw triangle inset at the bottom (/\ tail)
+  const tail_height = size * 0.4
+  const tail_width = size * 0.35
+  for (const offset of offsets) {
+    draw_line(-tail_width + offset, size, offset, size - tail_height, ship_transform, color)
+    draw_line(tail_width + offset, size, offset, size - tail_height, ship_transform, color)
+  }
 
   if (thrust > 0) {
     // Scale flame based on thrust amount (0.0 to 1.0)

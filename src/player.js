@@ -12,7 +12,7 @@ export const player = {
   rotation: 0, // -1 for left, 0 for none, 1 for right
   braking: false,
   size: 12,
-  color: [0.5, 0.5, 1.0, 1.0],
+  color: [1.0, 1.0, 1.0, 1.0],
   speed: 0,
   max_speed: 200,
   max_reverse_factor: 0.30, // Reverse speed = max_speed * this factor (adjustable)
