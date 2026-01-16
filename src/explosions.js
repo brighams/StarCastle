@@ -120,7 +120,7 @@ const draw_styled_explosion = (explosion, transform) => {
   draw_circle(explosion.x, explosion.y, explosion.size, 20, transform, [1.0, 0.3, 0.0, alpha * 0.6])
 
   // Draw random spiky lines (vector style explosion)
-  explosion.spikes.forEach(spike => {
+  for (const spike of explosion.spikes) {
     const wobble = Math.sin(time * spike.wobble_speed) * spike.wobble_amount
     const angle = spike.angle + wobble
     const length = explosion.size * spike.length_factor
@@ -133,7 +133,7 @@ const draw_styled_explosion = (explosion, transform) => {
     // Color varies from white/yellow at center to orange/red at tips
     const color = [1.0, 0.5 + Math.random() * 0.3, 0.0, alpha]
     draw_line(x1, y1, x2, y2, transform, color)
-  })
+  }
 
   // Add some extra random short debris lines (scaled for explosion size)
   const num_debris = Math.floor((explosion.is_castle ? 12 : 6) * alpha)
@@ -156,17 +156,17 @@ export const draw_explosions = () => {
   const transform = identity_matrix()
 
   // Draw regular explosions
-  explosions.forEach(explosion => {
+  for (const explosion of explosions) {
     const segments = 8
     const alpha = explosion.life / explosion.maxLife
     const color = [1.0, 0.5, 0.0, alpha]
     draw_circle(explosion.x, explosion.y, explosion.size, segments, transform, color)
-  })
+  }
 
   // Draw styled ship explosions
-  styled_explosions.forEach(explosion => {
+  for (const explosion of styled_explosions) {
     draw_styled_explosion(explosion, transform)
-  })
+  }
 
   // Draw castle explosion with special vector style
   if (castle_explosion) {

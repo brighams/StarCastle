@@ -34,7 +34,8 @@ export const spawn_enemy = () => {
 export const update_enemies = (dt, player, game_over, round_won, enemy_speed_multiplier) => {
   const player_is_target = player.alive && !game_over && !round_won
 
-  enemies.forEach((enemy, index) => {
+  for (let index = 0; index < enemies.length; index++) {
+    const enemy = enemies[index]
     // Handle spawning state - move from center to target position
     if (enemy.spawning) {
       const dx = enemy.spawn_target_x - enemy.x
@@ -56,7 +57,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
         enemy.y += enemy.vel_y * dt
         enemy.angle = Math.atan2(enemy.vel_y, enemy.vel_x) + Math.PI / 2
       }
-      return
+      continue
     }
 
     // Handle lingering state - orbit on spawn ring
@@ -80,7 +81,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
           enemy.lingering = false
         }
       }
-      return
+      continue
     }
 
     if (enemy.docked) {
@@ -93,7 +94,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       if (player_is_target) {
         enemy.docked = false
       }
-      return
+      continue
     }
 
     if (!player_is_target) {
@@ -112,7 +113,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       // If segment is destroyed, pick a different ring or keep moving
       if (face && face.destroyed) {
         enemy.dock_ring = (enemy.dock_ring + 1) % castle_rings.length
-        return
+        continue
       }
 
       const target_x = CENTER_X + Math.cos(angle_to_dock) * ring.radius
@@ -136,7 +137,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
         enemy.y += enemy.vel_y * dt
         enemy.angle = Math.atan2(enemy.vel_y, enemy.vel_x) + Math.PI / 2
       }
-      return
+      continue
     }
 
     enemy.dock_ring = null
@@ -209,7 +210,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
     enemy.y += enemy.vel_y * dt
 
     enemy.angle = Math.atan2(enemy.vel_y, enemy.vel_x) + Math.PI / 2
-  })
+  }
 }
 
 export const clear_enemies = () => {
@@ -225,7 +226,7 @@ export const spawn_enemies = (max_enemies) => {
 }
 
 export const retreat_enemies_to_center = () => {
-  enemies.forEach(enemy => {
+   for (const enemy of enemies) {
     const enemy_center_dx = CENTER_X - enemy.x
     const enemy_center_dy = CENTER_Y - enemy.y
     const enemy_center_distance = Math.sqrt(enemy_center_dx * enemy_center_dx + enemy_center_dy * enemy_center_dy)
@@ -233,7 +234,7 @@ export const retreat_enemies_to_center = () => {
       enemy.vel_x = (enemy_center_dx / enemy_center_distance) * 100
       enemy.vel_y = (enemy_center_dy / enemy_center_distance) * 100
     }
-  })
+  }
 }
 
 // Undock one enemy when a wall is destroyed

@@ -110,9 +110,10 @@ const effects = {
     const now = audioCtx.currentTime;
     const gain = createGain(volume, now);
     // Descending sad tones
-    [400, 350, 300, 200].forEach((freq, i) => {
-      createOscillator('square', freq * magnitude, now + i * 0.2, 0.2, gain);
-    });
+    const freqs = [400, 350, 300, 200];
+    for (let i = 0; i < freqs.length; i++) {
+      createOscillator('square', freqs[i] * magnitude, now + i * 0.2, 0.2, gain);
+    }
     gain.gain.setValueAtTime(volume, now + 0.7);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
   },

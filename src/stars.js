@@ -26,7 +26,7 @@ export const draw_stars = () => {
   const time = performance.now() / 1000
   const transform = identity_matrix()
 
-  stars.forEach(star => {
+  for (const star of stars) {
     // Calculate twinkling brightness using sine wave
     const twinkle = Math.sin(time * star.twinkle_rate + star.twinkle_offset)
     const alpha = star.brightness * (0.5 + twinkle * 0.5)  // Oscillates between 0 and brightness
@@ -40,7 +40,7 @@ export const draw_stars = () => {
       draw_line(star.x - s, star.y, star.x + s, star.y, transform, color)
       draw_line(star.x, star.y - s, star.x, star.y + s, transform, color)
     }
-  })
+  }
 }
 
 // Initialize on load

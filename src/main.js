@@ -10,7 +10,7 @@ import { draw_ui } from './ui.js'
 import { draw_stars } from './stars.js'
 
 const canvas = document.getElementById('gameCanvas')
-const gl = init_renderer(canvas)
+init_renderer(canvas)
 
 const game_state = {
   lives: 3,
@@ -116,9 +116,9 @@ const game_loop = (current_time) => {
     draw_ship(player.x, player.y, player.angle, player.size, transform, player.color, player.thrust, player.rotation, player.braking)
   }
 
-  enemies.forEach(enemy => {
+  for (const enemy of enemies) {
     draw_spark(enemy.x, enemy.y, enemy.angle, enemy.size, transform, [1.0, 0.0, 1.0, 1.0])
-  })
+  }
 
   draw_bullets([1.0, 1.0, 0.0, 1.0])
   draw_explosions()

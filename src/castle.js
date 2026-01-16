@@ -1,6 +1,6 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { identity_matrix } from './math.js'
-import { draw_line, draw_circle, draw_spark } from './renderer.js'
+import { draw_line, draw_spark } from './renderer.js'
 import { is_castle_exploding, are_rings_destroyed_by_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 import { clear_bullets } from './bullets.js'
@@ -72,7 +72,7 @@ const has_clear_shot = (angle) => {
 }
 
 export const init_ring_faces = () => {
-  castle_rings.forEach(ring => {
+  for (const ring of castle_rings) {
     ring.faces = []
     ring.respawn_timer = 0
     for (let i = 0; i < ring.segments; i++) {
@@ -81,7 +81,7 @@ export const init_ring_faces = () => {
         destroyed: false
       })
     }
-  })
+  }
   // Reset cannon angle and projectile
   cannon.angle = 0
   cannon_projectile = null
@@ -94,7 +94,7 @@ export const update_castle_rings = (dt, player = null) => {
   // Update center castle rotation
   center_rotation += CENTER_ROTATION_SPEED * dt
 
-  castle_rings.forEach(ring => {
+  for (const ring of castle_rings) {
     ring.rotation += ring.rotationSpeed * dt
 
     // Check if ring needs respawning
@@ -102,9 +102,9 @@ export const update_castle_rings = (dt, player = null) => {
       ring.respawn_timer -= dt
       if (ring.respawn_timer <= 0) {
         // Respawn all faces
-        ring.faces.forEach(face => {
+        for (const face of ring.faces) {
           face.destroyed = false
-        })
+        }
         ring.respawn_timer = 0
       }
     } else {
@@ -114,7 +114,7 @@ export const update_castle_rings = (dt, player = null) => {
         ring.respawn_timer = 1.0
       }
     }
-  })
+  }
 
   // Update cannon to track player
   if (player && player.alive) {
@@ -179,11 +179,11 @@ export const draw_castle = () => {
   // Calculate glow intensity with pulse effect
   const glow_pulse = 0.15 + Math.sin(glow_time * 2.5) * 0.08 // Subtle pulse between 0.07 and 0.23
 
-  castle_rings.forEach(ring => {
+  for (const ring of castle_rings) {
     const segment_angle = (Math.PI * 2) / ring.segments
 
-    ring.faces.forEach(face => {
-      if (face.destroyed) return
+    for (const face of ring.faces) {
+      if (face.destroyed) continue
 
       const start_angle = face.index * segment_angle + ring.rotation
       const end_angle = (face.index + 1) * segment_angle + ring.rotation
@@ -219,8 +219,8 @@ export const draw_castle = () => {
 
       // Main ring segment
       draw_line(x1, y1, x2, y2, transform, ring.color)
-    })
-  })
+    }
+  }
 
   // Draw cannon as a thick line (multiple parallel lines for thickness)
   const cannon_color = [0.5, 0.5, 0.5, 1.0] // Orange
@@ -232,8 +232,7 @@ export const draw_castle = () => {
   const perp_x = Math.cos(cannon.angle + Math.PI / 2)
   const perp_y = Math.sin(cannon.angle + Math.PI / 2)
 
-  for (let i = -thickness; i <= thickness; i++) {
-    const offset = i * 1
+  for (let offset = -thickness; offset <= thickness; offset++) {
     draw_line(
       CENTER_X + perp_x * offset,
       CENTER_Y + perp_y * offset,

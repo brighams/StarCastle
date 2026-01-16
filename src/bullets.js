@@ -31,12 +31,11 @@ export const update_bullets = (dt) => {
   }
 }
 
-export const draw_bullets = (color) => {
+export const draw_bullets = (color = [1.0, 0.84, 0.0, 1.0]) => {
   const transform = identity_matrix()
-  const golden_color = [1.0, 0.84, 0.0, 1.0] // Golden color
-  player_bullets.forEach(bullet => {
-    draw_spark(bullet.x, bullet.y, 0, 5, transform, golden_color)
-  })
+  for (const bullet of player_bullets) {
+    draw_spark(bullet.x, bullet.y, 0, 5, transform, color)
+  }
 }
 
 export const clear_bullets = () => {
