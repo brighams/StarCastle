@@ -3,15 +3,15 @@ import { identity_matrix } from './math.js'
 import { draw_ship, draw_line } from './renderer.js'
 import { getHighScore, getIsNewHighScore } from './score.js'
 
-let isNewHighScore = false
+let showInfoBox = false
+let infoBox = document.getElementById('infoBox')
 
-export const setNewHighScore = (value) => {
-  isNewHighScore = value
-}
-
-export const checkForNewHighScore = (round) => {
-  if (checkAndUpdateHighScore(round)) {
-    isNewHighScore = true
+export const toggle_info_box = (show) => {
+  showInfoBox = show
+  if (show) {
+    infoBox.style.display = 'block'
+  } else {
+    infoBox.style.display = 'none'
   }
 }
 
@@ -131,3 +131,15 @@ export const draw_ui = (lives, round, game_over, round_won) => {
     draw_text('STARKEEPER ONE', CENTER_X - 32, 16 , 3, transform, [0.0, 1.0, 1.0, 1.0])
   }
 }
+
+
+// let isNewHighScore = false
+// export const setNewHighScore = (value) => {
+//   isNewHighScore = value
+// }
+//
+// export const checkForNewHighScore = (round) => {
+//   if (checkAndUpdateHighScore(round)) {
+//     isNewHighScore = true
+//   }
+// }

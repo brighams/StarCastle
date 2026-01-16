@@ -42,6 +42,7 @@
 
     #gameContainer {
       text-align: center;
+      position: relative;
     }
 
     #gameCanvas {
@@ -54,11 +55,74 @@
       font-size: 14px;
       color: #aaa;
     }
+
+    /* Help icon styles */
+    .help-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 30px;
+      height: 30px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: #00FFFF;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid #00FFFF;
+      box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+      z-index: 100;
+    }
+
+    .help-icon:hover {
+      background-color: rgba(0, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
+    /* Popup styles */
+    .help-popup {
+      display: none;
+      position: absolute;
+      width: 240px;
+      height: auto;
+      background-color: rgba(0, 0, 0, 0.9);
+      border: 2px solid #00FFFF;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
+      padding: 10px;
+      top: 55px;
+      right: 20px;
+      color: white;
+      font-size: 12px;
+      text-align: center;
+      z-index: 110;
+    }
+
+    .help-icon:hover + .help-popup {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
   </style>
 </head>
 <body>
   <div id="gameContainer">
     <canvas id="gameCanvas" width="800" height="800"></canvas>
+
+    <!-- Help icon and popup -->
+    <div id="infoBox" class="help-icon">?</div>
+    <div class="help-popup">
+      <div>Score 1 point by destroying the castle core</div>
+    </div>
+
+
+
+
+
     <div class="info" style="color:#00FFFF; font-size: 24px;">
       Arrow keys or WASD: Move/Rotate | Spacebar: Fire
     </div>

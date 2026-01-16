@@ -71,6 +71,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
       } else {
         game_state.game_over = true
         playSound('game_over', 1.0, 0.1)
+        toggle_info_box(game_state.game_over)
       }
     }
     return

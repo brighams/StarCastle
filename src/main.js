@@ -6,7 +6,7 @@ import { player_bullets, fire_bullet, update_bullets, draw_bullets, clear_bullet
 import { enemies, spawn_enemies, update_enemies, clear_enemies } from './enemies.js'
 import { update_explosions, draw_explosions, clear_explosions } from './explosions.js'
 import { check_collisions } from './collisions.js'
-import { draw_ui } from './ui.js'
+import { draw_ui, toggle_info_box } from './ui.js'
 import { draw_stars } from './stars.js'
 
 const canvas = document.getElementById('gameCanvas')
@@ -42,6 +42,8 @@ const reset_game = (new_game = true) => {
   game_state.game_started = true
   game_state.round_won = false
   game_state.enemy_speed_multiplier = 10.0
+
+  toggle_info_box(game_state.game_over)
 
   // Reset all game objects
   clear_explosions()
