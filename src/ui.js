@@ -1,7 +1,8 @@
 import { CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y } from './constants.js'
 import { identity_matrix } from './math.js'
 import { draw_ship, draw_line } from './renderer.js'
-import { getHighScore, getIsNewHighScore } from './score.js'
+import { getHighScore } from './score.js'
+import { game_state } from "./main.js";
 
 let showInfoBox = false
 let infoBox = document.getElementById('infoBox')
@@ -102,7 +103,7 @@ export const draw_text = (text, x, y, scale, transform, color) => {
   }
 }
 
-export const draw_ui = (lives, round, game_over, round_won) => {
+export const draw_ui = ({lives, round, game_over, round_won}) => {
   const transform = identity_matrix()
 
   if (!game_over) {
@@ -122,7 +123,14 @@ export const draw_ui = (lives, round, game_over, round_won) => {
     draw_animated_text("INSERT BITCOIN OR PRESS ENTER TO START", CENTER_X, CENTER_Y + 200, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0)
     draw_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 260, 2, transform, [1.0, 1.0, 0.0, 1.0])
   } else if (round_won) {
-    draw_text("ROUND WON", CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0])
+    if (!game_state.pyrrhic_victory) {
+      draw_text("ROUND WON", CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0])
+      draw_text("YOU ARE GRANTED ANOTHER SHIP", CENTER_X, CENTER_Y - 300, 5, transform, [1.0, 0.84, 0.0, 1.0])
+    } else {
+      draw_text("PYRRHIC VICTORY!", CENTER_X, CENTER_Y - 312, 5, transform, [1.0, 0.84, 0.0, 1.0])
+      draw_text("A WORTHY SACRIFICE FOR VICTORY!", CENTER_X, CENTER_Y - 262, 3, transform, [1.0, 0.84, 0.0, 1.0])
+      draw_text("NEXT TIME TRY TO SURVIVE", CENTER_X, CENTER_Y - 222, 3, transform, [1.0, 0.0, 0.5, 1.0])
+    }
     draw_text("PRESS ENTER TO START THE NEXT ROUND", CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 0.84, 0.0, 1.0])
     draw_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 260, 2, transform, [1.0, 1.0, 0.0, 1.0])
     draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])

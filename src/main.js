@@ -12,13 +12,14 @@ import { draw_stars } from './stars.js'
 const canvas = document.getElementById('gameCanvas')
 init_renderer(canvas)
 
-const game_state = {
+export const game_state = {
   lives: 3,
   round: 0,
   max_enemies: 4,
   game_over: true,
   game_started: false,
   round_won: false,
+  pyrrhic_victory: false,
   enemy_speed_multiplier: 1.0
 }
 
@@ -124,8 +125,7 @@ const game_loop = (current_time) => {
 
   draw_bullets([1.0, 1.0, 0.0, 1.0])
   draw_explosions()
-  draw_ui(game_state.lives, game_state.round, game_state.game_over, game_state.round_won)
-
+  draw_ui(game_state)
   requestAnimationFrame(game_loop)
 }
 

@@ -6,6 +6,7 @@ import { playSound } from './sound.js'
 import { clear_bullets } from './bullets.js'
 import { retreat_enemies_to_center } from './enemies.js'
 import { create_castle_explosion } from './explosions.js'
+import {player} from "./player.js";
 
 // Glow animation state
 let glow_time = 0
@@ -19,9 +20,6 @@ export const castle_rings = [
   { radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.7, color: [0.0, 0.0, 1.0, 1.0] },
   { radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] }
 ]
-
-// Respawn animation duration
-const RING_SPAWN_DURATION = 0.5
 
 // Cannon state
 export const cannon = {
@@ -41,11 +39,21 @@ export const clear_cannon_projectile = () => {
 export const castle_destroyed = (game_state) => {
   create_castle_explosion(CENTER_X, CENTER_Y)
   playSound('castle_explode')
-  clear_bullets()
-  game_state.round_won = true
-  game_state.lives += 1
-  game_state.enemy_speed_multiplier += 0.1
   retreat_enemies_to_center()
+  setTimeout(() => delayed_check_round_won(game_state), 1000)
+}
+
+export const delayed_check_round_won = (game_state) => {
+  clear_bullets()
+  if (player.alive) {
+    game_state.pyrrhic_victory = false
+    game_state.round_won = true
+  } else {
+    game_state.pyrrhic_victory = true
+    game_state.round_won = true
+  }
+  game_state.lives += 1
+  game_state.enemy_speed_multiplier += 0.2
 }
 
 const CANNON_SPARK_SIZE = 24 // 3x normal spark size of 8
