@@ -118,7 +118,7 @@ export const draw_circle = (x, y, radius, segments, transform, color) => {
   gl.drawArrays(gl.LINE_STRIP, 0, segments + 1)
 }
 
-export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotation = 0, braking = false) => {
+export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotation = 0, braking = false, strafing = 0, strafe_thrust = 0) => {
   const ship_transform = multiply_matrices(
     multiply_matrices(transform, translate_matrix(x, y)),
     rotate_matrix(angle)
@@ -157,12 +157,12 @@ export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotat
 
     if (rotation > 0) {
       // Rotating right, jet fires from left side (pushing right)
-      draw_line(-size * 0.7, size * 0.3, -size * 0.7 - jet_length, size * 0.5, ship_transform, jet_color)
-      draw_line(-size * 0.7, size * 0.3, -size * 0.7 - jet_length, size * 0.1, ship_transform, jet_color)
+      draw_line(-size * 0.7, -size * 0.5, -size * 0.7 - jet_length, -size * 0.3, ship_transform, jet_color)
+      draw_line(-size * 0.7, -size * 0.5, -size * 0.7 - jet_length, -size * 0.7, ship_transform, jet_color)
     } else {
       // Rotating left, jet fires from right side (pushing left)
-      draw_line(size * 0.7, size * 0.3, size * 0.7 + jet_length, size * 0.5, ship_transform, jet_color)
-      draw_line(size * 0.7, size * 0.3, size * 0.7 + jet_length, size * 0.1, ship_transform, jet_color)
+      draw_line(size * 0.7, -size * 0.5, size * 0.7 + jet_length, -size * 0.3, ship_transform, jet_color)
+      draw_line(size * 0.7, -size * 0.5, size * 0.7 + jet_length, -size * 0.7, ship_transform, jet_color)
     }
   }
 
@@ -173,6 +173,24 @@ export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotat
 
     draw_line(0, -size, -size * 0.2, -size - jet_length, ship_transform, jet_color)
     draw_line(0, -size, size * 0.2, -size - jet_length, ship_transform, jet_color)
+  }
+
+  // Strafe thrusters - positioned at the rear sides, larger flames
+  if (strafe_thrust > 0) {
+    const strafe_color = [1.0, 0.3, 0.0, strafe_thrust * 0.9] // Orange flame that fades with thrust
+    const strafe_jet_length = size * 1.2 * strafe_thrust // Larger flame than attitude jets
+
+    if (strafing > 0) {
+      // Strafing right, thruster fires from left side (pushing right)
+      draw_line(-size * 0.5, size * 0.6, -size * 0.5 - strafe_jet_length, size * 0.8, ship_transform, strafe_color)
+      draw_line(-size * 0.5, size * 0.6, -size * 0.5 - strafe_jet_length, size * 0.4, ship_transform, strafe_color)
+      draw_line(-size * 0.5, size * 0.6, -size * 0.5 - strafe_jet_length * 0.7, size * 0.6, ship_transform, strafe_color)
+    } else if (strafing < 0) {
+      // Strafing left, thruster fires from right side (pushing left)
+      draw_line(size * 0.5, size * 0.6, size * 0.5 + strafe_jet_length, size * 0.8, ship_transform, strafe_color)
+      draw_line(size * 0.5, size * 0.6, size * 0.5 + strafe_jet_length, size * 0.4, ship_transform, strafe_color)
+      draw_line(size * 0.5, size * 0.6, size * 0.5 + strafe_jet_length * 0.7, size * 0.6, ship_transform, strafe_color)
+    }
   }
 }
 

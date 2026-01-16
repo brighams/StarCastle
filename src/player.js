@@ -12,11 +12,14 @@ export const player = {
   thrust: 0,
   rotation: 0, // -1 for left, 0 for none, 1 for right
   braking: false,
+  strafing: 0, // -1 for left, 0 for none, 1 for right
+  strafe_thrust: 0, // 0.0 to 1.0 for animation ramping
   size: 12,
   color: [1.0, 1.0, 1.0, 1.0],
   speed: 0,
   max_speed: 200,
   max_reverse_factor: 0.30, // Reverse speed = max_speed * this factor (adjustable)
+  max_strafe_factor: 0.40, // Strafe speed = max_speed * this factor
   alive: true,
   respawn_timer: 0,
   spawn_anim_timer: 1.5
@@ -147,8 +150,39 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     player.braking = false
   }
 
-  // Handle attitude thruster sound
-  if (isRotatingOrBraking) {
+    // Strafe controls (Q/E)
+    player.strafing = 0
+    const max_strafe_speed = player.max_speed * player.max_strafe_factor
+
+    if (keys_pressed['q'] || keys_pressed['Q']) {
+      player.strafing = -1
+      // Strafe left (perpendicular to facing direction)
+      const strafe_x = -Math.cos(player.angle) // Left is perpendicular
+      const strafe_y = -Math.sin(player.angle)
+      const strafe_force = 250 * dt
+      player.vel_x += strafe_x * strafe_force
+      player.vel_y += strafe_y * strafe_force
+      // Ramp up strafe thrust for animation
+      player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
+      isRotatingOrBraking = true
+    } else if (keys_pressed['e'] || keys_pressed['E']) {
+      player.strafing = 1
+      // Strafe right (perpendicular to facing direction)
+      const strafe_x = Math.cos(player.angle) // Right is perpendicular
+      const strafe_y = Math.sin(player.angle)
+      const strafe_force = 250 * dt
+      player.vel_x += strafe_x * strafe_force
+      player.vel_y += strafe_y * strafe_force
+      // Ramp up strafe thrust for animation
+      player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
+      isRotatingOrBraking = true
+    } else {
+      // Ramp down strafe thrust
+      player.strafe_thrust = Math.max(player.strafe_thrust - dt * 6, 0)
+    }
+
+    // Handle attitude thruster sound
+    if (isRotatingOrBraking) {
     startAttitudeThruster()
   } else {
     stopAttitudeThruster()
