@@ -1,8 +1,8 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
-import { castle_rings, cannon_projectile, clear_cannon_projectile } from './castle.js'
-import { player_bullets, clear_bullets } from './bullets.js'
+import { castle_rings, cannon_projectile, clear_cannon_projectile, castle_destroyed } from './castle.js'
+import { player_bullets } from './bullets.js'
 import { enemies, retreat_enemies_to_center, undock_one_enemy } from './enemies.js'
-import { create_explosion, create_castle_explosion, create_ship_explosion } from './explosions.js'
+import { create_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 
 export const check_collisions = (player, game_state) => {
@@ -84,17 +84,8 @@ export const check_collisions = (player, game_state) => {
     const bullet_center_distance = Math.sqrt(bullet_center_dx * bullet_center_dx + bullet_center_dy * bullet_center_dy)
 
     if (bullet_center_distance < 15 + 2) {
-      // Create the spectacular castle explosion!
-      create_castle_explosion(CENTER_X, CENTER_Y)
-      playSound('castle_explode')
       player_bullets.splice(i, 1)
-      clear_bullets()
-      game_state.round_won = true
-      game_state.round++
-      game_state.lives++
-      game_state.enemy_speed_multiplier += 0.1
-
-      retreat_enemies_to_center()
+      castle_destroyed(game_state)
       continue
     }
 

@@ -1,7 +1,7 @@
 import { identity_matrix } from './math.js'
 import { init_renderer, clear_screen, draw_ship, draw_spark } from './renderer.js'
 import { player, reset_player, update_player } from './player.js'
-import { init_ring_faces, update_castle_rings, draw_castle } from './castle.js'
+import { init_ring_faces, update_castle_rings, draw_castle, clear_cannon_projectile } from './castle.js'
 import { player_bullets, fire_bullet, update_bullets, draw_bullets, clear_bullets } from './bullets.js'
 import { enemies, spawn_enemy, spawn_enemies, update_enemies, clear_enemies } from './enemies.js'
 import { update_explosions, draw_explosions, clear_explosions } from './explosions.js'
@@ -23,25 +23,40 @@ const game_state = {
 }
 
 let keys_pressed = {}
+let space_pressed = false
+let last_time = 0
+let enemy_spawn_timer = 1.2
 
-const init_game = () => {
-  game_state.lives = 3
-  game_state.round = 1
+// Unified reset function for new game and new rounds
+// If new_game is true, resets lives/round; otherwise advances to next round
+const reset_game = (new_game = true) => {
+  if (new_game) {
+    game_state.lives = 3
+    game_state.round = 0
+  } else {
+    game_state.round += 1
+  }
+
   game_state.max_enemies = 4 + game_state.round
   game_state.game_over = false
   game_state.game_started = true
   game_state.round_won = false
   game_state.enemy_speed_multiplier = 10.0
 
+  // Reset all game objects
   clear_explosions()
   clear_enemies()
   clear_bullets()
+  clear_cannon_projectile()
   reset_player()
   init_ring_faces()
+
+  // Reset spawn timer
+  enemy_spawn_timer = 1.2
+
+  // Spawn initial enemies based on round
   spawn_enemies(game_state.max_enemies)
 }
-
-let space_pressed = false
 
 document.addEventListener('keydown', (e) => {
   keys_pressed[e.key] = true
@@ -55,18 +70,9 @@ document.addEventListener('keydown', (e) => {
 
   if (e.key === 'Enter') {
     if (game_state.game_over) {
-      init_game()
+      reset_game(true)  // New game
     } else if (game_state.round_won) {
-      // Start next round
-      game_state.round_won = false
-      clear_explosions()
-      clear_enemies()
-      clear_bullets()
-      reset_player()
-      init_ring_faces()
-      for (let i = 0; i < (game_state.round + 2) * 2; i++) {
-        spawn_enemy()
-      }
+      reset_game(false) // Next round
     }
   }
 })
@@ -78,9 +84,6 @@ document.addEventListener('keyup', (e) => {
     space_pressed = false
   }
 })
-
-let last_time = 0
-let enemy_spawn_timer = 1.2
 
 const game_loop = (current_time) => {
   const dt = (current_time - last_time) / 1000

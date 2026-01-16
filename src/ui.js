@@ -127,7 +127,7 @@ export const draw_ui = (lives, round, game_over, round_won) => {
     draw_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 260, 2, transform, [1.0, 1.0, 0.0, 1.0])
     draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
   } else {
-    draw_text(`ROUND ${round+1}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
+    draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y , 3, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text('STARKEEPER ONE', CENTER_X - 32, 16 , 3, transform, [0.0, 1.0, 1.0, 1.0])
   }
 }

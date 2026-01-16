@@ -3,6 +3,9 @@ import { identity_matrix } from './math.js'
 import { draw_line, draw_circle, draw_spark } from './renderer.js'
 import { is_castle_exploding, are_rings_destroyed_by_explosion } from './explosions.js'
 import { playSound } from './sound.js'
+import { clear_bullets } from './bullets.js'
+import { retreat_enemies_to_center } from './enemies.js'
+import { create_castle_explosion } from './explosions.js'
 
 // Glow animation state
 let glow_time = 0
@@ -29,6 +32,17 @@ export let cannon_projectile = null
 
 export const clear_cannon_projectile = () => {
   cannon_projectile = null
+}
+
+// Called when a bullet hits the castle center
+export const castle_destroyed = (game_state) => {
+  create_castle_explosion(CENTER_X, CENTER_Y)
+  playSound('castle_explode')
+  clear_bullets()
+  game_state.round_won = true
+  game_state.lives += 1
+  game_state.enemy_speed_multiplier += 0.1
+  retreat_enemies_to_center()
 }
 
 const CANNON_SPARK_SIZE = 24 // 3x normal spark size of 8
