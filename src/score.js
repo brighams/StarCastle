@@ -3,6 +3,17 @@ const HIGH_SCORE_KEY = 'starkeeper_high_score';
 export const getHighScore = () => parseInt(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
 
 // ==== FOR LATER
+
+// export const setNewHighScore = (value) => {
+//   isNewHighScore = value
+// }
+//
+// export const checkForNewHighScore = (round) => {
+//   if (checkAndUpdateHighScore(round)) {
+//     isNewHighScore = true
+//   }
+// }
+
 // let isNewHighScore = false
 // export const getIsNewHighScore = () => isNewHighScore
 //

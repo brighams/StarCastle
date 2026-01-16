@@ -115,15 +115,15 @@ export const draw_ui = ({ lives, round, game_over, round_won }) => {
     draw_animated_text('STARKEEPER ONE', CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0], 3.0);
     draw_animated_text('BY BRIGHAM@STARKEEPER.IO', CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0], 3.0);
     draw_animated_text('INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE', CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0], 3.0);
-    draw_animated_text('INSERT BITCOIN OR PRESS ENTER TO START', CENTER_X, CENTER_Y + 200, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0);
-    draw_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 260, 2, transform, [1.0, 1.0, 0.0, 1.0]);
+    draw_animated_text('INSERT BITCOIN OR PRESS ENTER TO START', CENTER_X, CENTER_Y + 150, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0);
+    draw_animated_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 190, 2, transform, [1.0, 1.0, 0.0, 1.0], 3.0);
   } else if (round_won) {
     if (!game_state.pyrrhic_victory) {
       draw_text('ROUND WON', CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0]);
       draw_text('YOU ARE GRANTED ANOTHER SHIP', CENTER_X, CENTER_Y - 300, 5, transform, [1.0, 0.84, 0.0, 1.0]);
     } else {
       draw_text('PYRRHIC VICTORY!', CENTER_X, CENTER_Y - 312, 5, transform, [1.0, 0.84, 0.0, 1.0]);
-      draw_text('A WORTHY SACRIFICE FOR VICTORY!', CENTER_X, CENTER_Y - 262, 3, transform, [1.0, 0.84, 0.0, 1.0]);
+      draw_text('A WORTHY SACRIFICE MY STARKEEPER', CENTER_X, CENTER_Y - 262, 3, transform, [1.0, 0.84, 0.0, 1.0]);
       draw_text('NEXT TIME TRY TO SURVIVE', CENTER_X, CENTER_Y - 222, 3, transform, [1.0, 0.0, 0.5, 1.0]);
     }
     draw_text('PRESS ENTER TO START THE NEXT ROUND', CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 0.84, 0.0, 1.0]);
@@ -134,15 +134,3 @@ export const draw_ui = ({ lives, round, game_over, round_won }) => {
     draw_text('STARKEEPER ONE', CENTER_X - 32, 16, 3, transform, [0.0, 1.0, 1.0, 1.0]);
   }
 };
-
-
-// let isNewHighScore = false
-// export const setNewHighScore = (value) => {
-//   isNewHighScore = value
-// }
-//
-// export const checkForNewHighScore = (round) => {
-//   if (checkAndUpdateHighScore(round)) {
-//     isNewHighScore = true
-//   }
-// }
