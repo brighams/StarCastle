@@ -1,5 +1,5 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
-import { castle_rings } from './castle.js'
+import {castle_rings, ring_spawning} from './castle.js'
 
 export const enemies = []
 
@@ -216,9 +216,10 @@ export const clear_enemies = () => {
   enemies.length = 0
 }
 
-export const spawn_enemies = (max_enemies) => {
+export const spawn_enemies = (max_enemies, chance = 0.5) => {
+  if (ring_spawning()) return
   for (let i = 0; i < max_enemies; i++) {
-    if (Math.random() < 0.5) {
+    if (Math.random() < chance) {
       spawn_enemy()
     }
   }

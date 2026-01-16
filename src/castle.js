@@ -20,6 +20,9 @@ export const castle_rings = [
   { radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] }
 ]
 
+// Respawn animation duration
+const RING_SPAWN_DURATION = 0.5
+
 // Cannon state
 export const cannon = {
   angle: 0,
@@ -75,6 +78,7 @@ export const init_ring_faces = () => {
   for (const ring of castle_rings) {
     ring.faces = []
     ring.respawn_timer = 0
+    ring.spawn_radius = 0.1
     for (let i = 0; i < ring.segments; i++) {
       ring.faces.push({
         index: i,
@@ -87,6 +91,11 @@ export const init_ring_faces = () => {
   cannon_projectile = null
 }
 
+
+export const ring_spawning = () => {
+  return castle_rings.some(ring => ring.spawn_radius < ring.radius)
+}
+
 export const update_castle_rings = (dt, player = null) => {
   // Update glow animation
   glow_time += dt
@@ -97,6 +106,11 @@ export const update_castle_rings = (dt, player = null) => {
   for (const ring of castle_rings) {
     ring.rotation += ring.rotationSpeed * dt
 
+    // Update ring spawn animation
+    if (ring.spawn_radius < ring.radius) {
+      ring.spawn_radius += dt * ring.radius
+    }
+
     // Check if ring needs respawning
     if (ring.respawn_timer > 0) {
       ring.respawn_timer -= dt
@@ -106,6 +120,7 @@ export const update_castle_rings = (dt, player = null) => {
           face.destroyed = false
         }
         ring.respawn_timer = 0
+        ring.spawn_radius = 0.001 // Start animation (small value to trigger)
       }
     } else {
       // Check if all faces are destroyed
@@ -181,17 +196,17 @@ export const draw_castle = () => {
 
   for (const ring of castle_rings) {
     const segment_angle = (Math.PI * 2) / ring.segments
-
+    const draw_radius = ring.spawn_radius < ring.radius ? ring.spawn_radius : ring.radius
     for (const face of ring.faces) {
       if (face.destroyed) continue
 
       const start_angle = face.index * segment_angle + ring.rotation
       const end_angle = (face.index + 1) * segment_angle + ring.rotation
 
-      const x1 = CENTER_X + Math.cos(start_angle) * ring.radius
-      const y1 = CENTER_Y + Math.sin(start_angle) * ring.radius
-      const x2 = CENTER_X + Math.cos(end_angle) * ring.radius
-      const y2 = CENTER_Y + Math.sin(end_angle) * ring.radius
+      const x1 = CENTER_X + Math.cos(start_angle) * draw_radius
+      const y1 = CENTER_Y + Math.sin(start_angle) * draw_radius
+      const x2 = CENTER_X + Math.cos(end_angle) * draw_radius
+      const y2 = CENTER_Y + Math.sin(end_angle) * draw_radius
 
       // Draw glow layers (outer to inner)
       const glow_color = [ring.color[0], ring.color[1], ring.color[2], glow_pulse * 0.3]

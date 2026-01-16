@@ -3,7 +3,7 @@ import { init_renderer, clear_screen, draw_ship, draw_spark } from './renderer.j
 import { player, reset_player, update_player } from './player.js'
 import { init_ring_faces, update_castle_rings, draw_castle, clear_cannon_projectile } from './castle.js'
 import { player_bullets, fire_bullet, update_bullets, draw_bullets, clear_bullets } from './bullets.js'
-import { enemies, spawn_enemy, spawn_enemies, update_enemies, clear_enemies } from './enemies.js'
+import { enemies, spawn_enemies, update_enemies, clear_enemies } from './enemies.js'
 import { update_explosions, draw_explosions, clear_explosions } from './explosions.js'
 import { check_collisions } from './collisions.js'
 import { draw_ui } from './ui.js'
@@ -55,7 +55,7 @@ const reset_game = (new_game = true) => {
   enemy_spawn_timer = 1.2
 
   // Spawn initial enemies based on round
-  spawn_enemies(game_state.max_enemies)
+  setTimeout(() => spawn_enemies(game_state.max_enemies, 1.0), 5000)
 }
 
 document.addEventListener('keydown', (e) => {
@@ -92,7 +92,7 @@ const game_loop = (current_time) => {
   enemy_spawn_timer -= dt
   if (enemy_spawn_timer <= 0 && enemies.length < game_state.max_enemies) {
     if (Math.random() < 0.3) {
-      spawn_enemy()
+      spawn_enemies(game_state.max_enemies, 0.5)
     }
     enemy_spawn_timer = 3
   }

@@ -1,5 +1,6 @@
 import { CANVAS_SIZE, CENTER_X, CENTER_Y } from './constants.js'
 import { playSound, startMainThruster, stopMainThruster, startAttitudeThruster, stopAttitudeThruster } from './sound.js'
+import {retreat_enemies_to_center} from "./enemies.js";
 
 export const player = {
   x: CENTER_X,
@@ -20,7 +21,13 @@ export const player = {
   spawn_anim_timer: 1.5
 }
 
-// Helper function to set random spawn position within 80% inset circle
+export const destroy_player = (player, game_state) => {
+  game_state.lives--
+  player.alive = false
+  player.respawn_timer = 1.0
+  retreat_enemies_to_center()
+}
+
 const set_random_spawn_position = () => {
   const spawn_radius = CANVAS_SIZE * 0.4  // 80% inset = 40% from center
   const random_angle = Math.random() * Math.PI * 2

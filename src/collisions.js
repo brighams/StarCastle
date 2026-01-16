@@ -1,9 +1,11 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { castle_rings, cannon_projectile, clear_cannon_projectile, castle_destroyed } from './castle.js'
 import { player_bullets } from './bullets.js'
-import { enemies, retreat_enemies_to_center, undock_one_enemy } from './enemies.js'
+import { enemies, undock_one_enemy } from './enemies.js'
 import { create_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
+import {destroy_player} from "./player.js";
+
 
 export const check_collisions = (player, game_state) => {
   // Check cannon projectile vs player
@@ -16,10 +18,7 @@ export const check_collisions = (player, game_state) => {
       create_ship_explosion(player.x, player.y)
       playSound('player_explode')
       clear_cannon_projectile()
-      game_state.lives--
-      player.alive = false
-      player.respawn_timer = 1.0
-      retreat_enemies_to_center()
+      destroy_player(player, game_state)
       return
     }
   }
@@ -35,7 +34,7 @@ export const check_collisions = (player, game_state) => {
       const segment_angle = (Math.PI * 2) / ring.segments
 
       for (let face of ring.faces) {
-        if (face.destroyed) continue
+        if (face.destroyed || face.respawn_timer > 0) continue
 
         const start_angle = face.index * segment_angle + ring.rotation
         const end_angle = (face.index + 1) * segment_angle + ring.rotation
@@ -113,10 +112,7 @@ export const check_collisions = (player, game_state) => {
   if (player.alive && player_center_distance < 15 + player.size) {
     create_ship_explosion(player.x, player.y)
     playSound('player_explode')
-    game_state.lives--
-    player.alive = false
-    player.respawn_timer = 1.0
-    retreat_enemies_to_center()
+    destroy_player(player, game_state)
     return
   }
 
@@ -134,10 +130,7 @@ export const check_collisions = (player, game_state) => {
         create_explosion(player.x, player.y, 25, 0.8)
         playSound('player_explode')
         playSound('ring_explode')
-        game_state.lives--
-        player.alive = false
-        player.respawn_timer = 1.0
-        retreat_enemies_to_center()
+        destroy_player(player, game_state)
         return
       }
     }
@@ -156,10 +149,7 @@ export const check_collisions = (player, game_state) => {
       playSound('player_explode')
       playSound('enemy_explode')
       enemies.splice(i, 1)
-      game_state.lives--
-      player.alive = false
-      player.respawn_timer = 1.0
-      retreat_enemies_to_center()
+      destroy_player(player, game_state)
       break
     }
   }

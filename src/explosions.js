@@ -3,7 +3,6 @@ import { draw_circle, draw_line } from './renderer.js'
 
 export const explosions = []
 
-// Special styled explosions (castle and ship)
 export let castle_explosion = null
 export const styled_explosions = []
 
@@ -18,7 +17,6 @@ export const create_explosion = (x, y, maxSize, life) => {
   })
 }
 
-// Create a vector-style explosion (used for both castle and ship)
 const create_styled_explosion = (x, y, maxSize, life, num_spikes_base, num_spikes_random, is_castle = false) => {
   const num_spikes = num_spikes_base + Math.floor(Math.random() * num_spikes_random)
   const spikes = []
@@ -48,12 +46,10 @@ const create_styled_explosion = (x, y, maxSize, life, num_spikes_base, num_spike
   }
 }
 
-// Create a spectacular castle destruction explosion
 export const create_castle_explosion = (x, y) => {
   castle_explosion = create_styled_explosion(x, y, 180, 1.8, 16, 8, true)
 }
 
-// Create a ship explosion (smaller scale)
 export const create_ship_explosion = (x, y) => {
   styled_explosions.push(create_styled_explosion(x, y, 45, 0.8, 10, 4, false))
 }
@@ -69,7 +65,6 @@ export const update_explosions = (dt) => {
     }
   }
 
-  // Update styled explosions (ship explosions)
   for (let i = styled_explosions.length - 1; i >= 0; i--) {
     const explosion = styled_explosions[i]
     explosion.life -= dt
@@ -83,16 +78,12 @@ export const update_explosions = (dt) => {
     }
   }
 
-  // Update castle explosion
   if (castle_explosion) {
     castle_explosion.life -= dt
     const progress = 1 - (castle_explosion.life / castle_explosion.maxLife)
 
-    // Starts small, grows big with easing
     const eased_progress = 1 - Math.pow(1 - progress, 2) // Ease out quad
     castle_explosion.size = 5 + (castle_explosion.maxSize - 5) * eased_progress
-
-    // Check if explosion has reached inner ring radius
     if (!castle_explosion.rings_destroyed && castle_explosion.size >= castle_explosion.inner_ring_radius) {
       castle_explosion.rings_destroyed = true
     }
@@ -103,7 +94,6 @@ export const update_explosions = (dt) => {
   }
 }
 
-// Helper function to draw a styled vector explosion
 const draw_styled_explosion = (explosion, transform) => {
   const time = performance.now() / 1000
   const alpha = Math.min(1.0, explosion.life / explosion.maxLife * 2)
@@ -155,7 +145,6 @@ const draw_styled_explosion = (explosion, transform) => {
 export const draw_explosions = () => {
   const transform = identity_matrix()
 
-  // Draw regular explosions
   for (const explosion of explosions) {
     const segments = 8
     const alpha = explosion.life / explosion.maxLife
@@ -163,12 +152,10 @@ export const draw_explosions = () => {
     draw_circle(explosion.x, explosion.y, explosion.size, segments, transform, color)
   }
 
-  // Draw styled ship explosions
   for (const explosion of styled_explosions) {
     draw_styled_explosion(explosion, transform)
   }
 
-  // Draw castle explosion with special vector style
   if (castle_explosion) {
     draw_styled_explosion(castle_explosion, transform)
   }
