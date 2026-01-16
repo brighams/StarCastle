@@ -43,7 +43,7 @@ export const castle_destroyed = (game_state) => {
   playSound('castle_explode')
   retreat_enemies_to_center()
   cannon.is_destroyed = true
-  setTimeout(() => delayed_check_round_won(game_state), 1000)
+  setTimeout(() => delayed_check_round_won(game_state), 1200)
 }
 
 export const delayed_check_round_won = (game_state) => {
