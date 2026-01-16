@@ -218,6 +218,7 @@ export const clear_enemies = () => {
 
 export const spawn_enemies = (max_enemies, chance = 0.5) => {
   if (ring_spawning()) return
+  if (enemies.length >= max_enemies) return
   for (let i = 0; i < max_enemies; i++) {
     if (Math.random() < chance) {
       spawn_enemy()
