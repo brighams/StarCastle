@@ -1,6 +1,7 @@
 import { CANVAS_SIZE, CENTER_X, CENTER_Y } from './constants.js'
 import { playSound, startMainThruster, stopMainThruster, startAttitudeThruster, stopAttitudeThruster } from './sound.js'
 import {retreat_enemies_to_center} from "./enemies.js";
+import {toggle_info_box} from "./ui.js";
 
 export const player = {
   x: CENTER_X,
