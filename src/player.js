@@ -31,7 +31,7 @@ export const player = {
 export const destroy_player = (player, game_state) => {
   game_state.lives--
   player.alive = false
-  player.respawn_timer = 1.0
+  player.respawn_timer = 3.0
   retreat_enemies_to_center()
 }
 
