@@ -98,24 +98,20 @@ const game_loop = (current_time) => {
     enemy_spawn_timer = 3
   }
 
-  update_castle_rings(dt, player, game_state.round / 100)
+  update_castle_rings(dt, player)
   update_player(dt, keys_pressed, game_state.lives, game_state)
   update_bullets(dt)
   update_enemies(dt, player, game_state.game_over, game_state.round_won, game_state.enemy_speed_multiplier)
   check_collisions(player, game_state)
   update_explosions(dt)
-
   clear_screen()
-
   draw_stars()
 
   const transform = identity_matrix()
-
   draw_castle()
   if (player.alive && !game_state.game_over) {
     draw_ship(player.x, player.y, player.angle, player.size, transform, player.color, player.thrust, player.rotation, player.braking, player.strafing, player.strafe_thrust)
   }
-
   for (const enemy of enemies) {
     draw_spark(enemy.x, enemy.y, enemy.angle, enemy.size, transform, [1.0, 0.0, 1.0, 1.0])
   }

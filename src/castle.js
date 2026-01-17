@@ -141,7 +141,6 @@ export const update_castle_rings = (dt, player = null) => {
       cannon.angle += Math.sign(angle_diff) * max_rotation
     }
 
-    // Decrement the cooldown timer
     if (cannon.cool_off_timer > 0) {
       cannon.cool_off_timer -= dt
     }
