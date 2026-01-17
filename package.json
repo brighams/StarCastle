@@ -1,8 +1,4 @@
 {
-  "devDependencies": {
-    "eslint": "^9.39.2",
-    "eslint-plugin-import": "^2.32.0"
-  },
   "name": "starkeeper_one",
   "version": "1.0.0",
   "description": "A modern take of the 1980 clasic StarCastle",
