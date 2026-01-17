@@ -8,7 +8,7 @@ export const player_bullets = []
 
 export const fire_bullet = (x, y, angle, speed) => {
   if (player_bullets.length > 0) return
-  playSound('player_shoot', 0.1)
+  playSound('fire_bullet', 0.1)
   player_bullets.push({
     x: x,
     y: y,

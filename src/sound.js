@@ -391,6 +391,110 @@ const effects = {
     subOsc.stop(now + 0.15)
   },
 
+  photon_torpedo: (magnitude, volume) => {
+    const now = audioCtx.currentTime
+    const duration = 1.0
+
+    // === STAGE 1: ENERGY CHARGE IGNITION (0-0.15s) ===
+    // Very short, sharp rising transient - HIGHER FREQUENCIES
+    const chargeTime = 0.15
+
+    const chargeGain = audioCtx.createGain()
+    chargeGain.gain.setValueAtTime(0.001, now)
+    chargeGain.gain.exponentialRampToValueAtTime(volume * 0.8, now + chargeTime * 0.7)
+    chargeGain.gain.exponentialRampToValueAtTime(volume, now + chargeTime)
+    chargeGain.connect(audioCtx.destination)
+
+    const chargeOsc = audioCtx.createOscillator()
+    chargeOsc.type = 'sine'
+    chargeOsc.frequency.setValueAtTime(600 * magnitude, now) // Raised from 200
+    chargeOsc.frequency.exponentialRampToValueAtTime(1800 * magnitude, now + chargeTime) // Raised from 1200
+    chargeOsc.connect(chargeGain)
+    chargeOsc.start(now)
+    chargeOsc.stop(now + chargeTime + 0.01)
+
+    // === STAGE 2: PLASMA/ENERGY DISCHARGE LAUNCH (0.15-0.55s) ===
+    // Three descending "KRTEE" pulses with Doppler effect - HIGHER PING
+    const launchStart = now + chargeTime
+    const launchDuration = 0.4
+
+    const pulses = [
+      { offset: 0, freq: 2000 * magnitude, endFreq: 1400 * magnitude, vol: 1.0 },      // Raised significantly
+      { offset: 0.13, freq: 1600 * magnitude, endFreq: 1100 * magnitude, vol: 0.85 },  // Raised significantly
+      { offset: 0.26, freq: 1300 * magnitude, endFreq: 900 * magnitude, vol: 0.7 }     // Raised significantly
+    ]
+
+    for (const pulse of pulses) {
+      const pulseStart = launchStart + pulse.offset
+      const pulseDuration = 0.14
+
+      // Main "Krtee" tone
+      const pulseGain = audioCtx.createGain()
+      pulseGain.gain.setValueAtTime(0.001, pulseStart)
+      pulseGain.gain.exponentialRampToValueAtTime(volume * pulse.vol, pulseStart + 0.015)
+      pulseGain.gain.exponentialRampToValueAtTime(volume * pulse.vol * 0.5, pulseStart + pulseDuration * 0.5)
+      pulseGain.gain.exponentialRampToValueAtTime(0.001, pulseStart + pulseDuration)
+      pulseGain.connect(audioCtx.destination)
+
+      const pulseOsc = audioCtx.createOscillator()
+      pulseOsc.type = 'sine'
+      pulseOsc.frequency.setValueAtTime(pulse.freq, pulseStart)
+      pulseOsc.frequency.exponentialRampToValueAtTime(pulse.endFreq, pulseStart + pulseDuration)
+      pulseOsc.connect(pulseGain)
+      pulseOsc.start(pulseStart)
+      pulseOsc.stop(pulseStart + pulseDuration)
+
+      // Harmonic richness
+      const harmonicGain = audioCtx.createGain()
+      harmonicGain.gain.setValueAtTime(0.001, pulseStart)
+      harmonicGain.gain.exponentialRampToValueAtTime(volume * pulse.vol * 0.4, pulseStart + 0.02)
+      harmonicGain.gain.exponentialRampToValueAtTime(0.001, pulseStart + pulseDuration * 0.7)
+      harmonicGain.connect(audioCtx.destination)
+
+      const harmonic = audioCtx.createOscillator()
+      harmonic.type = 'sine' // Changed to sine for cleaner high frequencies
+      harmonic.frequency.setValueAtTime(pulse.freq * 1.5, pulseStart)
+      harmonic.frequency.exponentialRampToValueAtTime(pulse.endFreq * 1.5, pulseStart + pulseDuration * 0.6)
+      harmonic.connect(harmonicGain)
+      harmonic.start(pulseStart)
+      harmonic.stop(pulseStart + pulseDuration)
+
+      // Attack transient "K" - reduced volume
+      const attackGain = audioCtx.createGain()
+      attackGain.gain.setValueAtTime(volume * pulse.vol * 0.25, pulseStart) // Reduced from 0.35
+      attackGain.gain.exponentialRampToValueAtTime(0.001, pulseStart + 0.03)
+      attackGain.connect(audioCtx.destination)
+
+      const attackOsc = audioCtx.createOscillator()
+      attackOsc.type = 'square'
+      attackOsc.frequency.setValueAtTime(pulse.freq * 0.8, pulseStart) // Raised from 0.6
+      attackOsc.connect(attackGain)
+      attackOsc.start(pulseStart)
+      attackOsc.stop(pulseStart + 0.03)
+    }
+
+    // === STAGE 3: MASS DEPARTURE / DOPPLER TAIL (0.55-1.0s) ===
+    // Brief descending tonal residue - LESS BASS
+    const tailStart = now + chargeTime + launchDuration
+    const tailDuration = duration - chargeTime - launchDuration
+
+    const tailGain = audioCtx.createGain()
+    tailGain.gain.setValueAtTime(volume * 0.4, tailStart) // Reduced from 0.5
+    tailGain.gain.exponentialRampToValueAtTime(volume * 0.25, tailStart + tailDuration * 0.3)
+    tailGain.gain.exponentialRampToValueAtTime(0.001, tailStart + tailDuration)
+    tailGain.connect(audioCtx.destination)
+
+    const tailOsc = audioCtx.createOscillator()
+    tailOsc.type = 'sine'
+    tailOsc.frequency.setValueAtTime(900 * magnitude, tailStart) // Raised from 650
+    tailOsc.frequency.exponentialRampToValueAtTime(500 * magnitude, tailStart + tailDuration * 0.7) // Raised from 250
+    tailOsc.frequency.exponentialRampToValueAtTime(350 * magnitude, tailStart + tailDuration) // Raised from 150
+    tailOsc.connect(tailGain)
+    tailOsc.start(tailStart)
+    tailOsc.stop(tailStart + tailDuration)
+
+    // Removed sub-harmonic entirely to eliminate bass
+  },
   cannon_fire: (magnitude, volume) => {
     const now = audioCtx.currentTime
     const duration = 1.2 // Extended to 1.2 seconds
@@ -569,7 +673,6 @@ const effects = {
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1)
   }
 }
-
 
 export const startMainThruster = (volume = 0.08) => {
   if (audioCtx.state === 'suspended') audioCtx.resume()
