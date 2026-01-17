@@ -7,7 +7,10 @@
   "version": "1.0.0",
   "description": "A modern take of the 1980 clasic StarCastle",
   "scripts": {
-    "eslint": "eslint src --fix"
+    "eslint": "eslint src --fix",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
@@ -30,6 +33,7 @@
   "homepage": "https://github.com/brighams/starkeeper.io#readme",
   "devDependencies": {
     "eslint": "^9.39.2",
-    "eslint-plugin-import": "^2.32.0"
+    "eslint-plugin-import": "^2.32.0",
+    "vite": "^7.3.1"
   }
 }
