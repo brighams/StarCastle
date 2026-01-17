@@ -7,14 +7,13 @@ import { playSound } from './sound.js'
 export const player_bullets = []
 
 export const fire_bullet = (x, y, angle, speed) => {
-  if (player_bullets.length > 0) return
-  playSound('fire_bullet', 0.1)
+  playSound('fire_bullet', 0.2, 0.1)
   player_bullets.push({
     x: x,
     y: y,
     vel_x: Math.sin(angle) * speed,
     vel_y: -Math.cos(angle) * speed,
-    life: 3000
+    life: 2000
   })
 }
 

@@ -11,25 +11,19 @@ import { player } from './player.js'
 let glow_time = 0
 let center_rotation = 0
 const CENTER_ROTATION_SPEED = 0.8
+const CANNON_COOL_OFF_TIME = 1.3
 
-export const castle_rings = [{
-  radius: 120,
-  segments: 12,
-  rotation: 0,
-  rotationSpeed: 0.75,  // was 0.5
-  color: [0.0, 1.0, 0.0, 1.0]
-}, { radius: 90, segments: 8, rotation: 0, rotationSpeed: -1.05, color: [0.0, 0.0, 1.0, 1.0] }, {  // was -0.7
-  radius: 60,
-  segments: 6,
-  rotation: 0,
-  rotationSpeed: 1.5,  // was 1.0
-  color: [1.0, 1.0, 0.0, 1.0]
-}]
+export const castle_rings = [
+  { radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.65, color: [0.0, 1.0, 0.0, 1.0] },
+  { radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.95, color: [0.0, 0.0, 1.0, 1.0] },
+  { radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] }
+]
 
 export const cannon = {
   angle: 0, rotation_speed: 2.0,
   length: 18,
-  is_destroyed: false
+  is_destroyed: false,
+  cool_off_timer: 0
 }
 
 export let cannon_projectile = null
@@ -104,9 +98,7 @@ export const ring_spawning = () => {
 }
 
 export const update_castle_rings = (dt, player = null) => {
-
   glow_time += dt
-
   center_rotation += CENTER_ROTATION_SPEED * dt
 
   for (const ring of castle_rings) {
@@ -149,17 +141,24 @@ export const update_castle_rings = (dt, player = null) => {
       cannon.angle += Math.sign(angle_diff) * max_rotation
     }
 
-    if (!cannon_projectile && has_clear_shot(cannon.angle)) {
+    // Decrement the cooldown timer
+    if (cannon.cool_off_timer > 0) {
+      cannon.cool_off_timer -= dt
+    }
 
-      cannon_projectile = {
-        x: CENTER_X + Math.cos(cannon.angle) * cannon.length,
-        y: CENTER_Y + Math.sin(cannon.angle) * cannon.length,
-        angle: cannon.angle,
-        vx: Math.cos(cannon.angle) * CANNON_SPARK_SPEED,
-        vy: Math.sin(cannon.angle) * CANNON_SPARK_SPEED,
-        size: CANNON_SPARK_SIZE
-      }
+    if (!cannon_projectile && cannon.cool_off_timer <= 0 && has_clear_shot(cannon.angle)) {
       playSound('cannon_fire')
+      setTimeout(() => {
+        cannon_projectile = {
+          x: CENTER_X + Math.cos(cannon.angle) * cannon.length,
+          y: CENTER_Y + Math.sin(cannon.angle) * cannon.length,
+          angle: cannon.angle,
+          vx: Math.cos(cannon.angle) * CANNON_SPARK_SPEED,
+          vy: Math.sin(cannon.angle) * CANNON_SPARK_SPEED,
+          size: CANNON_SPARK_SIZE
+        }
+        cannon.cool_off_timer = CANNON_COOL_OFF_TIME
+      }, 200)
     }
   }
 

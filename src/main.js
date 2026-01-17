@@ -9,13 +9,16 @@ import { check_collisions } from './collisions.js'
 import { draw_ui, toggle_info_box } from './ui.js'
 import { draw_stars } from './stars.js'
 
+
+const MAX_BULLETS = 2
+
 const canvas = document.getElementById('gameCanvas')
 init_renderer(canvas)
 
 export const game_state = {
   lives: 3,
   round: 0,
-  max_enemies: 4,
+  max_enemies: 3,
   game_over: true,
   game_started: false,
   round_won: false,
@@ -28,7 +31,6 @@ let space_pressed = false
 let last_time = 0
 let enemy_spawn_timer = 1.2
 
-
 const reset_game = (new_game = true) => {
   if (new_game) {
     game_state.lives = 3
@@ -37,14 +39,13 @@ const reset_game = (new_game = true) => {
     game_state.round += 1
   }
 
-  game_state.max_enemies = 4 + game_state.round
+  game_state.max_enemies = 3 + game_state.round
   game_state.game_over = false
   game_state.game_started = true
   game_state.round_won = false
   game_state.enemy_speed_multiplier = 10.0
 
   toggle_info_box(game_state.game_over)
-
 
   clear_explosions()
   clear_enemies()
@@ -53,20 +54,18 @@ const reset_game = (new_game = true) => {
   reset_player()
   init_ring_faces()
 
-
   enemy_spawn_timer = 1.2
 
-
-  setTimeout(() => spawn_enemies(game_state.max_enemies, 1.0), 5000)
+  setTimeout(() => spawn_enemies(game_state.max_enemies / 2, 1.0), 5000)
 }
 
 document.addEventListener('keydown', (e) => {
   keys_pressed[e.key] = true
 
   if (e.key === ' ') {
-    if (!game_state.game_over && !game_state.round_won && !space_pressed && player.alive && player_bullets.length < 3) {
+    if (!game_state.game_over && !game_state.round_won && !space_pressed && player.alive && player_bullets.length < MAX_BULLETS) {
       space_pressed = true
-      fire_bullet(player.x, player.y, player.angle, 400)
+      fire_bullet(player.x, player.y, player.angle, 450)
     }
   }
 
@@ -99,7 +98,7 @@ const game_loop = (current_time) => {
     enemy_spawn_timer = 3
   }
 
-  update_castle_rings(dt, player)
+  update_castle_rings(dt, player, game_state.round / 100)
   update_player(dt, keys_pressed, game_state.lives, game_state)
   update_bullets(dt)
   update_enemies(dt, player, game_state.game_over, game_state.round_won, game_state.enemy_speed_multiplier)
@@ -107,7 +106,6 @@ const game_loop = (current_time) => {
   update_explosions(dt)
 
   clear_screen()
-
 
   draw_stars()
 

@@ -1,6 +1,7 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { castle_rings, ring_spawning } from './castle.js'
 
+
 export const enemies = []
 
 export const spawn_enemy = () => {
@@ -58,7 +59,6 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       continue
     }
 
-
     if (enemy.lingering) {
       const ring = castle_rings[enemy.spawn_ring_index]
       enemy.spawn_angle += ring.rotationSpeed * dt
@@ -102,12 +102,10 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       const ring = castle_rings[enemy.dock_ring]
       const angle_to_dock = Math.atan2(enemy.y - CENTER_Y, enemy.x - CENTER_X)
 
-
       const segment_angle = (Math.PI * 2) / ring.segments
       const normalized_angle = ((angle_to_dock - ring.rotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)
       const face_index = Math.floor(normalized_angle / segment_angle)
       const face = ring.faces[face_index]
-
 
       if (face && face.destroyed) {
         enemy.dock_ring = (enemy.dock_ring + 1) % castle_rings.length
@@ -181,7 +179,6 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       enemy.vel_x += separate_x * dt * 60
       enemy.vel_y += separate_y * dt * 60
 
-
       enemy.vel_x += (dx / distance_to_player) * 20 * dt * enemy_speed_multiplier
       enemy.vel_y += (dy / distance_to_player) * 20 * dt * enemy_speed_multiplier
 
@@ -218,7 +215,7 @@ export const clear_enemies = () => {
 export const spawn_enemies = (max_enemies, chance = 0.5) => {
   if (ring_spawning()) return
   if (enemies.length >= max_enemies) return
-  for (let i = 0; i < max_enemies; i++) {
+  for (let i = 0; i < max_enemies && enemies.length < max_enemies; i++) {
     if (Math.random() < chance) {
       spawn_enemy()
     }
@@ -236,7 +233,6 @@ export const retreat_enemies_to_center = () => {
     }
   }
 }
-
 
 export const undock_one_enemy = () => {
   const docked_enemy = enemies.find(enemy => enemy.docked)
