@@ -2,7 +2,7 @@ import { identity_matrix } from './math.js'
 import { clear_screen, draw_spark, init_renderer } from './renderer.js'
 import { draw_ship, player, reset_player, update_player } from './player.js'
 import { clear_cannon_projectile, draw_castle, init_ring_faces, update_castle_rings } from './castle.js'
-import { clear_torpedos, draw_torpedos, fire_torpedo, player_torpedos, update_torpedos } from './torpedos.js'
+import { clear_torpedos, draw_torpedoes, fire_torpedo, player_torpedos, update_torpedos } from './torpedos.js'
 import { clear_enemies, enemies, spawn_enemies, update_enemies } from './enemies.js'
 import { clear_explosions, draw_explosions, update_explosions } from './explosions.js'
 import { check_collisions } from './collisions.js'
@@ -67,7 +67,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === ' ') {
     if (!game_state.game_over && !game_state.round_won && !space_pressed && player.alive && player_torpedos.length < MAX_torpedoS) {
       space_pressed = true
-      fire_torpedo(player.x, player.y, player.angle, 450)
+      fire_torpedo(player.x, player.y, player.angle, player.torpedo_speed)
     }
   }
 
@@ -115,10 +115,10 @@ const game_loop = (current_time) => {
     draw_ship(player.x, player.y, player.angle, player.size, transform, player.color, player.thrust, player.rotation, player.braking, player.strafing, player.strafe_thrust)
   }
   for (const enemy of enemies) {
-    draw_spark(enemy.x, enemy.y, enemy.angle, enemy.size, transform, [1.0, 0.0, 1.0, 1.0])
+    draw_spark({ x: enemy.x, y: enemy.y, angle: enemy.angle, size: enemy.size, transform, color: [1.0, 0.0, 1.0, 1.0] })
   }
 
-  draw_torpedos([1.0, 1.0, 0.0, 1.0])
+  draw_torpedoes([1.0, 1.0, 0.0, 1.0])
   draw_explosions()
   draw_ui(game_state.lives, game_state.score, game_state.game_over, game_state.round_won)
   requestAnimationFrame(game_loop)

@@ -254,6 +254,13 @@ export const draw_castle = () => {
   }
 
   if (cannon_projectile) {
-    draw_spark(cannon_projectile.x, cannon_projectile.y, cannon_projectile.angle, cannon_projectile.size, transform, CANNON_SPARK_COLOR)
+    draw_spark({
+      x: cannon_projectile.x,
+      y: cannon_projectile.y,
+      angle: cannon_projectile.angle,
+      size: cannon_projectile.size,
+      transform,
+      color: CANNON_SPARK_COLOR
+    })
   }
 }

@@ -32,10 +32,10 @@ export const update_torpedos = (dt) => {
   }
 }
 
-export const draw_torpedos = (color = [1.0, 0.84, 0.0, 1.0]) => {
+export const draw_torpedoes = (color = [1.0, 0.84, 0.0, 1.0]) => {
   const transform = identity_matrix()
   for (const torpedo of player_torpedos) {
-    draw_spark(torpedo.x, torpedo.y, 0, 5, transform, color)
+    draw_spark({ x: torpedo.x, y: torpedo.y, angle: 0, size: 5, transform, color })
   }
 }
 

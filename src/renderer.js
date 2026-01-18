@@ -1,5 +1,6 @@
 import { multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
 
+
 const vertex_shader_source = `
   attribute vec2 a_position;
   uniform vec2 u_resolution;
@@ -119,7 +120,7 @@ export const draw_circle = (x, y, radius, segments, transform, color) => {
 }
 
 // ===== USED FOR ENEMIES AND PLAYER PROJECTILES =====
-export const draw_spark = (x, y, angle, size, transform, color, show_thrust = false) => {
+export const draw_spark = ({ x, y, angle, size, transform, color }) => {
   const rotation_speed = 8.0 // radians per second
   const animated_angle = angle + (performance.now() / 1000) * rotation_speed
 

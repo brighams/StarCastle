@@ -25,7 +25,8 @@ export const player = {
   alive: true,
   respawn_timer: 0,
   spawn_anim_timer: 1.5,
-  spawn_thrust: { forward: 0, strafe: 0 } // Track spawn thrust
+  spawn_thrust: { forward: 0, strafe: 0 },
+  torpedo_speed: 320
 }
 
 export const destroy_player = (player, game_state) => {
