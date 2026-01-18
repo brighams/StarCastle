@@ -6,6 +6,7 @@ import { playSound } from './sound.js'
 import { clear_bullets } from './bullets.js'
 import { retreat_enemies_to_center } from './enemies.js'
 import { player } from './player.js'
+import { checkAndUpdateHighScore } from './score.js'
 
 
 let glow_time = 0
@@ -37,6 +38,7 @@ export const castle_destroyed = (game_state) => {
   playSound('castle_explode')
   retreat_enemies_to_center()
   cannon.is_destroyed = true
+  game_state.score = (game_state.round + 1)
   setTimeout(() => delayed_check_round_won(game_state), 1200)
 }
 
@@ -51,6 +53,7 @@ export const delayed_check_round_won = (game_state) => {
   }
   game_state.lives += 1
   game_state.enemy_speed_multiplier += 0.2
+  checkAndUpdateHighScore(game_state.score)
 }
 
 const CANNON_SPARK_SIZE = 24

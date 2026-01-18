@@ -18,6 +18,7 @@ init_renderer(canvas)
 export const game_state = {
   lives: 3,
   round: 0,
+  score: 0,
   max_enemies: 3,
   game_over: true,
   game_started: false,
@@ -35,6 +36,7 @@ const reset_game = (new_game = true) => {
   if (new_game) {
     game_state.lives = 3
     game_state.round = 0
+    game_state.score = 0
   } else {
     game_state.round += 1
   }
@@ -118,7 +120,7 @@ const game_loop = (current_time) => {
 
   draw_bullets([1.0, 1.0, 0.0, 1.0])
   draw_explosions()
-  draw_ui(game_state)
+  draw_ui(game_state.lives, game_state.score, game_state.game_over, game_state.round_won)
   requestAnimationFrame(game_loop)
 }
 

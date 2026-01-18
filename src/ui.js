@@ -5,6 +5,7 @@ import { getHighScore } from './score.js'
 import { game_state } from './main.js'
 import { draw_ship } from './player.js'
 
+
 let infoBox = document.getElementById('infoBox')
 
 export const toggle_info_box = (show) => {
@@ -66,10 +67,7 @@ export const draw_animated_text = (text, x, y, scale, transform, color, duration
 
   const elapsed = (performance.now() - animationStartTime) / 1000
   const progress = Math.min(elapsed / duration, 1.0)
-
-
   const eased = 1 - Math.pow(1 - progress, 3)
-
   const currentScale = scale * eased
 
   if (currentScale > 0.01) {
@@ -98,7 +96,7 @@ export const draw_text = (text, x, y, scale, transform, color) => {
   }
 }
 
-export const draw_ui = ({ lives, round, game_over, round_won }) => {
+export const draw_ui = (lives, score, game_over, round_won) => {
   const transform = identity_matrix()
 
   if (!game_over) {
@@ -128,9 +126,9 @@ export const draw_ui = ({ lives, round, game_over, round_won }) => {
     }
     draw_text('PRESS ENTER TO START THE NEXT ROUND', CENTER_X, CENTER_Y + 200, 3, transform, [1.0, 0.84, 0.0, 1.0])
     draw_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 260, 2, transform, [1.0, 1.0, 0.0, 1.0])
-    draw_text(`ROUND ${round}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y, 3, transform, [1.0, 0.0, 0.5, 1.0])
+    draw_text(`SCORE ${score}`, TOP_RIGHT_X - 100, TOP_RIGHT_Y, 3, transform, [1.0, 0.0, 0.5, 1.0])
   } else {
-    draw_text(`HIGH ${getHighScore()} SCORE ${round}`, TOP_RIGHT_X - 120, TOP_RIGHT_Y, 3, transform, [1.0, 0.0, 0.5, 1.0])
+    draw_text(`HIGH ${getHighScore()} SCORE ${score}`, TOP_RIGHT_X - 120, TOP_RIGHT_Y, 3, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text('STARKEEPER ONE', CENTER_X - 32, 16, 3, transform, [0.0, 1.0, 1.0, 1.0])
   }
 }
