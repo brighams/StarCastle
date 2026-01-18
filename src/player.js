@@ -54,10 +54,10 @@ export const reset_player = () => {
   playSound('game_start', 0.5, 0.08)
 }
 
-export const spawn_player = (dt) => {
+export const spawn_player = (game_state, dt) => {
   player.respawn_timer -= dt
   if (player.respawn_timer <= 0) {
-    if (lives > 0) {
+    if (game_state.lives > 0) {
       set_random_spawn_position()
       player.alive = true
       playSound('game_start', 0.5, 0.08)
@@ -79,7 +79,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     if (game_state.round_won) {
       return
     }
-    spawn_player(dt)
+    spawn_player(game_state, dt)
     return
   }
 
