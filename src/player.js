@@ -88,14 +88,17 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
   player.rotation = 0
 
   let isRotatingOrBraking = false
+  const ROTATION_FACTOR = 6
+  const THRUST_FACTOR = 4
+  const THRUST_DECELERATE_FACTOR = 6
 
   if (keys_pressed['a'] || keys_pressed['A'] || keys_pressed['ArrowLeft']) {
-    player.angle -= rotation_step * dt * 4
+    player.angle -= rotation_step * dt * ROTATION_FACTOR
     player.rotation = -1
     isRotatingOrBraking = true
   }
   if (keys_pressed['d'] || keys_pressed['D'] || keys_pressed['ArrowRight']) {
-    player.angle += rotation_step * dt * 4
+    player.angle += rotation_step * dt * ROTATION_FACTOR
     player.rotation = 1
     isRotatingOrBraking = true
   }
@@ -104,12 +107,11 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     const thrust_force = 300 * dt
     player.vel_x += Math.sin(player.angle) * thrust_force
     player.vel_y += -Math.cos(player.angle) * thrust_force
-
-    player.thrust = Math.min(player.thrust + dt * 4, 1.0)
+    player.thrust = Math.min(player.thrust + dt * THRUST_FACTOR, 1.0)
     startMainThruster()
   } else {
-
-    player.thrust = Math.max(player.thrust - dt * 8, 0)
+    // decelerate while not thrusting
+    player.thrust = Math.max(player.thrust - dt * THRUST_DECELERATE_FACTOR, 0)
     stopMainThruster()
   }
 
