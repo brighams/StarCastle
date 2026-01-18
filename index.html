@@ -115,6 +115,53 @@
       justify-content: center;
       align-items: center;
     }
+
+    .info-text {
+      color: #00FFFF;
+      font-size: 14px;
+    }
+
+    .info-star {
+      color: #FFFF00;
+      margin-left: 20px;
+      maring-right: 12px;
+    }
+
+
+    /* Controls section styles */
+    .controls-title {
+      font-weight: bold;
+      font-size: 18px;
+      margin-left: 10px;
+      margin-bottom: 4px;
+      margin-top: 2px;
+      color: #FF0088;
+    }
+
+    .controls-grid {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 0 16px;
+      margin-top: 10px;
+      align-items: center;
+    }
+
+    .control-key {
+      color: #ff0088;
+      margin-left: 20px;
+      text-align: left;
+    }
+
+    .control-description {
+      text-align: left;
+      color: #00FFFF;
+    }
+
+    .control-label {
+      color: #00FFFF;
+      text-align: right;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -122,39 +169,59 @@
   <canvas id="gameCanvas" width="800" height="800"></canvas>
 
   <!-- Help icon and popup -->
-  <div id="infoBox" class="help-popup" style="bottom: -20px; right: 252px;">
-    <div>✧ Score 1 point by destroying the castle core</div>
-    <div>✧ BEWARE: the castle has a mighty cannon!!</div>
-    <div>✧ Earn an extra life by winning the round!</div>
-    <div>✧ Difficulty increases every round</div>
-    <div>✧ Can you beat your high score?</div>
+  <div id="infoBox" class="help-popup" style="bottom: -200px; right: 180px;">
+    <div class="controls-title">Welcome To STARKEEPER ONE</div>
+    <div class="info-text"><span class="info-star">✧</span> Score 1 point by destroying the castle core</div>
+    <div class="info-text"><span class="info-star">✧</span> BEWARE: the castle has a mighty cannon!!</div>
+    <div class="info-text"><span class="info-star">✧</span> Earn an extra life by winning the round!</div>
+    <div class="info-text"><span class="info-star">✧</span> Difficulty increases every round</div>
+    <div class="info-text"><span class="info-star">✧</span> Can you beat your high score?</div>
     <div style="margin-top: 10px; margin-bottom: 20px;">
-      <div
-        style="font-weight: bold;
-        tex-size:18px;
-        margin-left: 10px;
-        margin-bottom: 4px;
-        margin-top:2px; color: #FF0088;">
-        Controls
-      </div>
-      <div><span class="key-bind">W:</span> Forward Thrust</div>
-      <div><span class="key-bind">S:</span> Reverse Thrust</div>
-      <div><span class="key-bind">A:</span> Rotate Left</div>
-      <div><span class="key-bind">D:</span> Rotate Right</div>
-      <div><span class="key-bind">Q:</span> Strafe Lateral Left Thrust</div>
-      <div><span class="key-bind">E:</span> Strafe Lateral Right Thrust</div>
-      <div><span class="key-bind" style="color: #ff5500; font-size: 14px;">Spacebar to Fire Torpedo</span></div>
-    </div>
-  </div>
+      <div class="controls-title">Controls</div>
+      <div class="controls-grid">
+        <span class="control-key">W:</span>
+        <span class="control-description">Forward Thrust</span>
+        <span class="control-label">(FORE)</span>
 
-  <div class="info" style="color:#00FFFF; font-size: 12px; position: relative; bottom: -80px;">
-    <a target="_GITHUB" href="https://github.com/brighams/StarCastle">View On GitHub</a>
-    |
-    <a href="#" id="resetHighScore" style="color:#FFFF00; font-size: 12px;">Reset High Score</a>
-    <div class="music-info" style="color:#333333; font-size: 12px;">
-      <a target="_UPBEAT" href="https://uppbeat.io/t/d0d/orbit" style="color:#333333; font-size: 12px;">
-        Free Music from #Uppbeat</a>
-      <div style="color:#333333">License code: 8CWB22QJHCXO9EWR</div>
+        <span class="control-key">S:</span>
+        <span class="control-description">Reverse Thrust</span>
+        <span class="control-label">(AFT)</span>
+
+        <span class="control-key">A:</span>
+        <span class="control-description">Rotate Left</span>
+        <span class="control-label">(PORT)</span>
+
+        <span class="control-key">SHIFT-D:</span>
+        <span class="control-description">Strafe Left</span>
+        <span class="control-label">(PORT)</span>
+
+        <span class="control-key">D:</span>
+        <span class="control-description">Rotate Right</span>
+        <span class="control-label">(STARBOARD)</span>
+
+        <span class="control-key">SHIFT-A:</span>
+        <span class="control-description">Strafe Right</span>
+        <span class="control-label">(STARBOARD)</span>
+
+        <span class="control-key">Spacebar:</span>
+        <span class="control-description">Fire Torpedo</span>
+        <span class="control-label">(FORE)</span>
+
+        <span class="control-key">R:</span>
+        <span class="control-description">Fire Rear Torpedo</span>
+        <span class="control-label">(AFT)</span>
+        <div class="info" style="color:#00FFFF; font-size: 12px; position: relative; bottom: -80px;">
+          <a style="color:#00FFFF;" target="_GITHUB" href="https://github.com/brighams/StarCastle">View On GitHub</a>
+          |
+          <a href="#" id="resetHighScore" style="color:#FFFF00; font-size: 12px;">Reset High Score</a>
+          <div class="music-info" style="color:#666666; font-size: 12px;">
+            <a style="color:#666666" target="_UPBEAT" href="https://uppbeat.io/t/d0d/orbit"
+               style="color:#333333; font-size: 12px;">
+              Free Music from #Uppbeat</a>
+            <div style="color:#666666">License code: 8CWB22QJHCXO9EWR</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
