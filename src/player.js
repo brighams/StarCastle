@@ -24,7 +24,8 @@ export const player = {
   max_strafe_factor: 0.40, // Strafe speed = max_speed * this factor
   alive: true,
   respawn_timer: 0,
-  spawn_anim_timer: 1.5
+  spawn_anim_timer: 1.5,
+  spawn_thrust: { forward: 0, strafe: 0 } // Track spawn thrust
 }
 
 export const destroy_player = (player, game_state) => {
@@ -61,6 +62,22 @@ export const spawn_player = (game_state, dt) => {
       set_random_spawn_position()
       player.alive = true
       playSound('game_start', 0.5, 0.08)
+
+      // Apply spawn thrust directly
+      const spawn_forward_force = 60 // Forward thrust magnitude
+      const spawn_strafe_force = 40 // Strafe thrust magnitude
+
+      // Forward thrust
+      player.vel_x += Math.sin(player.angle) * spawn_forward_force
+      player.vel_y += -Math.cos(player.angle) * spawn_forward_force
+
+      // Random left or right strafe
+      const strafe_direction = Math.random() > 0.5 ? 1 : -1
+      const strafe_x = strafe_direction * Math.cos(player.angle)
+      const strafe_y = strafe_direction * Math.sin(player.angle)
+      player.vel_x += strafe_x * spawn_strafe_force
+      player.vel_y += strafe_y * spawn_strafe_force
+
     } else {
       game_state.game_over = true
       playSound('game_over', 1.0, 0.1)

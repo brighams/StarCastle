@@ -2,7 +2,7 @@ import { identity_matrix } from './math.js'
 import { clear_screen, draw_spark, init_renderer } from './renderer.js'
 import { draw_ship, player, reset_player, update_player } from './player.js'
 import { clear_cannon_projectile, draw_castle, init_ring_faces, update_castle_rings } from './castle.js'
-import { clear_bullets, draw_bullets, fire_bullet, player_bullets, update_bullets } from './bullets.js'
+import { clear_torpedos, draw_torpedos, fire_torpedo, player_torpedos, update_torpedos } from './torpedos.js'
 import { clear_enemies, enemies, spawn_enemies, update_enemies } from './enemies.js'
 import { clear_explosions, draw_explosions, update_explosions } from './explosions.js'
 import { check_collisions } from './collisions.js'
@@ -10,7 +10,7 @@ import { draw_ui, toggle_info_box } from './ui.js'
 import { draw_stars } from './stars.js'
 
 
-const MAX_BULLETS = 2
+const MAX_torpedoS = 2
 
 const canvas = document.getElementById('gameCanvas')
 init_renderer(canvas)
@@ -51,7 +51,7 @@ const reset_game = (new_game = true) => {
 
   clear_explosions()
   clear_enemies()
-  clear_bullets()
+  clear_torpedos()
   clear_cannon_projectile()
   reset_player()
   init_ring_faces()
@@ -65,9 +65,9 @@ document.addEventListener('keydown', (e) => {
   keys_pressed[e.key] = true
 
   if (e.key === ' ') {
-    if (!game_state.game_over && !game_state.round_won && !space_pressed && player.alive && player_bullets.length < MAX_BULLETS) {
+    if (!game_state.game_over && !game_state.round_won && !space_pressed && player.alive && player_torpedos.length < MAX_torpedoS) {
       space_pressed = true
-      fire_bullet(player.x, player.y, player.angle, 450)
+      fire_torpedo(player.x, player.y, player.angle, 450)
     }
   }
 
@@ -102,7 +102,7 @@ const game_loop = (current_time) => {
 
   update_castle_rings(dt, player)
   update_player(dt, keys_pressed, game_state.lives, game_state)
-  update_bullets(dt)
+  update_torpedos(dt)
   update_enemies(dt, player, game_state.game_over, game_state.round_won, game_state.enemy_speed_multiplier)
   check_collisions(player, game_state)
   update_explosions(dt)
@@ -118,7 +118,7 @@ const game_loop = (current_time) => {
     draw_spark(enemy.x, enemy.y, enemy.angle, enemy.size, transform, [1.0, 0.0, 1.0, 1.0])
   }
 
-  draw_bullets([1.0, 1.0, 0.0, 1.0])
+  draw_torpedos([1.0, 1.0, 0.0, 1.0])
   draw_explosions()
   draw_ui(game_state.lives, game_state.score, game_state.game_over, game_state.round_won)
   requestAnimationFrame(game_loop)

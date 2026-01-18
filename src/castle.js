@@ -3,7 +3,7 @@ import { identity_matrix } from './math.js'
 import { draw_line, draw_spark } from './renderer.js'
 import { are_rings_destroyed_by_explosion, create_castle_explosion, is_castle_exploding } from './explosions.js'
 import { playSound } from './sound.js'
-import { clear_bullets } from './bullets.js'
+import { clear_torpedos } from './torpedos.js'
 import { retreat_enemies_to_center } from './enemies.js'
 import { player } from './player.js'
 import { checkAndUpdateHighScore } from './score.js'
@@ -43,7 +43,7 @@ export const castle_destroyed = (game_state) => {
 }
 
 export const delayed_check_round_won = (game_state) => {
-  clear_bullets()
+  clear_torpedos()
   if (player.alive) {
     game_state.pyrrhic_victory = false
     game_state.round_won = true

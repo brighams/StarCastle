@@ -1,10 +1,11 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { cannon_projectile, castle_destroyed, castle_rings, clear_cannon_projectile } from './castle.js'
-import { player_bullets } from './bullets.js'
+import { player_torpedos } from './torpedos.js'
 import { enemies, undock_one_enemy } from './enemies.js'
 import { create_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 import { destroy_player } from './player.js'
+
 
 export const check_collisions = (player, game_state) => {
   if (cannon_projectile && player.alive) {
@@ -21,13 +22,12 @@ export const check_collisions = (player, game_state) => {
     }
   }
 
-
-  for (let i = player_bullets.length - 1; i >= 0; i--) {
-    const bullet = player_bullets[i]
-    let bullet_hit = false
+  for (let i = player_torpedos.length - 1; i >= 0; i--) {
+    const torpedo = player_torpedos[i]
+    let torpedo_hit = false
 
     for (let ring of castle_rings) {
-      if (bullet_hit) break
+      if (torpedo_hit) break
 
       const segment_angle = (Math.PI * 2) / ring.segments
 
@@ -46,12 +46,12 @@ export const check_collisions = (player, game_state) => {
         const line_dy = y2 - y1
         const line_length_sq = line_dx * line_dx + line_dy * line_dy
 
-        let t = Math.max(0, Math.min(1, ((bullet.x - x1) * line_dx + (bullet.y - y1) * line_dy) / line_length_sq))
+        let t = Math.max(0, Math.min(1, ((torpedo.x - x1) * line_dx + (torpedo.y - y1) * line_dy) / line_length_sq))
         const closest_x = x1 + t * line_dx
         const closest_y = y1 + t * line_dy
 
-        const dist_x = bullet.x - closest_x
-        const dist_y = bullet.y - closest_y
+        const dist_x = torpedo.x - closest_x
+        const dist_y = torpedo.y - closest_y
         const distance = Math.sqrt(dist_x * dist_x + dist_y * dist_y)
 
         if (distance < 8) {
@@ -61,9 +61,8 @@ export const check_collisions = (player, game_state) => {
           playSound('ring_explode')
 
           face.destroyed = true
-          player_bullets.splice(i, 1)
-          bullet_hit = true
-
+          player_torpedos.splice(i, 1)
+          torpedo_hit = true
 
           undock_one_enemy()
           break
@@ -72,36 +71,34 @@ export const check_collisions = (player, game_state) => {
     }
   }
 
+  for (let i = player_torpedos.length - 1; i >= 0; i--) {
+    const torpedo = player_torpedos[i]
 
-  for (let i = player_bullets.length - 1; i >= 0; i--) {
-    const bullet = player_bullets[i]
+    const torpedo_center_dx = torpedo.x - CENTER_X
+    const torpedo_center_dy = torpedo.y - CENTER_Y
+    const torpedo_center_distance = Math.sqrt(torpedo_center_dx * torpedo_center_dx + torpedo_center_dy * torpedo_center_dy)
 
-    const bullet_center_dx = bullet.x - CENTER_X
-    const bullet_center_dy = bullet.y - CENTER_Y
-    const bullet_center_distance = Math.sqrt(bullet_center_dx * bullet_center_dx + bullet_center_dy * bullet_center_dy)
-
-    if (bullet_center_distance < 15 + 2) {
-      player_bullets.splice(i, 1)
+    if (torpedo_center_distance < 15 + 2) {
+      player_torpedos.splice(i, 1)
       castle_destroyed(game_state)
       continue
     }
 
     for (let j = enemies.length - 1; j >= 0; j--) {
       const enemy = enemies[j]
-      const dx = bullet.x - enemy.x
-      const dy = bullet.y - enemy.y
+      const dx = torpedo.x - enemy.x
+      const dy = torpedo.y - enemy.y
       const distance = Math.sqrt(dx * dx + dy * dy)
 
       if (distance < enemy.size + 2) {
         create_explosion(enemy.x, enemy.y, 20, 0.5)
         playSound('enemy_explode')
-        player_bullets.splice(i, 1)
+        player_torpedos.splice(i, 1)
         enemies.splice(j, 1)
         break
       }
     }
   }
-
 
   const player_center_dx = player.x - CENTER_X
   const player_center_dy = player.y - CENTER_Y
@@ -133,7 +130,6 @@ export const check_collisions = (player, game_state) => {
       }
     }
   }
-
 
   for (let i = enemies.length - 1; i >= 0; i--) {
     const enemy = enemies[i]
