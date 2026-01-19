@@ -42,7 +42,7 @@ export const destroy_player = (player, game_state) => {
 }
 
 const set_random_spawn_position = () => {
-  const spawn_radius = CANVAS_SIZE * 0.4
+  const spawn_radius = CANVAS_SIZE * 0.42
   const random_angle = Math.random() * Math.PI * 2
   player.x = CENTER_X + Math.cos(random_angle) * spawn_radius
   player.y = CENTER_Y + Math.sin(random_angle) * spawn_radius
