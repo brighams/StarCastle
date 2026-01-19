@@ -15,7 +15,7 @@
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="./img/starkeeper-64-logo.png">
 
-  <!-- Open Graph meta tags for social preview -->
+  <!-- Open Graph tags for social preview -->
   <meta property="og:title" content="STARKEEPER ONE">
   <meta property="og:description"
         content="A WebGL recreation of the classic 1980 arcade game Star Castle. Blast through defensive rings and destroy the reactor core!">
@@ -29,109 +29,8 @@
   <meta name="twitter:description"
         content="A WebGL recreation of the classic 1980 arcade game Star Castle. Blast through defensive rings and destroy the reactor core!">
   <meta name="twitter:image" content="https://brighams.github.io/StarCastle/README.png">
-
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding-top: 2em;
-      min-height: 100vh;
-      font-family: monospace;
-      color: #fff;
-    }
-
-    #gameContainer {
-      text-align: center;
-      position: relative;
-    }
-
-    #gameCanvas {
-      border: 2px solid #333;
-      background: #000;
-    }
-
-    .music-info {
-      margin-top: 10px;
-      color: #aaa;
-      justify-self: center;
-      font-size: 12px;
-    }
-
-    .info-box {
-      display: block;
-      position: absolute;
-      width: 440px;
-      height: 390px;
-      background-color: rgba(0, 0, 0, 0.9);
-      border: 2px solid #00FFFF;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
-      padding: 10px;
-      color: white;
-      font-size: 12px;
-      text-align: left;
-      z-index: 110;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    .info-text {
-      color: #00FFFF;
-      font-size: 16px;
-    }
-
-    .info-star {
-      color: #FFFF00;
-      margin-left: 20px;
-      font-size: 16px;
-    }
-
-    /* Controls section styles */
-    .controls-title {
-      font-weight: bold;
-      font-size: 18px;
-      margin-left: 10px;
-      margin-bottom: 4px;
-      margin-top: 2px;
-      color: #FF0088;
-      justify-self: center;
-    }
-
-    .controls-grid {
-      display: grid;
-      grid-template-columns: 146px 180px 80px;
-      gap: 2px 4px;
-      margin-top: 10px;
-      align-items: center;
-    }
-
-    .control-key {
-      color: #ff0088;
-      margin-left: 20px;
-      text-align: left;
-      font-weight: bold;
-      font-size: 18px;
-    }
-
-    .control-description {
-      text-align: left;
-      color: #00FFFF;
-      font-weight: bold;
-      font-size: 18px;
-    }
-
-    .control-direction {
-      color: #ff7800;
-      text-align: right;
-      white-space: nowrap;
-    }
-  </style>
+  <link rel="stylesheet" href="index.css">
 </head>
-<body>
 <div id="gameContainer">
   <canvas id="gameCanvas" width="800" height="800"></canvas>
 
@@ -145,10 +44,7 @@
     <div class="info-text"><span class="info-star">✧</span> Can you beat your high score?</div>
 
     <div style="margin-top: 10px; margin-bottom: 20px;">
-
       <div class="controls-title">Controls</div>
-
-
       <div class="controls-grid">
         <span class="control-key">W</span>
         <span class="control-description">Forward</span>
@@ -189,22 +85,74 @@
       </div>
     </div>
 
-    <div class="music-info" style="position: relative; bottom: -10px;">
+    <!-- Volume Control Panel -->
+    <div class="volume-panel">
+      <div class="volume-toggle" id="volumeToggle" title="Volume Controls">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+      </div>
+      <div class="volume-popup" id="volumePopup">
+        <div class="volume-popup-title">◆ AUDIO ◆</div>
 
-      <a target="_UPBEAT" href="https://uppbeat.io/t/d0d/orbit"
-         style="color:#666666; font-size: 12px; padding-bottom: 4px;">
-        Free Music from #Uppbeat License code: 8CWB22QJHCXO9EWR</a>
+        <!-- Music Volume Control -->
+        <div class="volume-control">
+          <div class="volume-icon" id="musicIcon" title="Click to mute music">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+            </svg>
+          </div>
+          <div class="slider-container">
+            <div class="slider-track">
+              <div class="slider-fill" id="musicFill" style="width: 50%;"></div>
+              <div class="slider-notches">
+                <div class="slider-notch"></div>
+                <div class="slider-notch"></div>
+                <div class="slider-notch"></div>
+                <div class="slider-notch"></div>
+                <div class="slider-notch"></div>
+              </div>
+            </div>
+            <div class="slider-thumb" id="musicThumb" style="left: calc(50% - 7px);"></div>
+            <input type="range" class="slider-input" id="musicSlider" min="0" max="100" value="50">
+          </div>
+          <span class="volume-label" id="musicLabel">50%</span>
+        </div>
+
+        <!-- Effects Volume Control (Deactivated) -->
+        <div class="volume-control">
+          <div class="volume-icon deactivated" id="effectsIcon" title="Not implemented yet">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+            </svg>
+          </div>
+          <div class="slider-container">
+            <div class="slider-track deactivated">
+              <div class="slider-fill deactivated" id="effectsFill" style="width: 50%;"></div>
+              <div class="slider-notches">
+                <div class="slider-notch deactivated"></div>
+                <div class="slider-notch deactivated"></div>
+                <div class="slider-notch deactivated"></div>
+                <div class="slider-notch deactivated"></div>
+                <div class="slider-notch deactivated"></div>
+              </div>
+            </div>
+            <div class="slider-thumb deactivated" id="effectsThumb" style="left: calc(50% - 7px);"></div>
+            <input type="range" class="slider-input deactivated" id="effectsSlider" min="0" max="100" value="50" disabled>
+          </div>
+          <span class="volume-label deactivated" id="effectsLabel">50%</span>
+        </div>
+        <div class="deactivated-notice">✧ Effects: not implemented yet, coming soon! ✧</div>
+      </div>
     </div>
-
-
   </div>
 </div>
-<script type="module" src="./src/main.js"></script>
+  <script type="module" src="./src/main.js"></script>
 <script>
   window.addEventListener('load', () => {
     const audio = new Audio('sound/orbit-d0d-main-version-29627-02-39.mp3');
     audio.loop = true;
-    audio.volume = 0.1;
+    audio.volume = 0.5; // Start at 50% to match slider
 
     const startAudio = () => {
       audio.play().catch(() => {
@@ -215,6 +163,66 @@
 
     document.addEventListener('click', startAudio);
     document.addEventListener('keydown', startAudio);
+
+    // Volume control elements
+    const volumeToggle = document.getElementById('volumeToggle');
+    const volumePopup = document.getElementById('volumePopup');
+    const musicSlider = document.getElementById('musicSlider');
+    const musicFill = document.getElementById('musicFill');
+    const musicThumb = document.getElementById('musicThumb');
+    const musicLabel = document.getElementById('musicLabel');
+    const musicIcon = document.getElementById('musicIcon');
+
+    let lastVolume = 0.5; // Remember volume before mute
+
+    // Toggle volume popup visibility
+    volumeToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      volumePopup.classList.toggle('visible');
+    });
+
+    // Close popup when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!volumePopup.contains(e.target) && !volumeToggle.contains(e.target)) {
+        volumePopup.classList.remove('visible');
+      }
+    });
+
+    // Update slider visuals and audio volume
+    function updateMusicVolume(value) {
+      const percent = value;
+      audio.volume = value / 100;
+      musicFill.style.width = percent + '%';
+      musicThumb.style.left = `calc(${percent}% - 7px)`;
+      musicLabel.textContent = Math.round(percent) + '%';
+
+      // Update icon state for muted
+      if (value === 0) {
+        musicIcon.classList.add('muted');
+      } else {
+        musicIcon.classList.remove('muted');
+      }
+    }
+
+    // Music slider input handler
+    musicSlider.addEventListener('input', (e) => {
+      const value = parseInt(e.target.value);
+      updateMusicVolume(value);
+      if (value > 0) lastVolume = value / 100;
+    });
+
+    // Click music icon to toggle mute
+    musicIcon.addEventListener('click', () => {
+      if (audio.volume > 0) {
+        lastVolume = audio.volume;
+        musicSlider.value = 0;
+        updateMusicVolume(0);
+      } else {
+        const restored = Math.round(lastVolume * 100);
+        musicSlider.value = restored;
+        updateMusicVolume(restored);
+      }
+    });
   });
 
   // Prevent spacebar and arrow keys from scrolling the page
