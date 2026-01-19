@@ -216,6 +216,13 @@
     document.addEventListener('click', startAudio);
     document.addEventListener('keydown', startAudio);
   });
+
+  // Prevent spacebar and arrow keys from scrolling the page
+  window.addEventListener('keydown', (e) => {
+    if ([' ', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+    }
+  });
 </script>
 </body>
 </html>
