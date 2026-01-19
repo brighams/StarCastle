@@ -189,19 +189,20 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       enemy.vel_y += (dy / distance_to_player) * 20 * dt * enemy_speed_multiplier
 
     } else {
-      // ============ ENEMY IS CLOSE TO SHIP - MOVE FASTER
+      // ============ ENEMY IS CLOSE TO SHIP - MOVE FASTER & DODGE
       enemy.jitter_timer -= dt
       if (enemy.jitter_timer <= 0) {
-        enemy.jitter_x = (Math.random() - 0.5) * 50
-        enemy.jitter_y = (Math.random() - 0.5) * 50
-        enemy.jitter_timer = 0.2 + Math.random() * 0.3
+        enemy.jitter_x = (Math.random() - 0.5) * 160
+        enemy.jitter_y = (Math.random() - 0.5) * 160
+        enemy.jitter_timer = 0.15 + Math.random() * 0.2
       }
 
       enemy.vel_x += (dx / distance_to_player) * 30 * dt * enemy_speed_multiplier
       enemy.vel_y += (dy / distance_to_player) * 30 * dt * enemy_speed_multiplier
 
-      enemy.vel_x += enemy.jitter_x * dt
-      enemy.vel_y += enemy.jitter_y * dt
+      // Apply jitter directly to position for visible effect
+      enemy.x += enemy.jitter_x * dt
+      enemy.y += enemy.jitter_y * dt
     }
 
     enemy.vel_x *= 0.98

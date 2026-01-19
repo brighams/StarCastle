@@ -122,7 +122,7 @@ export const update_player = (dt, keys_pressed, game_state) => {
   const AFT_TORPEDO_LIFE_MODIFIER = 0.75
   const AFT_TORPEDO_COLOR = [1.0, 0.0, 0.5]
   const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.5]
-  const FIRE_COOLDOWN_TIME = 0.25  // 250ms between shots
+  const FIRE_COOLDOWN_TIME = 0.50  // 500ms between shots
 
   // Update cooldown timer
   if (player.fire_cooldown > 0) {
