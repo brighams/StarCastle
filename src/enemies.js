@@ -97,7 +97,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
 
     if (!player_is_target) {
       if (!enemy.dock_ring && enemy.dock_ring !== 0) {
-        enemy.dock_ring = Math.floor(Math.random() * castle_rings.length)
+        Math.floor(Math.random() * castle_rings.length)
       }
       const ring = castle_rings[enemy.dock_ring]
       const angle_to_dock = Math.atan2(enemy.y - CENTER_Y, enemy.x - CENTER_X)
@@ -105,6 +105,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       const segment_angle = (Math.PI * 2) / ring.segments
       const normalized_angle = ((angle_to_dock - ring.rotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)
       const face_index = Math.floor(normalized_angle / segment_angle)
+
       const face = ring.faces[face_index]
 
       if (face && face.destroyed) {

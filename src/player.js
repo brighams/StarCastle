@@ -3,6 +3,7 @@ import { playSound, startAttitudeThruster, startMainThruster, stopAttitudeThrust
 import { retreat_enemies_to_center } from './enemies.js'
 import { multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
 import { draw_line } from './renderer.js'
+import { toggle_info_box } from './ui.js'
 
 
 export const player = {
@@ -26,7 +27,8 @@ export const player = {
   respawn_timer: 0,
   spawn_anim_timer: 1.5,
   spawn_thrust: { forward: 0, strafe: 0 },
-  torpedo_speed: 320
+  torpedo_speed: 320,
+  torpedo_life: 1600
 }
 
 export const destroy_player = (player, game_state) => {
@@ -82,6 +84,7 @@ export const spawn_player = (game_state, dt) => {
     } else {
       game_state.game_over = true
       playSound('game_over', 1.0, 0.1)
+      toggle_info_box(true)
     }
   }
 }
@@ -108,19 +111,24 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
   const ROTATION_FACTOR = 6
   const THRUST_FACTOR = 4
   const THRUST_DECELERATE_FACTOR = 6
+  const SHIFT_DOWN = keys_pressed['ShiftKey']
 
-  if (keys_pressed['a']) {
+  // =================== ROTATE LEFT
+  if (keys_pressed['KeyA'] && !SHIFT_DOWN) {
     player.angle -= rotation_step * dt * ROTATION_FACTOR
     player.rotation = -1
     isRotatingOrBraking = true
   }
-  if (keys_pressed['d']) {
+
+  // =================== ROTATE RIGHT
+  if (keys_pressed['KeyD'] && !SHIFT_DOWN) {
     player.angle += rotation_step * dt * ROTATION_FACTOR
     player.rotation = 1
     isRotatingOrBraking = true
   }
 
-  if (keys_pressed['w'] || keys_pressed['W']) {
+  // =================== FORWARD
+  if (keys_pressed['KeyW']) {
     const thrust_force = 300 * dt
     player.vel_x += Math.sin(player.angle) * thrust_force
     player.vel_y += -Math.cos(player.angle) * thrust_force
@@ -132,7 +140,8 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     stopMainThruster()
   }
 
-  if (keys_pressed['s'] || keys_pressed['S']) {
+  // =================== REVERSE
+  if (keys_pressed['KeyS']) {
     const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
 
     // Determine if we're moving forward or in reverse
@@ -174,7 +183,8 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
 
   player.strafing = 0
 
-  if (keys_pressed['D'] || keys_pressed['e']) {
+  // =================== STRAFE RIGHT
+  if ((keys_pressed['KeyD'] && SHIFT_DOWN) || keys_pressed['KeyE']) {
     player.strafing = -1
 
     const strafe_x = -Math.cos(player.angle)
@@ -185,7 +195,9 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
 
     player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
     isRotatingOrBraking = true
-  } else if (keys_pressed['A'] || keys_pressed['q']) {
+
+    // =================== STRAFE LEFT
+  } else if ((keys_pressed['KeyA'] && SHIFT_DOWN) || keys_pressed['KeyQ']) {
     player.strafing = 1
 
     const strafe_x = Math.cos(player.angle)
@@ -197,10 +209,10 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
     isRotatingOrBraking = true
   } else {
-
     player.strafe_thrust = Math.max(player.strafe_thrust - dt * 6, 0)
   }
 
+  // =================== FINAL SPEED AND POSITION ADJUSTMENTS
   if (isRotatingOrBraking) {
     startAttitudeThruster()
   } else {

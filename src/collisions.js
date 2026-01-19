@@ -1,6 +1,6 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { cannon_projectile, castle_destroyed, castle_rings, clear_cannon_projectile } from './castle.js'
-import { player_torpedos } from './torpedos.js'
+import { player_torpedoes } from './torpedoes.js'
 import { enemies, undock_one_enemy } from './enemies.js'
 import { create_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
@@ -22,8 +22,8 @@ export const check_collisions = (player, game_state) => {
     }
   }
 
-  for (let i = player_torpedos.length - 1; i >= 0; i--) {
-    const torpedo = player_torpedos[i]
+  for (let i = player_torpedoes.length - 1; i >= 0; i--) {
+    const torpedo = player_torpedoes[i]
     let torpedo_hit = false
 
     for (let ring of castle_rings) {
@@ -61,7 +61,7 @@ export const check_collisions = (player, game_state) => {
           playSound('ring_explode')
 
           face.destroyed = true
-          player_torpedos.splice(i, 1)
+          player_torpedoes.splice(i, 1)
           torpedo_hit = true
 
           undock_one_enemy()
@@ -71,15 +71,15 @@ export const check_collisions = (player, game_state) => {
     }
   }
 
-  for (let i = player_torpedos.length - 1; i >= 0; i--) {
-    const torpedo = player_torpedos[i]
+  for (let i = player_torpedoes.length - 1; i >= 0; i--) {
+    const torpedo = player_torpedoes[i]
 
     const torpedo_center_dx = torpedo.x - CENTER_X
     const torpedo_center_dy = torpedo.y - CENTER_Y
     const torpedo_center_distance = Math.sqrt(torpedo_center_dx * torpedo_center_dx + torpedo_center_dy * torpedo_center_dy)
 
     if (torpedo_center_distance < 15 + 2) {
-      player_torpedos.splice(i, 1)
+      player_torpedoes.splice(i, 1)
       castle_destroyed(game_state)
       continue
     }
@@ -93,7 +93,7 @@ export const check_collisions = (player, game_state) => {
       if (distance < enemy.size + 2) {
         create_explosion(enemy.x, enemy.y, 20, 0.5)
         playSound('enemy_explode')
-        player_torpedos.splice(i, 1)
+        player_torpedoes.splice(i, 1)
         enemies.splice(j, 1)
         break
       }

@@ -3,7 +3,7 @@ import { identity_matrix } from './math.js'
 import { draw_line, draw_spark } from './renderer.js'
 import { are_rings_destroyed_by_explosion, create_castle_explosion, is_castle_exploding } from './explosions.js'
 import { playSound } from './sound.js'
-import { clear_torpedos } from './torpedos.js'
+import { clear_torpedoes } from './torpedoes.js'
 import { retreat_enemies_to_center } from './enemies.js'
 import { player } from './player.js'
 import { checkAndUpdateHighScore } from './score.js'
@@ -15,9 +15,9 @@ const CENTER_ROTATION_SPEED = 0.8
 const CANNON_COOL_OFF_TIME = 1.3
 
 export const castle_rings = [
-  { radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.65, color: [0.0, 1.0, 0.0, 1.0] },
-  { radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.95, color: [0.0, 0.0, 1.0, 1.0] },
-  { radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] }
+  { index: 0, radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.65, color: [0.0, 1.0, 0.0, 1.0] },
+  { index: 1, radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.95, color: [0.0, 0.0, 1.0, 1.0] },
+  { index: 2, radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] }
 ]
 
 export const cannon = {
@@ -43,7 +43,7 @@ export const castle_destroyed = (game_state) => {
 }
 
 export const delayed_check_round_won = (game_state) => {
-  clear_torpedos()
+  clear_torpedoes()
   if (player.alive) {
     game_state.pyrrhic_victory = false
     game_state.round_won = true
@@ -100,12 +100,12 @@ export const ring_spawning = () => {
   return castle_rings.some(ring => ring.spawn_radius < ring.radius)
 }
 
-export const update_castle_rings = (dt, player = null) => {
+export const update_castle_rings = (dt, player, game_state) => {
   glow_time += dt
   center_rotation += CENTER_ROTATION_SPEED * dt
 
   for (const ring of castle_rings) {
-    ring.rotation += ring.rotationSpeed * dt
+    ring.rotation += ring.rotationSpeed * dt * game_state.ring_speed_modifier
 
     if (ring.spawn_radius < ring.radius) {
       ring.spawn_radius += dt * ring.radius
@@ -122,7 +122,6 @@ export const update_castle_rings = (dt, player = null) => {
         ring.spawn_radius = 0.001
       }
     } else {
-
       const all_destroyed = ring.faces.every(face => face.destroyed)
       if (all_destroyed) {
         ring.respawn_timer = 1.0
@@ -130,7 +129,7 @@ export const update_castle_rings = (dt, player = null) => {
     }
   }
 
-  if (player && player.alive) {
+  if (player.alive) {
     const target_angle = Math.atan2(player.y - CENTER_Y, player.x - CENTER_X)
 
     let angle_diff = target_angle - cannon.angle
