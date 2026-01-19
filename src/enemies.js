@@ -1,8 +1,12 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { castle_rings, ring_spawning } from './castle.js'
+import { playSound } from './sound.js'
 
 
 export const enemies = []
+
+const ENEMY_SPARK_SIZE = 13
+const ENEMY_SEEK_LIMIT = 150
 
 export const spawn_enemy = () => {
   const ring_index = Math.floor(Math.random() * castle_rings.length)
@@ -12,16 +16,17 @@ export const spawn_enemy = () => {
   const target_y = CENTER_Y + Math.sin(angle) * ring.radius
 
   enemies.push({
+    alive: true,
+    spawning: true,
+    size: ENEMY_SPARK_SIZE,
     x: CENTER_X,
     y: CENTER_Y,
     angle: 0,
     vel_x: 0,
     vel_y: 0,
-    size: 12,
     jitter_timer: 0,
     jitter_x: 0,
     jitter_y: 0,
-    spawning: true,
     spawn_target_x: target_x,
     spawn_target_y: target_y,
     spawn_ring_index: ring_index,
@@ -33,9 +38,9 @@ export const spawn_enemy = () => {
 export const update_enemies = (dt, player, game_over, round_won, enemy_speed_multiplier) => {
   const player_is_target = player.alive && !game_over && !round_won
 
-  for (let index = 0; index < enemies.length; index++) {
+  for (let index = 0; index < enemies.length; index += 1) {
     const enemy = enemies[index]
-
+    if (!enemy.alive) continue
     if (enemy.spawning) {
       const dx = enemy.spawn_target_x - enemy.x
       const dy = enemy.spawn_target_y - enemy.y
@@ -138,18 +143,18 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
     }
 
     enemy.dock_ring = null
-
     const dx = player.x - enemy.x
     const dy = player.y - enemy.y
     const distance_to_player = Math.sqrt(dx * dx + dy * dy)
 
-    if (distance_to_player > 150) {
+    if (distance_to_player > ENEMY_SEEK_LIMIT) {
       let align_x = 0
       let align_y = 0
       let separate_x = 0
       let separate_y = 0
       let neighbors = 0
 
+      // ====== FLOCKING BEHAVIOR
       for (let other_index = 0; other_index < enemies.length; other_index++) {
         const other = enemies[other_index]
         if (index !== other_index && !other.docked) {
@@ -184,7 +189,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       enemy.vel_y += (dy / distance_to_player) * 20 * dt * enemy_speed_multiplier
 
     } else {
-
+      // ============ ENEMY IS CLOSE TO SHIP - MOVE FASTER
       enemy.jitter_timer -= dt
       if (enemy.jitter_timer <= 0) {
         enemy.jitter_x = (Math.random() - 0.5) * 50
@@ -215,9 +220,10 @@ export const clear_enemies = () => {
 
 export const spawn_enemies = (max_enemies, chance = 0.5) => {
   if (ring_spawning()) return
-  if (enemies.length >= max_enemies) return
+  const alive_enemies = enemies.filter(e => e.alive).length
+  if (alive_enemies >= max_enemies) return
   for (let i = 0; i < max_enemies && enemies.length < max_enemies; i++) {
-    if (Math.random() < chance) {
+    if (Math.random() <= chance) {
       spawn_enemy()
     }
   }
@@ -240,5 +246,18 @@ export const undock_one_enemy = () => {
   if (docked_enemy) {
     docked_enemy.docked = false
     docked_enemy.dock_ring = null
+  }
+}
+
+export const destroy_enemy = (enemy) => {
+  enemy.alive = false
+  playSound('enemy_explode')
+}
+
+export const remove_destroyed_enemies = () => {
+  for (let k = enemies.length - 1; k >= 0; k--) {
+    if (!enemies[k].alive) {
+      enemies.splice(k, 1)
+    }
   }
 }

@@ -2,8 +2,8 @@ import { identity_matrix } from './math.js'
 import { clear_screen, draw_spark, init_renderer } from './renderer.js'
 import { draw_ship, player, reset_player, update_player } from './player.js'
 import { clear_cannon_projectile, draw_castle, init_ring_faces, update_castle_rings } from './castle.js'
-import { clear_torpedoes, draw_torpedoes, update_torpedoes } from './torpedoes.js'
-import { clear_enemies, enemies, spawn_enemies, update_enemies } from './enemies.js'
+import { clear_torpedoes, draw_torpedoes, remove_destroyed_torpedoes, update_torpedoes } from './torpedoes.js'
+import { clear_enemies, enemies, remove_destroyed_enemies, spawn_enemies, update_enemies } from './enemies.js'
 import { clear_explosions, draw_explosions, update_explosions } from './explosions.js'
 import { check_collisions } from './collisions.js'
 import { draw_ui, toggle_info_box } from './ui.js'
@@ -120,24 +120,29 @@ const game_loop = (current_time) => {
   // }
   update_player(dt, keys_pressed, game_state)
   update_torpedoes(dt)
+  remove_destroyed_torpedoes()
   update_enemies(dt, player, game_state.game_over, game_state.round_won, game_state.enemy_speed_multiplier)
+  remove_destroyed_enemies()
   check_collisions(player, game_state)
   update_explosions(dt)
+
   clear_screen()
   draw_stars()
-
   const transform = identity_matrix()
   draw_castle()
+
   if (player.alive && !game_state.game_over) {
     draw_ship(player.x, player.y, player.angle, player.size, transform, player.color, player.thrust, player.rotation, player.braking, player.strafing, player.strafe_thrust)
   }
   for (const enemy of enemies) {
-    draw_spark({ x: enemy.x, y: enemy.y, angle: enemy.angle, size: enemy.size, transform, color: [1.0, 0.0, 1.0, 1.0] })
+    if (enemy.alive) {
+      draw_spark({ x: enemy.x, y: enemy.y, angle: enemy.angle, size: enemy.size, transform, color: [1.0, 0.0, 1.0, 1.0] })
+    }
   }
-
   draw_torpedoes()
   draw_explosions()
   draw_ui(game_state.lives, game_state.score, game_state.game_over, game_state.round_won)
+
   requestAnimationFrame(game_loop)
 }
 

@@ -1,36 +1,43 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
-import { cannon_projectile, castle_destroyed, castle_rings, clear_cannon_projectile } from './castle.js'
-import { player_torpedoes } from './torpedoes.js'
-import { enemies, undock_one_enemy } from './enemies.js'
+import { cannon_projectile, castle_rings, clear_cannon_projectile } from './castle.js'
+import { destroy_torpedo, player_torpedoes } from './torpedoes.js'
+import { destroy_enemy, enemies, undock_one_enemy } from './enemies.js'
 import { create_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 import { destroy_player } from './player.js'
 
 
 export const check_collisions = (player, game_state) => {
+  const player_center_dx = player.x - CENTER_X
+  const player_center_dy = player.y - CENTER_Y
+  const player_center_distance = Math.sqrt(player_center_dx * player_center_dx + player_center_dy * player_center_dy)
+
+  // ========== CHECK CANNON PROJECTILE HIT PLAYER
   if (cannon_projectile && player.alive) {
     const dx = player.x - cannon_projectile.x
     const dy = player.y - cannon_projectile.y
-    const distance = Math.sqrt(dx * dx + dy * dy)
+    const distance_from_projectile = Math.sqrt(dx * dx + dy * dy)
 
-    if (distance < player.size + cannon_projectile.size) {
+    if (distance_from_projectile < player.size + cannon_projectile.size) {
       create_ship_explosion(player.x, player.y)
-      playSound('player_explode')
       clear_cannon_projectile()
       destroy_player(player, game_state)
       return
     }
   }
 
-  for (let i = player_torpedoes.length - 1; i >= 0; i--) {
-    const torpedo = player_torpedoes[i]
+  // ======== CHECK TORPEDO HIT RING
+
+  for (const torpedo of player_torpedoes) {
+    if (!torpedo.alive) continue  // Skip dead torpedoes
+
     let torpedo_hit = false
 
-    for (let ring of castle_rings) {
+    for (const ring of castle_rings) {
       if (torpedo_hit) break
-
       const segment_angle = (Math.PI * 2) / ring.segments
 
+      // ======== CHECK EACH RING
       for (let face of ring.faces) {
         if (face.destroyed || face.respawn_timer > 0) continue
 
@@ -46,9 +53,9 @@ export const check_collisions = (player, game_state) => {
         const line_dy = y2 - y1
         const line_length_sq = line_dx * line_dx + line_dy * line_dy
 
-        let t = Math.max(0, Math.min(1, ((torpedo.x - x1) * line_dx + (torpedo.y - y1) * line_dy) / line_length_sq))
-        const closest_x = x1 + t * line_dx
-        const closest_y = y1 + t * line_dy
+        let projected_line_position = Math.max(0, Math.min(1, ((torpedo.x - x1) * line_dx + (torpedo.y - y1) * line_dy) / line_length_sq))
+        const closest_x = x1 + projected_line_position * line_dx
+        const closest_y = y1 + projected_line_position * line_dy
 
         const dist_x = torpedo.x - closest_x
         const dist_y = torpedo.y - closest_y
@@ -61,9 +68,8 @@ export const check_collisions = (player, game_state) => {
           playSound('ring_explode')
 
           face.destroyed = true
-          player_torpedoes.splice(i, 1)
+          destroy_torpedo(torpedo)
           torpedo_hit = true
-
           undock_one_enemy()
           break
         }
@@ -71,21 +77,18 @@ export const check_collisions = (player, game_state) => {
     }
   }
 
-  for (let i = player_torpedoes.length - 1; i >= 0; i--) {
-    const torpedo = player_torpedoes[i]
+  for (const torpedo of player_torpedoes) {
+    if (!torpedo.alive) continue  // Skip dead torpedoes
 
-    const torpedo_center_dx = torpedo.x - CENTER_X
-    const torpedo_center_dy = torpedo.y - CENTER_Y
-    const torpedo_center_distance = Math.sqrt(torpedo_center_dx * torpedo_center_dx + torpedo_center_dy * torpedo_center_dy)
-
-    if (torpedo_center_distance < 15 + 2) {
-      player_torpedoes.splice(i, 1)
-      castle_destroyed(game_state)
+    // ========== CHECK TORPEDO HIT CASTLE CORE
+    if (player.alive && player_center_distance < 15 + player.size) {
+      create_ship_explosion(player.x, player.y)
+      destroy_player(player, game_state)
       continue
     }
 
-    for (let j = enemies.length - 1; j >= 0; j--) {
-      const enemy = enemies[j]
+    // ========== CHECK TORPEDO HIT ENEMY SPARK
+    for (const enemy of enemies) {
       const dx = torpedo.x - enemy.x
       const dy = torpedo.y - enemy.y
       const distance = Math.sqrt(dx * dx + dy * dy)
@@ -93,24 +96,14 @@ export const check_collisions = (player, game_state) => {
       if (distance < enemy.size + 2) {
         create_explosion(enemy.x, enemy.y, 20, 0.5)
         playSound('enemy_explode')
-        player_torpedoes.splice(i, 1)
-        enemies.splice(j, 1)
+        destroy_torpedo(torpedo)
+        destroy_enemy(enemy)
         break
       }
     }
   }
 
-  const player_center_dx = player.x - CENTER_X
-  const player_center_dy = player.y - CENTER_Y
-  const player_center_distance = Math.sqrt(player_center_dx * player_center_dx + player_center_dy * player_center_dy)
-
-  if (player.alive && player_center_distance < 15 + player.size) {
-    create_ship_explosion(player.x, player.y)
-    playSound('player_explode')
-    destroy_player(player, game_state)
-    return
-  }
-
+  // =========== CHECK PLAYER HIT RING
   for (let ring of castle_rings) {
     if (player.alive && Math.abs(player_center_distance - ring.radius) < player.size) {
       const segment_angle = (Math.PI * 2) / ring.segments
@@ -120,17 +113,16 @@ export const check_collisions = (player, game_state) => {
 
       const face = ring.faces[face_index]
       if (face && !face.destroyed) {
-
         face.destroyed = true
-        create_explosion(player.x, player.y, 25, 0.8)
-        playSound('player_explode')
         playSound('ring_explode')
+        create_explosion(player.x, player.y, 25, 0.8)
         destroy_player(player, game_state)
         return
       }
     }
   }
 
+  // =========== CHECK ENEMY SPARK HIT PLAYER
   for (let i = enemies.length - 1; i >= 0; i--) {
     const enemy = enemies[i]
     const dx = player.x - enemy.x
@@ -140,10 +132,8 @@ export const check_collisions = (player, game_state) => {
     if (player.alive && distance < player.size + enemy.size) {
       create_ship_explosion(player.x, player.y)
       create_explosion(enemy.x, enemy.y, 20, 0.5)
-      playSound('player_explode')
-      playSound('enemy_explode')
-      enemies.splice(i, 1)
       destroy_player(player, game_state)
+      destroy_enemy(enemy)
       break
     }
   }

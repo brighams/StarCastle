@@ -29,13 +29,15 @@ export const player = {
   spawn_anim_timer: 1.5,
   spawn_thrust: { forward: 0, strafe: 0 },
   torpedo_speed: 320,
-  torpedo_life: 1600
+  torpedo_life: 1600,
+  fire_cooldown: 0
 }
 
 export const destroy_player = (player, game_state) => {
   game_state.lives--
   player.alive = false
   player.respawn_timer = 3.0
+  playSound('player_explode')
   retreat_enemies_to_center()
 }
 
@@ -114,35 +116,54 @@ export const update_player = (dt, keys_pressed, game_state) => {
   const THRUST_DECELERATE_FACTOR = 6
   const MAX_TORPEDO_COUNT = 2
   const SHIFT_DOWN = keys_pressed['ShiftKey']
+  const FORE_TORPEDO_SIZE = 7
+  const AFT_TORPEDO_SIZE = 5
+  const AFT_TORPEDO_SPEED_MODIFIER = 4
+  const AFT_TORPEDO_LIFE_MODIFIER = 0.75
+  const AFT_TORPEDO_COLOR = [1.0, 0.0, 0.5]
+  const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.5]
+  const FIRE_COOLDOWN_TIME = 0.25  // 250ms between shots
 
+  // Update cooldown timer
+  if (player.fire_cooldown > 0) {
+    player.fire_cooldown -= dt
+  }
+
+  const alive_torpedo_count = player_torpedoes.filter(torpedo => torpedo.alive).length
   // =================== FIRE FORE TORPEDO
   if (keys_pressed['Space']) {
-    if (!game_state.game_over && !game_state.round_won && player.alive && player_torpedoes.length < MAX_TORPEDO_COUNT) {
-      fire_torpedo({
-        x: player.x,
-        y: player.y,
-        angle: player.angle,
-        size: 7,
-        life: player.torpedo_life,
-        speed: player.torpedo_speed,
-        color: [1.0, 0.0, 0.5]
-      })
+    if (player.alive && alive_torpedo_count < MAX_TORPEDO_COUNT && player.fire_cooldown <= 0) {
+      if (!game_state.game_over && !game_state.round_won) {
+        fire_torpedo({
+          x: player.x,
+          y: player.y,
+          angle: player.angle,
+          size: FORE_TORPEDO_SIZE,
+          life: player.torpedo_life,
+          speed: player.torpedo_speed,
+          color: FORE_TORPEDO_COLOR,
+          alive: true
+        })
+        player.fire_cooldown = FIRE_COOLDOWN_TIME
+      }
     }
   }
 
   // =================== FIRE AFT TORPEDO
   if (keys_pressed['KeyR'] || keys_pressed['KeyF']) {
-    if (!game_state.game_over && !game_state.round_won && player.alive && player_torpedoes.length < MAX_TORPEDO_COUNT) {
+    if (!game_state.game_over && !game_state.round_won && player.alive && player_torpedoes.length < MAX_TORPEDO_COUNT && player.fire_cooldown <= 0) {
       fire_torpedo({
         x: player.x,
         y: player.y,
         angle: player.angle + Math.PI,
-        size: 5,
-        speed: player.torpedo_speed / 4,
-        life: player.torpedo_life * 0.75,
+        size: AFT_TORPEDO_SIZE,
+        speed: player.torpedo_speed / AFT_TORPEDO_SPEED_MODIFIER,
+        life: player.torpedo_life * AFT_TORPEDO_LIFE_MODIFIER,
         is_space_mine: true,
-        color: [1.0, 0.0, 0.5]
+        color: AFT_TORPEDO_COLOR,
+        alive: true
       })
+      player.fire_cooldown = FIRE_COOLDOWN_TIME
     }
   }
 
