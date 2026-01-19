@@ -15,7 +15,7 @@ import { draw_stars } from './stars.js'
 // import { autopilot_enabled, update_autopilot } from './autopilot.js'
 
 const STARTING_LIVES = 4
-const STARTING_ENEMY_SPEED_MULTIPLIER = 10.0
+const STARTING_ENEMY_SPEED_MULTIPLIER = 8.0
 const STARTING_RING_SPEED_MULTIPLIER = 1.0
 
 const canvas = document.getElementById('gameCanvas')

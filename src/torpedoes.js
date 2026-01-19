@@ -11,7 +11,7 @@ export const fire_torpedo = (
     x,
     y,
     angle = 0,
-    speed = 100,
+    speed = 120,
     size = 15,
     life = 5000,
     is_space_mine = false,
@@ -45,8 +45,8 @@ export const update_torpedoes = (dt) => {
       if (torpedo.is_space_mine) {
         torpedo.jitter_timer -= dt
         if (torpedo.jitter_timer <= 0) {
-          torpedo.jitter_x = (Math.random() - 0.5) * 120
-          torpedo.jitter_y = (Math.random() - 0.5) * 120
+          torpedo.jitter_x = (Math.random() - 0.5) * 110
+          torpedo.jitter_y = (Math.random() - 0.5) * 110
           torpedo.jitter_timer = 0.1 + Math.random() * 0.15
         }
         torpedo.x += torpedo.jitter_x * dt

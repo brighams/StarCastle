@@ -28,8 +28,8 @@ export const player = {
   respawn_timer: 0,
   spawn_anim_timer: 1.5,
   spawn_thrust: { forward: 0, strafe: 0 },
-  torpedo_speed: 320,
-  torpedo_life: 1600,
+  torpedo_speed: 360,
+  torpedo_life: 1800,
   fire_cooldown: 0
 }
 
@@ -114,7 +114,7 @@ export const update_player = (dt, keys_pressed, game_state) => {
   const ROTATION_FACTOR = 6
   const THRUST_FACTOR = 4
   const THRUST_DECELERATE_FACTOR = 6
-  const MAX_TORPEDO_COUNT = 2
+  const MAX_TORPEDO_COUNT = 3
   const SHIFT_DOWN = keys_pressed['ShiftKey']
   const FORE_TORPEDO_SIZE = 8
   const AFT_TORPEDO_SIZE = 7
@@ -122,7 +122,7 @@ export const update_player = (dt, keys_pressed, game_state) => {
   const AFT_TORPEDO_LIFE_MODIFIER = 1.0
   const AFT_TORPEDO_COLOR = [1.0, 0.5, 0.0]
   const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.1]
-  const FIRE_COOLDOWN_TIME = 0.40  // 400ms between shots
+  const FIRE_COOLDOWN_TIME = 0.20  // 200ms between shots
 
   // Update cooldown timer
   if (player.fire_cooldown > 0) {
