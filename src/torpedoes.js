@@ -16,7 +16,7 @@ export const fire_torpedo = ({
                                is_mine = false,
                                color = [1.0, 1.0, 1.0]
                              }) => {
-  playSound('fire_torpedo', 0.2, 0.1)
+  playSound('player_shoot', 0.1, 0.1)
   player_torpedoes.push({
     x: x,
     y: y,
