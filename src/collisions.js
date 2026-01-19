@@ -1,7 +1,7 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
-import { cannon_projectile, castle_rings, clear_cannon_projectile } from './castle.js'
+import { cannon_projectile, castle_destroyed, castle_rings, clear_cannon_projectile } from './castle.js'
 import { destroy_torpedo, player_torpedoes } from './torpedoes.js'
-import { destroy_enemy, enemies, undock_one_enemy } from './enemies.js'
+import { destroy_enemy, enemy_sparks, undock_one_enemy } from './enemies.js'
 import { create_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 import { destroy_player } from './player.js'
@@ -81,14 +81,19 @@ export const check_collisions = (player, game_state) => {
     if (!torpedo.alive) continue  // Skip dead torpedoes
 
     // ========== CHECK TORPEDO HIT CASTLE CORE
-    if (player.alive && player_center_distance < 15 + player.size) {
-      create_ship_explosion(player.x, player.y)
-      destroy_player(player, game_state)
+    const torpedo_center_dx = torpedo.x - CENTER_X
+    const torpedo_center_dy = torpedo.y - CENTER_Y
+    const torpedo_center_distance = Math.sqrt(torpedo_center_dx * torpedo_center_dx + torpedo_center_dy * torpedo_center_dy)
+
+    if (torpedo_center_distance < 15) {
+      // Torpedo hit the castle core!
+      castle_destroyed(game_state)
+      destroy_torpedo(torpedo)
       continue
     }
 
     // ========== CHECK TORPEDO HIT ENEMY SPARK
-    for (const enemy of enemies) {
+    for (const enemy of enemy_sparks) {
       const dx = torpedo.x - enemy.x
       const dy = torpedo.y - enemy.y
       const distance = Math.sqrt(dx * dx + dy * dy)
@@ -123,8 +128,8 @@ export const check_collisions = (player, game_state) => {
   }
 
   // =========== CHECK ENEMY SPARK HIT PLAYER
-  for (let i = enemies.length - 1; i >= 0; i--) {
-    const enemy = enemies[i]
+  for (let i = enemy_sparks.length - 1; i >= 0; i--) {
+    const enemy = enemy_sparks[i]
     const dx = player.x - enemy.x
     const dy = player.y - enemy.y
     const distance = Math.sqrt(dx * dx + dy * dy)

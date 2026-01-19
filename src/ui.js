@@ -25,7 +25,9 @@ export const draw_ui = (lives, score, game_over, round_won) => {
       const ship_y = 30
       const ship_size = 8
       const ship_angle = 0
-      draw_ship(ship_x, ship_y, ship_angle, ship_size, transform, [1.0, 0.5, 1.0, 1.0])
+      draw_ship({
+        x: ship_x, y: ship_y, angle: ship_angle, size: ship_size, transform, color: [1.0, 1.0, 0.0, 1.0]
+      })
     }
   }
 

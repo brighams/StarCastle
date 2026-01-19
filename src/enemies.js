@@ -1,12 +1,14 @@
 import { CENTER_X, CENTER_Y } from './constants.js'
 import { castle_rings, ring_spawning } from './castle.js'
 import { playSound } from './sound.js'
+import { draw_spark } from './renderer.js'
+import { identity_matrix } from './math.js'
 
 
-export const enemies = []
+export const enemy_sparks = []
 
-const ENEMY_SPARK_SIZE = 13
-const ENEMY_SEEK_LIMIT = 150
+const ENEMY_SPARK_SIZE = 10
+const ENEMY_SEEK_LIMIT = 180
 
 export const spawn_enemy = () => {
   const ring_index = Math.floor(Math.random() * castle_rings.length)
@@ -15,7 +17,7 @@ export const spawn_enemy = () => {
   const target_x = CENTER_X + Math.cos(angle) * ring.radius
   const target_y = CENTER_Y + Math.sin(angle) * ring.radius
 
-  enemies.push({
+  enemy_sparks.push({
     alive: true,
     spawning: true,
     size: ENEMY_SPARK_SIZE,
@@ -38,8 +40,8 @@ export const spawn_enemy = () => {
 export const update_enemies = (dt, player, game_over, round_won, enemy_speed_multiplier) => {
   const player_is_target = player.alive && !game_over && !round_won
 
-  for (let index = 0; index < enemies.length; index += 1) {
-    const enemy = enemies[index]
+  for (let index = 0; index < enemy_sparks.length; index += 1) {
+    const enemy = enemy_sparks[index]
     if (!enemy.alive) continue
     if (enemy.spawning) {
       const dx = enemy.spawn_target_x - enemy.x
@@ -155,8 +157,8 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       let neighbors = 0
 
       // ====== FLOCKING BEHAVIOR
-      for (let other_index = 0; other_index < enemies.length; other_index++) {
-        const other = enemies[other_index]
+      for (let other_index = 0; other_index < enemy_sparks.length; other_index++) {
+        const other = enemy_sparks[other_index]
         if (index !== other_index && !other.docked) {
           const other_dx = other.x - enemy.x
           const other_dy = other.y - enemy.y
@@ -185,8 +187,9 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       enemy.vel_x += separate_x * dt * 60
       enemy.vel_y += separate_y * dt * 60
 
-      enemy.vel_x += (dx / distance_to_player) * 20 * dt * enemy_speed_multiplier
-      enemy.vel_y += (dy / distance_to_player) * 20 * dt * enemy_speed_multiplier
+      // 40 -> make constant -> it determines how fast the enemy moves when far to the player
+      enemy.vel_x += (dx / distance_to_player) * 40 * dt * enemy_speed_multiplier
+      enemy.vel_y += (dy / distance_to_player) * 40 * dt * enemy_speed_multiplier
 
     } else {
       // ============ ENEMY IS CLOSE TO SHIP - MOVE FASTER & DODGE
@@ -197,8 +200,9 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
         enemy.jitter_timer = 0.15 + Math.random() * 0.2
       }
 
-      enemy.vel_x += (dx / distance_to_player) * 30 * dt * enemy_speed_multiplier
-      enemy.vel_y += (dy / distance_to_player) * 30 * dt * enemy_speed_multiplier
+      // 60 -> make constant -> it determines how fast the enemy moves when close to the player
+      enemy.vel_x += (dx / distance_to_player) * 60 * dt * enemy_speed_multiplier
+      enemy.vel_y += (dy / distance_to_player) * 60 * dt * enemy_speed_multiplier
 
       // Apply jitter directly to position for visible effect
       enemy.x += enemy.jitter_x * dt
@@ -216,14 +220,14 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
 }
 
 export const clear_enemies = () => {
-  enemies.length = 0
+  enemy_sparks.length = 0
 }
 
 export const spawn_enemies = (max_enemies, chance = 0.5) => {
   if (ring_spawning()) return
-  const alive_enemies = enemies.filter(e => e.alive).length
+  const alive_enemies = enemy_sparks.filter(e => e.alive).length
   if (alive_enemies >= max_enemies) return
-  for (let i = 0; i < max_enemies && enemies.length < max_enemies; i++) {
+  for (let i = 0; i < max_enemies && enemy_sparks.length < max_enemies; i++) {
     if (Math.random() <= chance) {
       spawn_enemy()
     }
@@ -231,7 +235,7 @@ export const spawn_enemies = (max_enemies, chance = 0.5) => {
 }
 
 export const retreat_enemies_to_center = () => {
-  for (const enemy of enemies) {
+  for (const enemy of enemy_sparks) {
     const enemy_center_dx = CENTER_X - enemy.x
     const enemy_center_dy = CENTER_Y - enemy.y
     const enemy_center_distance = Math.sqrt(enemy_center_dx * enemy_center_dx + enemy_center_dy * enemy_center_dy)
@@ -243,7 +247,7 @@ export const retreat_enemies_to_center = () => {
 }
 
 export const undock_one_enemy = () => {
-  const docked_enemy = enemies.find(enemy => enemy.docked)
+  const docked_enemy = enemy_sparks.find(enemy => enemy.docked)
   if (docked_enemy) {
     docked_enemy.docked = false
     docked_enemy.dock_ring = null
@@ -256,9 +260,34 @@ export const destroy_enemy = (enemy) => {
 }
 
 export const remove_destroyed_enemies = () => {
-  for (let k = enemies.length - 1; k >= 0; k--) {
-    if (!enemies[k].alive) {
-      enemies.splice(k, 1)
+  for (let k = enemy_sparks.length - 1; k >= 0; k--) {
+    if (!enemy_sparks[k].alive) {
+      enemy_sparks.splice(k, 1)
+    }
+  }
+}
+
+export const draw_enemy_sparks = () => {
+  const transform = identity_matrix()
+  for (const enemy of enemy_sparks) {
+    if (enemy.alive) {
+      draw_spark({
+        x: enemy.x,
+        y: enemy.y,
+        angle: enemy.angle,
+        size: enemy.size,
+        transform,
+        color: [1.0, 0.0, 1.0, 1.0]
+      })
+      let angle_mod = Math.random() - 0.5
+      draw_spark({
+        x: enemy.x,
+        y: enemy.y,
+        angle: enemy.angle + angle_mod,
+        size: enemy.size * 0.75,
+        transform,
+        color: [1.0, 1.0, 0.0, 0.7]
+      })
     }
   }
 }

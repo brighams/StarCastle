@@ -1,7 +1,7 @@
 import { CANVAS_SIZE, CENTER_X, CENTER_Y } from './constants.js'
 import { playSound, startAttitudeThruster, startMainThruster, stopAttitudeThruster, stopMainThruster } from './sound.js'
 import { retreat_enemies_to_center } from './enemies.js'
-import { multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
+import { identity_matrix, multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
 import { draw_line } from './renderer.js'
 import { toggle_info_box } from './ui.js'
 import { fire_torpedo, player_torpedoes } from './torpedoes.js'
@@ -116,13 +116,13 @@ export const update_player = (dt, keys_pressed, game_state) => {
   const THRUST_DECELERATE_FACTOR = 6
   const MAX_TORPEDO_COUNT = 2
   const SHIFT_DOWN = keys_pressed['ShiftKey']
-  const FORE_TORPEDO_SIZE = 7
-  const AFT_TORPEDO_SIZE = 5
-  const AFT_TORPEDO_SPEED_MODIFIER = 4
-  const AFT_TORPEDO_LIFE_MODIFIER = 0.75
-  const AFT_TORPEDO_COLOR = [1.0, 0.0, 0.5]
-  const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.5]
-  const FIRE_COOLDOWN_TIME = 0.50  // 500ms between shots
+  const FORE_TORPEDO_SIZE = 8
+  const AFT_TORPEDO_SIZE = 7
+  const AFT_TORPEDO_SPEED_MODIFIER = 0.35
+  const AFT_TORPEDO_LIFE_MODIFIER = 1.0
+  const AFT_TORPEDO_COLOR = [1.0, 0.5, 0.0]
+  const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.1]
+  const FIRE_COOLDOWN_TIME = 0.40  // 400ms between shots
 
   // Update cooldown timer
   if (player.fire_cooldown > 0) {
@@ -142,14 +142,15 @@ export const update_player = (dt, keys_pressed, game_state) => {
           life: player.torpedo_life,
           speed: player.torpedo_speed,
           color: FORE_TORPEDO_COLOR,
-          alive: true
+          alive: true,
+          is_space_mine: false
         })
         player.fire_cooldown = FIRE_COOLDOWN_TIME
       }
     }
   }
 
-  // =================== FIRE AFT TORPEDO
+  // =================== FIRE AFT TORPEDO (SPACE MINE)
   if (keys_pressed['KeyR'] || keys_pressed['KeyF']) {
     if (!game_state.game_over && !game_state.round_won && player.alive && player_torpedoes.length < MAX_TORPEDO_COUNT && player.fire_cooldown <= 0) {
       fire_torpedo({
@@ -157,7 +158,7 @@ export const update_player = (dt, keys_pressed, game_state) => {
         y: player.y,
         angle: player.angle + Math.PI,
         size: AFT_TORPEDO_SIZE,
-        speed: player.torpedo_speed / AFT_TORPEDO_SPEED_MODIFIER,
+        speed: player.torpedo_speed * AFT_TORPEDO_SPEED_MODIFIER,
         life: player.torpedo_life * AFT_TORPEDO_LIFE_MODIFIER,
         is_space_mine: true,
         color: AFT_TORPEDO_COLOR,
@@ -298,7 +299,21 @@ export const update_player = (dt, keys_pressed, game_state) => {
   }
 }
 
-export const draw_ship = (x, y, angle, size, transform, color, thrust = 0, rotation = 0, braking = false, strafing = 0, strafe_thrust = 0) => {
+export const draw_ship = (
+  {
+    x,
+    y,
+    angle,
+    size,
+    color,
+    thrust = 0,
+    rotation = 0,
+    braking = false,
+    strafing = 0,
+    strafe_thrust = 0
+  }
+) => {
+  const transform = identity_matrix()
   const ship_transform = multiply_matrices(
     multiply_matrices(transform, translate_matrix(x, y)),
     rotate_matrix(angle)

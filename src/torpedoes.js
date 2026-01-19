@@ -1,7 +1,7 @@
-import { CANVAS_SIZE } from './constants.js'
 import { identity_matrix } from './math.js'
-import { draw_spark } from './renderer.js'
+import { draw_space_mine, draw_spark } from './renderer.js'
 import { playSound } from './sound.js'
+import { CANVAS_SIZE } from './constants.js'
 
 
 export const player_torpedoes = []
@@ -14,21 +14,24 @@ export const fire_torpedo = (
     speed = 100,
     size = 15,
     life = 5000,
-    is_mine = false,
-    color = [1.0, 1.0, 1.0]
+    is_space_mine = false,
+    color = [1.0, 0.0, 1.0]
   }
 ) => {
   playSound('player_shoot', 0.1, 0.1)
   player_torpedoes.push({
     x: x,
     y: y,
-    vel_x: Math.sin(angle) * speed,
-    vel_y: -Math.cos(angle) * speed,
+    alive: true,
     life: life,
     color: color,
     size: size,
-    is_space_mine: is_mine,
-    alive: true
+    vel_x: Math.sin(angle) * speed,
+    vel_y: -Math.cos(angle) * speed,
+    is_space_mine: is_space_mine,
+    jitter_x: 0,
+    jitter_y: 0,
+    jitter_timer: 0
   })
 }
 
@@ -39,27 +42,52 @@ export const update_torpedoes = (dt) => {
       torpedo.x += torpedo.vel_x * dt
       torpedo.y += torpedo.vel_y * dt
 
-      // if (torpedo.is_space_mine) {
-      //   const jitter_strength = 60
-      //   torpedo.x += (Math.random() - 0.5) * jitter_strength * dt
-      //   torpedo.y += (Math.random() - 0.5) * jitter_strength * dt
-      // }
+      if (torpedo.is_space_mine) {
+        torpedo.jitter_timer -= dt
+        if (torpedo.jitter_timer <= 0) {
+          torpedo.jitter_x = (Math.random() - 0.5) * 120
+          torpedo.jitter_y = (Math.random() - 0.5) * 120
+          torpedo.jitter_timer = 0.1 + Math.random() * 0.15
+        }
+        torpedo.x += torpedo.jitter_x * dt
+        torpedo.y += torpedo.jitter_y * dt
+      }
+
+      if (torpedo.x < 0) torpedo.x += CANVAS_SIZE
+      else if (torpedo.x > CANVAS_SIZE) torpedo.x -= CANVAS_SIZE
+      if (torpedo.y < 0) torpedo.y += CANVAS_SIZE
+      else if (torpedo.y > CANVAS_SIZE) torpedo.y -= CANVAS_SIZE
 
       torpedo.life -= dt * 1000
-      if (torpedo.life <= 0 ||
-        torpedo.x < 0 || torpedo.x > CANVAS_SIZE ||
-        torpedo.y < 0 || torpedo.y > CANVAS_SIZE) {
+      if (torpedo.life <= 0) {
         torpedo.alive = false
       }
     }
   }
 }
 
+export const draw_torpedo = ({ x, y, angle, size, transform, color }) => {
+  draw_spark({ x, y, angle, size, transform, color })
+  // draw_circle(x, y, size / 4.0, 8, transform, [Math.random(), Math.random(), Math.random(), Math.random()])
+  draw_spark({
+    x,
+    y,
+    angle: angle + Math.random() - 0.5,
+    size: size * 0.75,
+    transform,
+    color: [Math.random(), Math.random(), Math.random(), Math.random()]
+  })
+}
+
 export const draw_torpedoes = () => {
   const transform = identity_matrix()
   for (const torpedo of player_torpedoes) {
     if (torpedo.alive) {
-      draw_spark({ x: torpedo.x, y: torpedo.y, angle: 0, size: torpedo.size, transform, color: torpedo.color })
+      if (!torpedo.is_space_mine) {
+        draw_torpedo({ x: torpedo.x, y: torpedo.y, angle: 0, size: torpedo.size, transform, color: torpedo.color })
+      } else {
+        draw_space_mine({ x: torpedo.x, y: torpedo.y, angle: 0, size: torpedo.size, transform, color: torpedo.color })
+      }
     }
   }
 }
