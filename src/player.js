@@ -4,6 +4,7 @@ import { retreat_enemies_to_center } from './enemies.js'
 import { multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
 import { draw_line } from './renderer.js'
 import { toggle_info_box } from './ui.js'
+import { fire_torpedo, player_torpedoes } from './torpedoes.js'
 
 
 export const player = {
@@ -89,7 +90,7 @@ export const spawn_player = (game_state, dt) => {
   }
 }
 
-export const update_player = (dt, keys_pressed, lives, game_state) => {
+export const update_player = (dt, keys_pressed, game_state) => {
   if (game_state.game_over) {
     stopMainThruster()
     stopAttitudeThruster()
@@ -111,7 +112,39 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
   const ROTATION_FACTOR = 6
   const THRUST_FACTOR = 4
   const THRUST_DECELERATE_FACTOR = 6
+  const MAX_TORPEDO_COUNT = 2
   const SHIFT_DOWN = keys_pressed['ShiftKey']
+
+  // =================== FIRE FORE TORPEDO
+  if (keys_pressed['Space']) {
+    if (!game_state.game_over && !game_state.round_won && player.alive && player_torpedoes.length < MAX_TORPEDO_COUNT) {
+      fire_torpedo({
+        x: player.x,
+        y: player.y,
+        angle: player.angle,
+        size: 7,
+        life: player.torpedo_life,
+        speed: player.torpedo_speed,
+        color: [1.0, 0.0, 0.5]
+      })
+    }
+  }
+
+  // =================== FIRE AFT TORPEDO
+  if (keys_pressed['KeyR'] || keys_pressed['KeyF']) {
+    if (!game_state.game_over && !game_state.round_won && player.alive && player_torpedoes.length < MAX_TORPEDO_COUNT) {
+      fire_torpedo({
+        x: player.x,
+        y: player.y,
+        angle: player.angle + Math.PI,
+        size: 5,
+        speed: player.torpedo_speed / 4,
+        life: player.torpedo_life * 0.75,
+        is_space_mine: true,
+        color: [1.0, 0.0, 0.5]
+      })
+    }
+  }
 
   // =================== ROTATE LEFT
   if (keys_pressed['KeyA'] && !SHIFT_DOWN) {
@@ -181,6 +214,7 @@ export const update_player = (dt, keys_pressed, lives, game_state) => {
     player.braking = false
   }
 
+  // =================== STRAFING
   player.strafing = 0
 
   // =================== STRAFE RIGHT

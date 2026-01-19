@@ -17,7 +17,7 @@ export const spawn_enemy = () => {
     angle: 0,
     vel_x: 0,
     vel_y: 0,
-    size: 8,
+    size: 12,
     jitter_timer: 0,
     jitter_x: 0,
     jitter_y: 0,
