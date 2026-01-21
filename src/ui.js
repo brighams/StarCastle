@@ -16,7 +16,7 @@ export const toggle_info_box = (show) => {
   }
 }
 
-const draw_player_remaining_lives = () => {
+const draw_player_remaining_lives = (lives, transform) => {
   for (let i = 0; i < lives; i++) {
     const ship_x = 30 + i * 25
     const ship_y = 30
@@ -32,7 +32,7 @@ export const draw_ui = (lives, score, game_over, round_won) => {
   const transform = identity_matrix()
 
   if (!game_over) {
-    draw_player_remaining_lives()
+    draw_player_remaining_lives(lives, transform)
   }
 
   if (game_over) {
