@@ -6,6 +6,18 @@ import { create_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 import { destroy_player } from './player.js'
 
+// Collision detection distances
+const TORPEDO_RING_HIT_DISTANCE = 8
+const CASTLE_CORE_HIT_RADIUS = 15
+const TORPEDO_ENEMY_HIT_BUFFER = 2
+
+// Explosion parameters
+const RING_EXPLOSION_PARTICLES = 15
+const RING_EXPLOSION_DURATION = 0.5
+const ENEMY_EXPLOSION_PARTICLES = 20
+const ENEMY_EXPLOSION_DURATION = 0.5
+const PLAYER_RING_EXPLOSION_PARTICLES = 25
+const PLAYER_RING_EXPLOSION_DURATION = 0.8
 
 export const check_collisions = (player, game_state) => {
   const player_center_dx = player.x - CENTER_X
@@ -61,10 +73,10 @@ export const check_collisions = (player, game_state) => {
         const dist_y = torpedo.y - closest_y
         const distance = Math.sqrt(dist_x * dist_x + dist_y * dist_y)
 
-        if (distance < 8) {
+        if (distance < TORPEDO_RING_HIT_DISTANCE) {
           const mid_x = (x1 + x2) / 2
           const mid_y = (y1 + y2) / 2
-          create_explosion(mid_x, mid_y, 15, 0.5)
+          create_explosion(mid_x, mid_y, RING_EXPLOSION_PARTICLES, RING_EXPLOSION_DURATION)
           playSound('ring_explode')
 
           face.destroyed = true
@@ -85,7 +97,7 @@ export const check_collisions = (player, game_state) => {
     const torpedo_center_dy = torpedo.y - CENTER_Y
     const torpedo_center_distance = Math.sqrt(torpedo_center_dx * torpedo_center_dx + torpedo_center_dy * torpedo_center_dy)
 
-    if (torpedo_center_distance < 15) {
+    if (torpedo_center_distance < CASTLE_CORE_HIT_RADIUS) {
       // Torpedo hit the castle core!
       castle_destroyed(game_state)
       destroy_torpedo(torpedo)
@@ -98,8 +110,8 @@ export const check_collisions = (player, game_state) => {
       const dy = torpedo.y - enemy.y
       const distance = Math.sqrt(dx * dx + dy * dy)
 
-      if (distance < enemy.size + 2) {
-        create_explosion(enemy.x, enemy.y, 20, 0.5)
+      if (distance < enemy.size + TORPEDO_ENEMY_HIT_BUFFER) {
+        create_explosion(enemy.x, enemy.y, ENEMY_EXPLOSION_PARTICLES, ENEMY_EXPLOSION_DURATION)
         playSound('enemy_explode')
         destroy_torpedo(torpedo)
         destroy_enemy(enemy)
@@ -120,7 +132,7 @@ export const check_collisions = (player, game_state) => {
       if (face && !face.destroyed) {
         face.destroyed = true
         playSound('ring_explode')
-        create_explosion(player.x, player.y, 25, 0.8)
+        create_explosion(player.x, player.y, PLAYER_RING_EXPLOSION_PARTICLES, PLAYER_RING_EXPLOSION_DURATION)
         destroy_player(player, game_state)
         return
       }
@@ -136,7 +148,7 @@ export const check_collisions = (player, game_state) => {
 
     if (player.alive && distance < player.size + enemy.size) {
       create_ship_explosion(player.x, player.y)
-      create_explosion(enemy.x, enemy.y, 20, 0.5)
+      create_explosion(enemy.x, enemy.y, ENEMY_EXPLOSION_PARTICLES, ENEMY_EXPLOSION_DURATION)
       destroy_player(player, game_state)
       destroy_enemy(enemy)
       break
