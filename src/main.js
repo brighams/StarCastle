@@ -103,7 +103,21 @@ document.addEventListener('keyup', (e) => {
   // }
 })
 
-const game_loop = (current_time) => {
+const render_frame = () => {
+  clear_screen()
+  draw_stars()
+  draw_castle()
+  if (player.alive && !game_state.game_over) {
+    draw_player_ship(player)
+  }
+  draw_enemy_sparks()
+  draw_torpedoes()
+  draw_explosions()
+  draw_ui(game_state.lives, game_state.score, game_state.game_over, game_state.round_won)
+  requestAnimationFrame(game_loop)
+}
+
+const update_game = (current_time) => {
   const dt = (current_time - last_time) / 1000
   last_time = current_time
 
@@ -116,12 +130,6 @@ const game_loop = (current_time) => {
   }
 
   update_castle_rings(dt, player, game_state)
-
-  // if (game_state.autopilot_on) {
-  //   update_autopilot(player, game_state, dt)
-  // } else {
-  //   update_player(dt, keys_pressed, game_state)
-  // }
   update_player(dt, keys_pressed, game_state)
   update_torpedoes(dt)
   remove_destroyed_torpedoes()
@@ -129,20 +137,11 @@ const game_loop = (current_time) => {
   remove_destroyed_enemies()
   check_collisions(player, game_state)
   update_explosions(dt)
+}
 
-  clear_screen()
-  draw_stars()
-  draw_castle()
-
-  if (player.alive && !game_state.game_over) {
-    draw_player_ship(player)
-  }
-
-  draw_enemy_sparks()
-  draw_torpedoes()
-  draw_explosions()
-  draw_ui(game_state.lives, game_state.score, game_state.game_over, game_state.round_won)
-  requestAnimationFrame(game_loop)
+const game_loop = (current_time) => {
+  update_game(current_time)
+  render_frame()
 }
 
 init_ring_faces()
