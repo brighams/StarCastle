@@ -1,6 +1,72 @@
 import { identity_matrix } from './math.js'
 import { draw_circle, draw_line } from './renderer.js'
 
+// ============================================
+// EXPLOSION CONSTANTS
+// ============================================
+
+// Castle explosion parameters
+const CASTLE_EXPLOSION_MAX_SIZE = 180
+const CASTLE_EXPLOSION_LIFE = 1.8
+const CASTLE_EXPLOSION_SPIKES_BASE = 16
+const CASTLE_EXPLOSION_SPIKES_RANDOM = 8
+const CASTLE_EXPLOSION_INITIAL_SIZE = 5
+const CASTLE_EXPLOSION_DEBRIS_COUNT = 12
+const CASTLE_EXPLOSION_DEBRIS_SCALE = 1
+const CASTLE_INNER_RING_RADIUS = 60
+
+// Ship explosion parameters
+const SHIP_EXPLOSION_MAX_SIZE = 45
+const SHIP_EXPLOSION_LIFE = 0.8
+const SHIP_EXPLOSION_SPIKES_BASE = 10
+const SHIP_EXPLOSION_SPIKES_RANDOM = 4
+const SHIP_EXPLOSION_INITIAL_SIZE = 2
+const SHIP_EXPLOSION_DEBRIS_COUNT = 6
+const SHIP_EXPLOSION_DEBRIS_SCALE = 0.4
+
+// Spike generation parameters
+const SPIKE_ANGLE_VARIATION = 0.3
+const SPIKE_LENGTH_FACTOR_BASE = 0.6
+const SPIKE_LENGTH_FACTOR_RANDOM = 0.8
+const SPIKE_WOBBLE_SPEED_BASE = 2
+const SPIKE_WOBBLE_SPEED_RANDOM = 4
+const SPIKE_WOBBLE_AMOUNT_BASE = 0.1
+const SPIKE_WOBBLE_AMOUNT_RANDOM = 0.2
+
+// Drawing parameters - sizes
+const CORE_SIZE_FACTOR = 0.3
+const MID_SIZE_FACTOR = 0.6
+const CORE_SEGMENTS = 12
+const MID_SEGMENTS = 16
+const OUTER_SEGMENTS = 20
+const BASIC_EXPLOSION_SEGMENTS = 8
+
+// Drawing parameters - debris
+const DEBRIS_MIN_DISTANCE_FACTOR = 0.4
+const DEBRIS_DISTANCE_RANDOM = 0.5
+const DEBRIS_LENGTH_BASE = 5
+const DEBRIS_LENGTH_RANDOM = 15
+
+// Colors (RGBA)
+const BASIC_EXPLOSION_COLOR = [1.0, 0.5, 0.0]  // Orange
+const CORE_COLOR = [1.0, 1.0, 1.0]             // White
+const MID_COLOR = [1.0, 0.7, 0.0]              // Yellow-orange
+const OUTER_COLOR = [1.0, 0.3, 0.0]            // Red-orange
+const SPIKE_COLOR_BASE = [1.0, 0.5, 0.0]       // Orange base
+const SPIKE_COLOR_GREEN_RANDOM = 0.3           // Random green variation
+const DEBRIS_COLOR = [1.0, 0.8, 0.2]           // Yellow-orange
+
+// Alpha multipliers
+const MID_ALPHA_MULTIPLIER = 0.8
+const OUTER_ALPHA_MULTIPLIER = 0.6
+const DEBRIS_ALPHA_MULTIPLIER = 0.7
+const ALPHA_FADE_MULTIPLIER = 2
+
+// Time conversion
+const MS_TO_SECONDS = 1000
+
+// ============================================
+
 export const explosions = []
 
 export let castle_explosion = null
@@ -23,35 +89,35 @@ const create_styled_explosion = (x, y, maxSize, life, num_spikes_base, num_spike
 
   for (let i = 0; i < num_spikes; i++) {
     const base_angle = (i / num_spikes) * Math.PI * 2
-    const angle_variation = (Math.random() - 0.5) * 0.3
+    const angle_variation = (Math.random() - 0.5) * SPIKE_ANGLE_VARIATION
     spikes.push({
       angle: base_angle + angle_variation,
-      length_factor: 0.6 + Math.random() * 0.8,
-      wobble_speed: 2 + Math.random() * 4,
-      wobble_amount: 0.1 + Math.random() * 0.2
+      length_factor: SPIKE_LENGTH_FACTOR_BASE + Math.random() * SPIKE_LENGTH_FACTOR_RANDOM,
+      wobble_speed: SPIKE_WOBBLE_SPEED_BASE + Math.random() * SPIKE_WOBBLE_SPEED_RANDOM,
+      wobble_amount: SPIKE_WOBBLE_AMOUNT_BASE + Math.random() * SPIKE_WOBBLE_AMOUNT_RANDOM
     })
   }
 
   return {
     x: x,
     y: y,
-    size: is_castle ? 5 : 2,
+    size: is_castle ? CASTLE_EXPLOSION_INITIAL_SIZE : SHIP_EXPLOSION_INITIAL_SIZE,
     maxSize: maxSize,
     life: life,
     maxLife: life,
     spikes: spikes,
     rings_destroyed: false,
-    inner_ring_radius: 60,
+    inner_ring_radius: CASTLE_INNER_RING_RADIUS,
     is_castle: is_castle
   }
 }
 
 export const create_castle_explosion = (x, y) => {
-  castle_explosion = create_styled_explosion(x, y, 180, 1.8, 16, 8, true)
+  castle_explosion = create_styled_explosion(x, y, CASTLE_EXPLOSION_MAX_SIZE, CASTLE_EXPLOSION_LIFE, CASTLE_EXPLOSION_SPIKES_BASE, CASTLE_EXPLOSION_SPIKES_RANDOM, true)
 }
 
 export const create_ship_explosion = (x, y) => {
-  styled_explosions.push(create_styled_explosion(x, y, 45, 0.8, 10, 4, false))
+  styled_explosions.push(create_styled_explosion(x, y, SHIP_EXPLOSION_MAX_SIZE, SHIP_EXPLOSION_LIFE, SHIP_EXPLOSION_SPIKES_BASE, SHIP_EXPLOSION_SPIKES_RANDOM, false))
 }
 
 export const update_explosions = (dt) => {
@@ -95,20 +161,16 @@ export const update_explosions = (dt) => {
 }
 
 const draw_styled_explosion = (explosion, transform) => {
-  const time = performance.now() / 1000
-  const alpha = Math.min(1.0, explosion.life / explosion.maxLife * 2)
+  const time = performance.now() / MS_TO_SECONDS
+  const alpha = Math.min(1.0, explosion.life / explosion.maxLife * ALPHA_FADE_MULTIPLIER)
 
+  const core_size = explosion.size * CORE_SIZE_FACTOR
+  draw_circle(explosion.x, explosion.y, core_size, CORE_SEGMENTS, transform, [...CORE_COLOR, alpha])
 
-  const core_size = explosion.size * 0.3
-  draw_circle(explosion.x, explosion.y, core_size, 12, transform, [1.0, 1.0, 1.0, alpha])
+  const mid_size = explosion.size * MID_SIZE_FACTOR
+  draw_circle(explosion.x, explosion.y, mid_size, MID_SEGMENTS, transform, [...MID_COLOR, alpha * MID_ALPHA_MULTIPLIER])
 
-
-  const mid_size = explosion.size * 0.6
-  draw_circle(explosion.x, explosion.y, mid_size, 16, transform, [1.0, 0.7, 0.0, alpha * 0.8])
-
-
-  draw_circle(explosion.x, explosion.y, explosion.size, 20, transform, [1.0, 0.3, 0.0, alpha * 0.6])
-
+  draw_circle(explosion.x, explosion.y, explosion.size, OUTER_SEGMENTS, transform, [...OUTER_COLOR, alpha * OUTER_ALPHA_MULTIPLIER])
 
   for (const spike of explosion.spikes) {
     const wobble = Math.sin(time * spike.wobble_speed) * spike.wobble_amount
@@ -120,25 +182,23 @@ const draw_styled_explosion = (explosion, transform) => {
     const x2 = explosion.x + Math.cos(angle) * length
     const y2 = explosion.y + Math.sin(angle) * length
 
-
-    const color = [1.0, 0.5 + Math.random() * 0.3, 0.0, alpha]
+    const color = [SPIKE_COLOR_BASE[0], SPIKE_COLOR_BASE[1] + Math.random() * SPIKE_COLOR_GREEN_RANDOM, SPIKE_COLOR_BASE[2], alpha]
     draw_line(x1, y1, x2, y2, transform, color)
   }
 
-  
-  const num_debris = Math.floor((explosion.is_castle ? 12 : 6) * alpha)
-  const debris_scale = explosion.is_castle ? 1 : 0.4
+  const num_debris = Math.floor((explosion.is_castle ? CASTLE_EXPLOSION_DEBRIS_COUNT : SHIP_EXPLOSION_DEBRIS_COUNT) * alpha)
+  const debris_scale = explosion.is_castle ? CASTLE_EXPLOSION_DEBRIS_SCALE : SHIP_EXPLOSION_DEBRIS_SCALE
   for (let i = 0; i < num_debris; i++) {
     const angle = Math.random() * Math.PI * 2
-    const dist = explosion.size * (0.4 + Math.random() * 0.5)
-    const debris_len = (5 + Math.random() * 15) * debris_scale
+    const dist = explosion.size * (DEBRIS_MIN_DISTANCE_FACTOR + Math.random() * DEBRIS_DISTANCE_RANDOM)
+    const debris_len = (DEBRIS_LENGTH_BASE + Math.random() * DEBRIS_LENGTH_RANDOM) * debris_scale
 
     const x1 = explosion.x + Math.cos(angle) * dist
     const y1 = explosion.y + Math.sin(angle) * dist
     const x2 = x1 + Math.cos(angle) * debris_len
     const y2 = y1 + Math.sin(angle) * debris_len
 
-    draw_line(x1, y1, x2, y2, transform, [1.0, 0.8, 0.2, alpha * 0.7])
+    draw_line(x1, y1, x2, y2, transform, [...DEBRIS_COLOR, alpha * DEBRIS_ALPHA_MULTIPLIER])
   }
 }
 
@@ -146,10 +206,9 @@ export const draw_explosions = () => {
   const transform = identity_matrix()
 
   for (const explosion of explosions) {
-    const segments = 8
     const alpha = explosion.life / explosion.maxLife
-    const color = [1.0, 0.5, 0.0, alpha]
-    draw_circle(explosion.x, explosion.y, explosion.size, segments, transform, color)
+    const color = [...BASIC_EXPLOSION_COLOR, alpha]
+    draw_circle(explosion.x, explosion.y, explosion.size, BASIC_EXPLOSION_SEGMENTS, transform, color)
   }
 
   for (const explosion of styled_explosions) {
