@@ -13,7 +13,7 @@
   <meta name="author" content="Brigham Stevens - STARKEEPER.IO">
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="./img/starkeeper-64-logo.png">
+  <link rel="icon" type="image/png" href="./public/img/starkeeper-64-logo.png">
 
   <!-- Open Graph tags for social preview -->
   <meta property="og:title" content="STARKEEPER ONE">
@@ -156,9 +156,12 @@
   </div>
 </div>
 <script type="module" src="./src/main.js"></script>
-<script>
+<script type="module">
+  import musicFile from './public/sound/orbit-d0d-main-version-29627-02-39.mp3';
+
+
   window.addEventListener('load', () => {
-    const audio = new Audio('sound/orbit-d0d-main-version-29627-02-39.mp3');
+    const audio = new Audio(musicFile);
     audio.loop = true;
     audio.volume = 0.5; // Start at 50% to match slider
 
