@@ -16,19 +16,23 @@ export const toggle_info_box = (show) => {
   }
 }
 
+const draw_player_remaining_lives = () => {
+  for (let i = 0; i < lives; i++) {
+    const ship_x = 30 + i * 25
+    const ship_y = 30
+    const ship_size = 8
+    const ship_angle = 0
+    draw_player_ship({
+      x: ship_x, y: ship_y, angle: ship_angle, size: ship_size, transform, color: [1.0, 1.0, 0.0, 1.0]
+    })
+  }
+}
+
 export const draw_ui = (lives, score, game_over, round_won) => {
   const transform = identity_matrix()
 
   if (!game_over) {
-    for (let i = 0; i < lives; i++) {
-      const ship_x = 30 + i * 25
-      const ship_y = 30
-      const ship_size = 8
-      const ship_angle = 0
-      draw_player_ship({
-        x: ship_x, y: ship_y, angle: ship_angle, size: ship_size, transform, color: [1.0, 1.0, 0.0, 1.0]
-      })
-    }
+    draw_player_remaining_lives()
   }
 
   if (game_over) {

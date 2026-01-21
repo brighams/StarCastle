@@ -5,6 +5,10 @@ import { CANVAS_SIZE } from './constants.js'
 import { draw_space_mine } from './player.js'
 
 
+const TORPEDO_JITTER_X = 110
+const TORPEDO_JITTER_Y = 110
+const TORPEDO_JITTER_TIMER = 0.1
+
 export const player_torpedoes = []
 
 export const fire_torpedo = (
@@ -46,9 +50,9 @@ export const update_torpedoes = (dt) => {
       if (torpedo.is_space_mine) {
         torpedo.jitter_timer -= dt
         if (torpedo.jitter_timer <= 0) {
-          torpedo.jitter_x = (Math.random() - 0.5) * 110
-          torpedo.jitter_y = (Math.random() - 0.5) * 110
-          torpedo.jitter_timer = 0.1 + Math.random() * 0.15
+          torpedo.jitter_x = (Math.random() - 0.5) * TORPEDO_JITTER_X
+          torpedo.jitter_y = (Math.random() - 0.5) * TORPEDO_JITTER_Y
+          torpedo.jitter_timer = 0.1 + Math.random() * TORPEDO_JITTER_TIMER
         }
         torpedo.x += torpedo.jitter_x * dt
         torpedo.y += torpedo.jitter_y * dt
@@ -69,7 +73,6 @@ export const update_torpedoes = (dt) => {
 
 export const draw_torpedo = ({ x, y, angle, size, transform, color }) => {
   draw_spark({ x, y, angle, size, transform, color })
-  // draw_circle(x, y, size / 4.0, 8, transform, [Math.random(), Math.random(), Math.random(), Math.random()])
   draw_spark({
     x,
     y,
