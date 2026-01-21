@@ -92,6 +92,198 @@ export const spawn_player = (game_state, dt) => {
   }
 }
 
+const apply_input_events = (keys_pressed, dt, game_state) => {
+  const rotation_step = Math.PI / 8
+  const ROTATION_FACTOR = 6
+  const THRUST_FACTOR = 4
+  const THRUST_DECELERATE_FACTOR = 6
+  const MAX_TORPEDO_COUNT = 3
+  const SHIFT_DOWN = keys_pressed['ShiftKey']
+  const FORE_TORPEDO_SIZE = 8
+  const AFT_TORPEDO_SIZE = 7
+  const AFT_TORPEDO_SPEED_MODIFIER = 0.35
+  const AFT_TORPEDO_LIFE_MODIFIER = 1.0
+  const AFT_TORPEDO_COLOR = [1.0, 0.5, 0.0]
+  const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.1]
+  const FIRE_COOLDOWN_TIME = 0.20  // 200ms between shots
+
+  let isRotatingOrBraking = false
+
+  const check_keys = (key) => keys_pressed[key]
+
+  const launch_torpedo = () => {
+    const alive_torpedo_count = player_torpedoes.filter(torpedo => torpedo.alive).length
+    if (check_keys('Space')) {
+      if (player.alive && alive_torpedo_count < MAX_TORPEDO_COUNT && player.fire_cooldown <= 0) {
+        if (!game_state.game_over && !game_state.round_won) {
+          fire_torpedo({
+            x: player.x,
+            y: player.y,
+            angle: player.angle,
+            size: FORE_TORPEDO_SIZE,
+            life: player.torpedo_life,
+            speed: player.torpedo_speed,
+            color: FORE_TORPEDO_COLOR,
+            alive: true,
+            is_space_mine: false
+          })
+          player.fire_cooldown = FIRE_COOLDOWN_TIME
+        }
+      }
+    }
+  }
+
+  const launch_space_mine = () => {
+    if (check_keys('KeyR') || check_keys('KeyF')) {
+      if (!game_state.game_over && !game_state.round_won && player.alive && player_torpedoes.length < MAX_TORPEDO_COUNT && player.fire_cooldown <= 0) {
+        fire_torpedo({
+          x: player.x,
+          y: player.y,
+          angle: player.angle + Math.PI,
+          size: AFT_TORPEDO_SIZE,
+          speed: player.torpedo_speed * AFT_TORPEDO_SPEED_MODIFIER,
+          life: player.torpedo_life * AFT_TORPEDO_LIFE_MODIFIER,
+          is_space_mine: true,
+          color: AFT_TORPEDO_COLOR,
+          alive: true
+        })
+        player.fire_cooldown = FIRE_COOLDOWN_TIME
+      }
+    }
+  }
+
+  const thrust_forward = () => {
+    if (check_keys('KeyW')) {
+      const thrust_force = 300 * dt
+      player.vel_x += Math.sin(player.angle) * thrust_force
+      player.vel_y += -Math.cos(player.angle) * thrust_force
+      player.thrust = Math.min(player.thrust + dt * THRUST_FACTOR, 1.0)
+      startMainThruster()
+    } else {
+      // decelerate while not thrusting
+      player.thrust = Math.max(player.thrust - dt * THRUST_DECELERATE_FACTOR, 0)
+      stopMainThruster()
+    }
+  }
+
+  const thrust_reverse = () => {
+    const apply_braking = (current_speed) => {
+      const new_speed = Math.max(current_speed - 800 * dt, 0)
+      const speed_ratio = new_speed / current_speed
+      player.vel_x *= speed_ratio
+      player.vel_y *= speed_ratio
+      player.speed = new_speed
+    }
+
+    const apply_reverse_thrust = (forward_x, forward_y) => {
+      const max_reverse_speed = player.max_speed * player.max_reverse_factor
+      const reverse_force = 200 * dt
+      player.vel_x -= forward_x * reverse_force
+      player.vel_y -= forward_y * reverse_force
+
+      // Clamp to max reverse speed
+      const new_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
+      if (new_speed > max_reverse_speed) {
+        const speed_ratio = max_reverse_speed / new_speed
+        player.vel_x *= speed_ratio
+        player.vel_y *= speed_ratio
+      }
+      player.speed = -Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
+    }
+
+    if (check_keys('KeyS')) {
+      const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
+
+      // Determine if we're moving forward or in reverse
+      // Forward direction is (sin(angle), -cos(angle))
+      const forward_x = Math.sin(player.angle)
+      const forward_y = -Math.cos(player.angle)
+      const dot_product = player.vel_x * forward_x + player.vel_y * forward_y
+      const is_moving_forward = dot_product > 0
+
+      if (is_moving_forward && current_speed > 0) {
+        apply_braking(current_speed)
+      } else {
+        // At zero or already in reverse - apply reverse thrust
+        apply_reverse_thrust(forward_x, forward_y)
+      }
+
+      player.braking = current_speed > 10 || Math.abs(player.speed) > 5
+      if (player.braking) isRotatingOrBraking = true
+    } else {
+      player.braking = false
+    }
+  }
+
+  const strafe_left = () => {
+    if ((check_keys('KeyA') && SHIFT_DOWN) || check_keys('KeyQ')) {
+      player.strafing = 1
+
+      const strafe_x = Math.cos(player.angle)
+      const strafe_y = Math.sin(player.angle)
+      const strafe_force = 250 * dt
+      player.vel_x += strafe_x * strafe_force
+      player.vel_y += strafe_y * strafe_force
+
+      player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
+      isRotatingOrBraking = true
+      return true
+    }
+    return false
+  }
+
+  const strafe_right = () => {
+    if ((check_keys('KeyD') && SHIFT_DOWN) || check_keys('KeyE')) {
+      player.strafing = -1
+
+      const strafe_x = -Math.cos(player.angle)
+      const strafe_y = -Math.sin(player.angle)
+      const strafe_force = 250 * dt
+      player.vel_x += strafe_x * strafe_force
+      player.vel_y += strafe_y * strafe_force
+
+      player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
+      isRotatingOrBraking = true
+      return true
+    }
+    return false
+  }
+
+  const rotate_left = () => {
+    if (check_keys('KeyA') && !SHIFT_DOWN) {
+      player.angle -= rotation_step * dt * ROTATION_FACTOR
+      player.rotation = -1
+      isRotatingOrBraking = true
+    }
+  }
+
+  const rotate_right = () => {
+    if (check_keys('KeyD') && !SHIFT_DOWN) {
+      player.angle += rotation_step * dt * ROTATION_FACTOR
+      player.rotation = 1
+      isRotatingOrBraking = true
+    }
+  }
+
+  const handle_strafing = () => {
+    const did_strafe = strafe_right() || strafe_left()
+    if (!did_strafe) {
+      player.strafe_thrust = Math.max(player.strafe_thrust - dt * 6, 0)
+    }
+  }
+
+  // Process all input handlers
+  launch_torpedo()
+  launch_space_mine()
+  rotate_left()
+  rotate_right()
+  thrust_forward()
+  thrust_reverse()
+  handle_strafing()
+
+  return isRotatingOrBraking
+}
+
 export const update_player = (dt, keys_pressed, game_state) => {
   if (game_state.game_over) {
     stopMainThruster()
@@ -107,166 +299,17 @@ export const update_player = (dt, keys_pressed, game_state) => {
     return
   }
 
-  const rotation_step = Math.PI / 8
+  // Reset player state for this frame
   player.rotation = 0
-
-  let isRotatingOrBraking = false
-  const ROTATION_FACTOR = 6
-  const THRUST_FACTOR = 4
-  const THRUST_DECELERATE_FACTOR = 6
-  const MAX_TORPEDO_COUNT = 3
-  const SHIFT_DOWN = keys_pressed['ShiftKey']
-  const FORE_TORPEDO_SIZE = 8
-  const AFT_TORPEDO_SIZE = 7
-  const AFT_TORPEDO_SPEED_MODIFIER = 0.35
-  const AFT_TORPEDO_LIFE_MODIFIER = 1.0
-  const AFT_TORPEDO_COLOR = [1.0, 0.5, 0.0]
-  const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.1]
-  const FIRE_COOLDOWN_TIME = 0.20  // 200ms between shots
+  player.strafing = 0
 
   // Update cooldown timer
   if (player.fire_cooldown > 0) {
     player.fire_cooldown -= dt
   }
 
-  const alive_torpedo_count = player_torpedoes.filter(torpedo => torpedo.alive).length
-  // =================== FIRE FORE TORPEDO
-  if (keys_pressed['Space']) {
-    if (player.alive && alive_torpedo_count < MAX_TORPEDO_COUNT && player.fire_cooldown <= 0) {
-      if (!game_state.game_over && !game_state.round_won) {
-        fire_torpedo({
-          x: player.x,
-          y: player.y,
-          angle: player.angle,
-          size: FORE_TORPEDO_SIZE,
-          life: player.torpedo_life,
-          speed: player.torpedo_speed,
-          color: FORE_TORPEDO_COLOR,
-          alive: true,
-          is_space_mine: false
-        })
-        player.fire_cooldown = FIRE_COOLDOWN_TIME
-      }
-    }
-  }
-
-  // =================== FIRE AFT TORPEDO (SPACE MINE)
-  if (keys_pressed['KeyR'] || keys_pressed['KeyF']) {
-    if (!game_state.game_over && !game_state.round_won && player.alive && player_torpedoes.length < MAX_TORPEDO_COUNT && player.fire_cooldown <= 0) {
-      fire_torpedo({
-        x: player.x,
-        y: player.y,
-        angle: player.angle + Math.PI,
-        size: AFT_TORPEDO_SIZE,
-        speed: player.torpedo_speed * AFT_TORPEDO_SPEED_MODIFIER,
-        life: player.torpedo_life * AFT_TORPEDO_LIFE_MODIFIER,
-        is_space_mine: true,
-        color: AFT_TORPEDO_COLOR,
-        alive: true
-      })
-      player.fire_cooldown = FIRE_COOLDOWN_TIME
-    }
-  }
-
-  // =================== ROTATE LEFT
-  if (keys_pressed['KeyA'] && !SHIFT_DOWN) {
-    player.angle -= rotation_step * dt * ROTATION_FACTOR
-    player.rotation = -1
-    isRotatingOrBraking = true
-  }
-
-  // =================== ROTATE RIGHT
-  if (keys_pressed['KeyD'] && !SHIFT_DOWN) {
-    player.angle += rotation_step * dt * ROTATION_FACTOR
-    player.rotation = 1
-    isRotatingOrBraking = true
-  }
-
-  // =================== FORWARD
-  if (keys_pressed['KeyW']) {
-    const thrust_force = 300 * dt
-    player.vel_x += Math.sin(player.angle) * thrust_force
-    player.vel_y += -Math.cos(player.angle) * thrust_force
-    player.thrust = Math.min(player.thrust + dt * THRUST_FACTOR, 1.0)
-    startMainThruster()
-  } else {
-    // decelerate while not thrusting
-    player.thrust = Math.max(player.thrust - dt * THRUST_DECELERATE_FACTOR, 0)
-    stopMainThruster()
-  }
-
-  // =================== REVERSE
-  if (keys_pressed['KeyS']) {
-    const current_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
-
-    // Determine if we're moving forward or in reverse
-    // Forward direction is (sin(angle), -cos(angle))
-    const forward_x = Math.sin(player.angle)
-    const forward_y = -Math.cos(player.angle)
-    const dot_product = player.vel_x * forward_x + player.vel_y * forward_y
-    const is_moving_forward = dot_product > 0
-    const max_reverse_speed = player.max_speed * player.max_reverse_factor
-
-    if (is_moving_forward && current_speed > 0) {
-
-      const new_speed = Math.max(current_speed - 800 * dt, 0)
-      const speed_ratio = new_speed / current_speed
-      player.vel_x *= speed_ratio
-      player.vel_y *= speed_ratio
-      player.speed = new_speed
-    } else {
-      // At zero or already in reverse - apply reverse thrust
-      const reverse_force = 200 * dt
-      player.vel_x -= forward_x * reverse_force
-      player.vel_y -= forward_y * reverse_force
-
-      // Clamp to max reverse speed
-      const new_speed = Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
-      if (new_speed > max_reverse_speed) {
-        const speed_ratio = max_reverse_speed / new_speed
-        player.vel_x *= speed_ratio
-        player.vel_y *= speed_ratio
-      }
-      player.speed = -Math.sqrt(player.vel_x * player.vel_x + player.vel_y * player.vel_y)
-    }
-
-    player.braking = current_speed > 10 || Math.abs(player.speed) > 5
-    if (player.braking) isRotatingOrBraking = true
-  } else {
-    player.braking = false
-  }
-
-  // =================== STRAFING
-  player.strafing = 0
-
-  // =================== STRAFE RIGHT
-  if ((keys_pressed['KeyD'] && SHIFT_DOWN) || keys_pressed['KeyE']) {
-    player.strafing = -1
-
-    const strafe_x = -Math.cos(player.angle)
-    const strafe_y = -Math.sin(player.angle)
-    const strafe_force = 250 * dt
-    player.vel_x += strafe_x * strafe_force
-    player.vel_y += strafe_y * strafe_force
-
-    player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
-    isRotatingOrBraking = true
-
-    // =================== STRAFE LEFT
-  } else if ((keys_pressed['KeyA'] && SHIFT_DOWN) || keys_pressed['KeyQ']) {
-    player.strafing = 1
-
-    const strafe_x = Math.cos(player.angle)
-    const strafe_y = Math.sin(player.angle)
-    const strafe_force = 250 * dt
-    player.vel_x += strafe_x * strafe_force
-    player.vel_y += strafe_y * strafe_force
-
-    player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
-    isRotatingOrBraking = true
-  } else {
-    player.strafe_thrust = Math.max(player.strafe_thrust - dt * 6, 0)
-  }
+  // Process input events
+  const isRotatingOrBraking = apply_input_events(keys_pressed, dt, game_state)
 
   // =================== FINAL SPEED AND POSITION ADJUSTMENTS
   if (isRotatingOrBraking) {
@@ -299,7 +342,7 @@ export const update_player = (dt, keys_pressed, game_state) => {
   }
 }
 
-export const draw_ship = (
+export const draw_player_ship = (
   {
     x,
     y,
