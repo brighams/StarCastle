@@ -30,6 +30,45 @@ export const cannon = {
 
 export let cannon_projectile = null
 
+// Cannon projectile constants
+const CANNON_SPARK_SIZE = 24
+const CANNON_SPARK_SPEED = 300
+const CANNON_SPARK_COLOR = [0.0, 1.0, 1.0, 1.0]
+const CANNON_FIRE_DELAY = 200
+
+// Cannon drawing constants
+const CANNON_COLOR = [0.5, 0.5, 0.5, 1.0]
+const CANNON_THICKNESS = 0.8
+
+// Central hexagon constants
+const HEX_COLOR = [1.0, 1.0, 1.0, 1.0]
+const HEX_RADIUS = 15
+const HEX_SIDES = 6
+
+// Glow effect constants
+const GLOW_BASE = 0.15
+const GLOW_AMPLITUDE = 0.08
+const GLOW_SPEED = 2.5
+const GLOW_OUTER_ALPHA_MULTIPLIER = 0.3
+const GLOW_INNER_ALPHA_MULTIPLIER = 0.5
+const GLOW_OFFSET_OUTER = 4
+const GLOW_OFFSET_INNER = 2
+const GLOW_OFFSET_FACTOR = 0.3
+
+// Ring respawn constants
+const RING_RESPAWN_TIME = 1.0
+const RING_SPAWN_INITIAL_RADIUS = 0.001
+
+// Projectile bounds
+const PROJECTILE_BOUNDS_MIN = -50
+const PROJECTILE_BOUNDS_MAX = 1074
+
+// Castle destroyed delay
+const CASTLE_DESTROYED_CHECK_DELAY = 1200
+
+// Enemy speed increase per round
+const ENEMY_SPEED_INCREASE_PER_ROUND = 0.2
+
 export const clear_cannon_projectile = () => {
   cannon_projectile = null
 }
@@ -40,7 +79,7 @@ export const castle_destroyed = (game_state) => {
   retreat_enemies_to_center()
   cannon.is_destroyed = true
   game_state.score = (game_state.round + 1)
-  setTimeout(() => delayed_check_round_won(game_state), 1200)
+  setTimeout(() => delayed_check_round_won(game_state), CASTLE_DESTROYED_CHECK_DELAY)
 }
 
 export const delayed_check_round_won = (game_state) => {
@@ -53,13 +92,9 @@ export const delayed_check_round_won = (game_state) => {
     game_state.round_won = true
   }
   game_state.lives += 1
-  game_state.enemy_speed_multiplier += 0.2
+  game_state.enemy_speed_multiplier += ENEMY_SPEED_INCREASE_PER_ROUND
   checkAndUpdateHighScore(game_state.score)
 }
-
-const CANNON_SPARK_SIZE = 24
-const CANNON_SPARK_SPEED = 300
-const CANNON_SPARK_COLOR = [0.0, 1.0, 1.0, 1.0]
 
 const has_clear_shot = (angle) => {
   if (cannon.is_destroyed) return false
@@ -120,12 +155,12 @@ export const update_castle_rings = (dt, player, game_state) => {
           face.destroyed = false
         }
         ring.respawn_timer = 0
-        ring.spawn_radius = 0.001
+        ring.spawn_radius = RING_SPAWN_INITIAL_RADIUS
       }
     } else {
       const all_destroyed = ring.faces.every(face => face.destroyed)
       if (all_destroyed) {
-        ring.respawn_timer = 1.0
+        ring.respawn_timer = RING_RESPAWN_TIME
       }
     }
   }
@@ -160,7 +195,7 @@ export const update_castle_rings = (dt, player, game_state) => {
           size: CANNON_SPARK_SIZE
         }
         cannon.cool_off_timer = CANNON_COOL_OFF_TIME
-      }, 200)
+      }, CANNON_FIRE_DELAY)
     }
   }
 
@@ -168,7 +203,7 @@ export const update_castle_rings = (dt, player, game_state) => {
     cannon_projectile.x += cannon_projectile.vx * dt
     cannon_projectile.y += cannon_projectile.vy * dt
 
-    if (cannon_projectile.x < -50 || cannon_projectile.x > 1074 || cannon_projectile.y < -50 || cannon_projectile.y > 1074) {
+    if (cannon_projectile.x < PROJECTILE_BOUNDS_MIN || cannon_projectile.x > PROJECTILE_BOUNDS_MAX || cannon_projectile.y < PROJECTILE_BOUNDS_MIN || cannon_projectile.y > PROJECTILE_BOUNDS_MAX) {
       cannon_projectile = null
     }
   }
@@ -229,28 +264,23 @@ export const draw_castle = () => {
   const cannon_end_x = CENTER_X + Math.cos(cannon.angle) * cannon.length
   const cannon_end_y = CENTER_Y + Math.sin(cannon.angle) * cannon.length
 
-  const thickness = 0.8
   const perp_x = Math.cos(cannon.angle + Math.PI / 2)
   const perp_y = Math.sin(cannon.angle + Math.PI / 2)
 
-  for (let offset = -thickness; offset <= thickness; offset++) {
-    draw_line(CENTER_X + perp_x * offset, CENTER_Y + perp_y * offset, cannon_end_x + perp_x * offset, cannon_end_y + perp_y * offset, transform, cannon_color)
+  for (let offset = -CANNON_THICKNESS; offset <= CANNON_THICKNESS; offset++) {
+    draw_line(CENTER_X + perp_x * offset, CENTER_Y + perp_y * offset, cannon_end_x + perp_x * offset, cannon_end_y + perp_y * offset, transform, CANNON_COLOR)
   }
 
-  const hex_color = [1.0, 1.0, 1.0, 1.0]
-  const hex_radius = 15
-  const num_sides = 6
+  for (let i = 0; i < HEX_SIDES; i++) {
+    const angle1 = center_rotation + (i / HEX_SIDES) * Math.PI * 2
+    const angle2 = center_rotation + ((i + 1) / HEX_SIDES) * Math.PI * 2
 
-  for (let i = 0; i < num_sides; i++) {
-    const angle1 = center_rotation + (i / num_sides) * Math.PI * 2
-    const angle2 = center_rotation + ((i + 1) / num_sides) * Math.PI * 2
+    const x1 = CENTER_X + Math.cos(angle1) * HEX_RADIUS
+    const y1 = CENTER_Y + Math.sin(angle1) * HEX_RADIUS
+    const x2 = CENTER_X + Math.cos(angle2) * HEX_RADIUS
+    const y2 = CENTER_Y + Math.sin(angle2) * HEX_RADIUS
 
-    const x1 = CENTER_X + Math.cos(angle1) * hex_radius
-    const y1 = CENTER_Y + Math.sin(angle1) * hex_radius
-    const x2 = CENTER_X + Math.cos(angle2) * hex_radius
-    const y2 = CENTER_Y + Math.sin(angle2) * hex_radius
-
-    draw_line(x1, y1, x2, y2, transform, hex_color)
+    draw_line(x1, y1, x2, y2, transform, HEX_COLOR)
   }
 
   if (cannon_projectile) {
