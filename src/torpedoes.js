@@ -1,7 +1,8 @@
 import { identity_matrix } from './math.js'
-import { draw_space_mine, draw_spark } from './renderer.js'
+import { draw_spark } from './renderer.js'
 import { playSound } from './sound.js'
 import { CANVAS_SIZE } from './constants.js'
+import { draw_space_mine } from './player.js'
 
 
 export const player_torpedoes = []

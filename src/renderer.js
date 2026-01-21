@@ -119,11 +119,6 @@ export const draw_circle = (x, y, radius, segments, transform, color) => {
   gl.drawArrays(gl.LINE_STRIP, 0, segments + 1)
 }
 
-export const draw_space_mine = ({ x, y, angle, size, transform, color }) => {
-  draw_spark({ x, y, angle, size, transform, color })
-  draw_circle(x, y, size / 3.0, 4, transform, [0.6, 0.6, 0.6])
-}
-
 // ===== USED FOR ENEMIES AND PLAYER PROJECTILES =====
 export const draw_spark = ({ x, y, angle, size, transform, color }) => {
   const rotation_speed = 2.0 // radians per second
