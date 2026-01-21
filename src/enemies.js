@@ -10,6 +10,38 @@ export const enemy_sparks = []
 const ENEMY_SPARK_SIZE = 10
 const ENEMY_SEEK_LIMIT = 180
 
+// Movement & Physics
+const ENEMY_SPAWN_VELOCITY = 200
+const ENEMY_DOCK_VELOCITY = 100
+const ENEMY_RETREAT_VELOCITY = 100
+const ENEMY_FAR_CHASE_FORCE = 40
+const ENEMY_CLOSE_CHASE_FORCE = 60
+const ENEMY_VELOCITY_DAMPING = 0.98
+const ENEMY_SEPARATION_FORCE = 60
+const ENEMY_ALIGNMENT_FACTOR = 0.5
+
+// Distances & Thresholds
+const ENEMY_ARRIVAL_THRESHOLD = 5
+const ENEMY_SEPARATION_DISTANCE = 40
+const ENEMY_ALIGNMENT_DISTANCE = 100
+
+// Jitter (evasion behavior)
+const ENEMY_JITTER_MAGNITUDE = 160
+const ENEMY_JITTER_MIN_INTERVAL = 0.15
+const ENEMY_JITTER_RANDOM_INTERVAL = 0.2
+
+// Linger timing
+const ENEMY_LINGER_BASE_TIME = 2
+const ENEMY_LINGER_RANDOM_TIME = 3
+const ENEMY_RING_CHANGE_LINGER_BASE = 1
+const ENEMY_RING_CHANGE_LINGER_RANDOM = 2
+const ENEMY_RING_CHANGE_CHANCE = 0.30
+
+// Rendering
+const ENEMY_PRIMARY_COLOR = [1.0, 0.0, 1.0, 1.0]
+const ENEMY_SECONDARY_COLOR = [1.0, 1.0, 0.0, 0.7]
+const ENEMY_SECONDARY_SIZE_FACTOR = 0.75
+
 export const spawn_enemy = () => {
   const ring_index = Math.floor(Math.random() * castle_rings.length)
   const ring = castle_rings[ring_index]
@@ -33,7 +65,7 @@ export const spawn_enemy = () => {
     spawn_target_y: target_y,
     spawn_ring_index: ring_index,
     spawn_angle: angle,
-    linger_timer: 2 + Math.random() * 3
+    linger_timer: ENEMY_LINGER_BASE_TIME + Math.random() * ENEMY_LINGER_RANDOM_TIME
   })
 }
 
@@ -48,7 +80,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       const dy = enemy.spawn_target_y - enemy.y
       const distance = Math.sqrt(dx * dx + dy * dy)
 
-      if (distance < 5) {
+      if (distance < ENEMY_ARRIVAL_THRESHOLD) {
         enemy.spawning = false
         enemy.lingering = true
         enemy.x = enemy.spawn_target_x
@@ -56,9 +88,8 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
         enemy.vel_x = 0
         enemy.vel_y = 0
       } else {
-        const spawn_speed = 200
-        enemy.vel_x = (dx / distance) * spawn_speed
-        enemy.vel_y = (dy / distance) * spawn_speed
+        enemy.vel_x = (dx / distance) * ENEMY_SPAWN_VELOCITY
+        enemy.vel_y = (dy / distance) * ENEMY_SPAWN_VELOCITY
         enemy.x += enemy.vel_x * dt
         enemy.y += enemy.vel_y * dt
         enemy.angle = Math.atan2(enemy.vel_y, enemy.vel_x) + Math.PI / 2
@@ -75,13 +106,13 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
 
       enemy.linger_timer -= dt
       if (enemy.linger_timer <= 0) {
-        if (Math.random() < 0.30) {
+        if (Math.random() < ENEMY_RING_CHANGE_CHANCE) {
           enemy.spawn_ring_index = (enemy.spawn_ring_index + 1) % castle_rings.length
           const new_ring = castle_rings[enemy.spawn_ring_index]
           enemy.spawn_angle = Math.random() * Math.PI * 2
           enemy.x = CENTER_X + Math.cos(enemy.spawn_angle) * new_ring.radius
           enemy.y = CENTER_Y + Math.sin(enemy.spawn_angle) * new_ring.radius
-          enemy.linger_timer = 1 + Math.random() * 2
+          enemy.linger_timer = ENEMY_RING_CHANGE_LINGER_BASE + Math.random() * ENEMY_RING_CHANGE_LINGER_RANDOM
         } else {
           enemy.lingering = false
         }
@@ -127,7 +158,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       const dy = target_y - enemy.y
       const distance = Math.sqrt(dx * dx + dy * dy)
 
-      if (distance < 5) {
+      if (distance < ENEMY_ARRIVAL_THRESHOLD) {
         enemy.docked = true
         enemy.dock_angle = angle_to_dock
         enemy.x = target_x
@@ -135,8 +166,8 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
         enemy.vel_x = 0
         enemy.vel_y = 0
       } else {
-        enemy.vel_x = (dx / distance) * 100
-        enemy.vel_y = (dy / distance) * 100
+        enemy.vel_x = (dx / distance) * ENEMY_DOCK_VELOCITY
+        enemy.vel_y = (dy / distance) * ENEMY_DOCK_VELOCITY
         enemy.x += enemy.vel_x * dt
         enemy.y += enemy.vel_y * dt
         enemy.angle = Math.atan2(enemy.vel_y, enemy.vel_x) + Math.PI / 2
@@ -164,12 +195,12 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
           const other_dy = other.y - enemy.y
           const other_distance = Math.sqrt(other_dx * other_dx + other_dy * other_dy)
 
-          if (other_distance < 40 && other_distance > 0) {
+          if (other_distance < ENEMY_SEPARATION_DISTANCE && other_distance > 0) {
             separate_x -= other_dx / other_distance
             separate_y -= other_dy / other_distance
           }
 
-          if (other_distance < 100) {
+          if (other_distance < ENEMY_ALIGNMENT_DISTANCE) {
             align_x += other.vel_x
             align_y += other.vel_y
             neighbors++
@@ -180,37 +211,35 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
       if (neighbors > 0) {
         align_x /= neighbors
         align_y /= neighbors
-        enemy.vel_x += align_x * dt * 0.5
-        enemy.vel_y += align_y * dt * 0.5
+        enemy.vel_x += align_x * dt * ENEMY_ALIGNMENT_FACTOR
+        enemy.vel_y += align_y * dt * ENEMY_ALIGNMENT_FACTOR
       }
 
-      enemy.vel_x += separate_x * dt * 60
-      enemy.vel_y += separate_y * dt * 60
+      enemy.vel_x += separate_x * dt * ENEMY_SEPARATION_FORCE
+      enemy.vel_y += separate_y * dt * ENEMY_SEPARATION_FORCE
 
-      // 40 -> make constant -> it determines how fast the enemy moves when far to the player
-      enemy.vel_x += (dx / distance_to_player) * 40 * dt * enemy_speed_multiplier
-      enemy.vel_y += (dy / distance_to_player) * 40 * dt * enemy_speed_multiplier
+      enemy.vel_x += (dx / distance_to_player) * ENEMY_FAR_CHASE_FORCE * dt * enemy_speed_multiplier
+      enemy.vel_y += (dy / distance_to_player) * ENEMY_FAR_CHASE_FORCE * dt * enemy_speed_multiplier
 
     } else {
       // ============ ENEMY IS CLOSE TO SHIP - MOVE FASTER & DODGE
       enemy.jitter_timer -= dt
       if (enemy.jitter_timer <= 0) {
-        enemy.jitter_x = (Math.random() - 0.5) * 160
-        enemy.jitter_y = (Math.random() - 0.5) * 160
-        enemy.jitter_timer = 0.15 + Math.random() * 0.2
+        enemy.jitter_x = (Math.random() - 0.5) * ENEMY_JITTER_MAGNITUDE
+        enemy.jitter_y = (Math.random() - 0.5) * ENEMY_JITTER_MAGNITUDE
+        enemy.jitter_timer = ENEMY_JITTER_MIN_INTERVAL + Math.random() * ENEMY_JITTER_RANDOM_INTERVAL
       }
 
-      // 60 -> make constant -> it determines how fast the enemy moves when close to the player
-      enemy.vel_x += (dx / distance_to_player) * 60 * dt * enemy_speed_multiplier
-      enemy.vel_y += (dy / distance_to_player) * 60 * dt * enemy_speed_multiplier
+      enemy.vel_x += (dx / distance_to_player) * ENEMY_CLOSE_CHASE_FORCE * dt * enemy_speed_multiplier
+      enemy.vel_y += (dy / distance_to_player) * ENEMY_CLOSE_CHASE_FORCE * dt * enemy_speed_multiplier
 
       // Apply jitter directly to position for visible effect
       enemy.x += enemy.jitter_x * dt
       enemy.y += enemy.jitter_y * dt
     }
 
-    enemy.vel_x *= 0.98
-    enemy.vel_y *= 0.98
+    enemy.vel_x *= ENEMY_VELOCITY_DAMPING
+    enemy.vel_y *= ENEMY_VELOCITY_DAMPING
 
     enemy.x += enemy.vel_x * dt
     enemy.y += enemy.vel_y * dt
@@ -240,8 +269,8 @@ export const retreat_enemies_to_center = () => {
     const enemy_center_dy = CENTER_Y - enemy.y
     const enemy_center_distance = Math.sqrt(enemy_center_dx * enemy_center_dx + enemy_center_dy * enemy_center_dy)
     if (enemy_center_distance > 0) {
-      enemy.vel_x = (enemy_center_dx / enemy_center_distance) * 100
-      enemy.vel_y = (enemy_center_dy / enemy_center_distance) * 100
+      enemy.vel_x = (enemy_center_dx / enemy_center_distance) * ENEMY_RETREAT_VELOCITY
+      enemy.vel_y = (enemy_center_dy / enemy_center_distance) * ENEMY_RETREAT_VELOCITY
     }
   }
 }
