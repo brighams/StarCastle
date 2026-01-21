@@ -112,8 +112,8 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
   const check_keys = (key) => keys_pressed[key]
 
   const launch_torpedo = () => {
-    const alive_torpedo_count = player_torpedoes.filter(torpedo => torpedo.alive).length
     if (check_keys('Space')) {
+      const alive_torpedo_count = player_torpedoes.filter(torpedo => torpedo.alive).length
       if (player.alive && alive_torpedo_count < MAX_TORPEDO_COUNT && player.fire_cooldown <= 0) {
         if (!game_state.game_over && !game_state.round_won) {
           fire_torpedo({

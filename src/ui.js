@@ -2,7 +2,7 @@ import { CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y } from './constants.js'
 import { identity_matrix } from './math.js'
 import { getHighScore } from './score.js'
 import { game_state } from './main.js'
-import { draw_ship } from './player.js'
+import { draw_player_ship } from './player.js'
 import { draw_animated_text, draw_text } from './text.js'
 
 
@@ -25,7 +25,7 @@ export const draw_ui = (lives, score, game_over, round_won) => {
       const ship_y = 30
       const ship_size = 8
       const ship_angle = 0
-      draw_ship({
+      draw_player_ship({
         x: ship_x, y: ship_y, angle: ship_angle, size: ship_size, transform, color: [1.0, 1.0, 0.0, 1.0]
       })
     }

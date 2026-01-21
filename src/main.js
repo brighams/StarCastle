@@ -1,5 +1,5 @@
 import { clear_screen, init_renderer } from './renderer.js'
-import { draw_ship, player, reset_player, update_player } from './player.js'
+import { draw_player_ship, player, reset_player, update_player } from './player.js'
 import { clear_cannon_projectile, draw_castle, init_ring_faces, update_castle_rings } from './castle.js'
 import { clear_torpedoes, draw_torpedoes, remove_destroyed_torpedoes, update_torpedoes } from './torpedoes.js'
 import { clear_enemies,
@@ -135,7 +135,7 @@ const game_loop = (current_time) => {
   draw_castle()
 
   if (player.alive && !game_state.game_over) {
-    draw_ship(player)
+    draw_player_ship(player)
   }
 
   draw_enemy_sparks()
