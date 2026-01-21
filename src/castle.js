@@ -15,9 +15,10 @@ const CENTER_ROTATION_SPEED = 0.8
 const CANNON_COOL_OFF_TIME = 1.3
 
 export const castle_rings = [
-  { index: 0, radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.65, color: [0.0, 1.0, 0.0, 1.0] },
-  { index: 1, radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.95, color: [0.0, 0.0, 1.0, 1.0] },
-  { index: 2, radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] }
+//  { round: 1, index: 0, radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.65, color: [0.0, 1.0, 0.0, 1.0] },
+  { round: 0, index: 0, radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.65, color: [0.0, 1.0, 0.0, 1.0] },
+  { round: 1, index: 1, radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.95, color: [0.0, 0.0, 1.0, 1.0] },
+  { round: 2, index: 2, radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] }
 ]
 
 export const cannon = {
