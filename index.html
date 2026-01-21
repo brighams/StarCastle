@@ -157,11 +157,9 @@
 </div>
 <script type="module" src="./src/main.js"></script>
 <script type="module">
-  import musicFile from './public/sound/orbit-d0d-main-version-29627-02-39.mp3';
-
 
   window.addEventListener('load', () => {
-    const audio = new Audio(musicFile);
+    const audio = new Audio('./public/sound/orbit-d0d-main-version-29627-02-39.mp3');
     audio.loop = true;
     audio.volume = 0.5; // Start at 50% to match slider
 
