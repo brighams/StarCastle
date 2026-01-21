@@ -7,6 +7,78 @@ import { toggle_info_box } from './ui.js'
 import { fire_torpedo, player_torpedoes } from './torpedoes.js'
 
 
+const ROTATION_STEP = Math.PI / 8
+const ROTATION_FACTOR = 6
+const THRUST_FACTOR = 4
+const THRUST_DECELERATE_FACTOR = 6
+const MAX_TORPEDO_COUNT = 3
+const FORE_TORPEDO_SIZE = 8
+const AFT_TORPEDO_SIZE = 7
+const AFT_TORPEDO_SPEED_MODIFIER = 0.35
+const AFT_TORPEDO_LIFE_MODIFIER = 1.0
+const AFT_TORPEDO_COLOR = [1.0, 0.5, 0.0]
+const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.1]
+const FIRE_COOLDOWN_TIME = 0.200
+
+// Spawn behavior
+const SPAWN_FORWARD_PUSH = 60                               // Initial forward velocity when respawning
+const SPAWN_SIDEWAYS_PUSH = 40                              // Initial sideways velocity when respawning
+const SPAWN_DISTANCE_FROM_CENTER_RATIO = 0.42               // How far from center to spawn (fraction of canvas)
+const RESPAWN_DELAY_SECONDS = 3.0                           // Time before player respawns after death
+
+// Physics forces (units per second squared)
+const FORWARD_THRUST_FORCE = 300                            // Engine power when pressing forward
+const REVERSE_THRUST_FORCE = 400                            // Reverse thruster power
+const BRAKING_DECELERATION = 800                            // How fast the ship slows when braking
+const STRAFE_THRUST_FORCE = 250                             // Sideways thruster power
+
+// Animation ramp speeds (how fast thruster visuals fade in/out)
+const STRAFE_THRUST_RAMP_UP_SPEED = 3
+const STRAFE_THRUST_RAMP_DOWN_SPEED = 6
+
+// Speed thresholds for visual effects
+const BRAKING_VISUAL_THRESHOLD = 10                         // Min speed to show braking jets
+const REVERSE_VISUAL_THRESHOLD = 5                          // Min speed to show reverse jets
+
+// Screen wrap boundary
+const SCREEN_WRAP_BUFFER = 20                               // Pixels beyond edge before wrapping
+
+// Ship geometry ratios (relative to ship size)
+const SHIP_HULL_WIDTH_RATIO = 0.7                           // How wide the hull sides are
+const SHIP_TAIL_NOTCH_HEIGHT_RATIO = 0.4                    // Height of rear tail notch
+const SHIP_TAIL_NOTCH_WIDTH_RATIO = 0.35                    // Width of rear tail notch
+const SHIP_LINE_OFFSETS = [-0.5, 0, 0.5]                    // Offsets for bold line effect
+
+// Rotation thruster jet geometry
+const ROTATION_JET_LENGTH_RATIO = 0.6                       // Length of rotation jets
+const ROTATION_JET_MOUNT_Y_RATIO = 0.5                      // Y position of rotation jet mounts
+const ROTATION_JET_UPPER_SPREAD_RATIO = 0.3                 // Upper jet endpoint spread
+const ROTATION_JET_LOWER_SPREAD_RATIO = 0.7                 // Lower jet endpoint spread
+
+// Braking jet geometry
+const BRAKE_JET_LENGTH_RATIO = 0.8                          // Length of forward braking jets
+const BRAKE_JET_WIDTH_RATIO = 0.2                           // Width of braking jet spread
+
+// Strafe jet geometry
+const STRAFE_JET_MAX_LENGTH_RATIO = 1.2                     // Max length of strafe jets
+const STRAFE_JET_CENTER_LENGTH_RATIO = 0.7                  // Center jet is shorter
+const STRAFE_JET_VERTICAL_SPREAD_RATIO = 0.2                // Vertical spread of strafe jets
+const STRAFE_JET_MOUNT_X_RATIO = 0.5                        // X position of strafe jet mounts
+
+// Main engine flame
+const FLAME_BASE_LENGTH = 1.0                               // Min flame length when thrusting
+const FLAME_LENGTH_MULTIPLIER = 3.2                         // Additional flame length at full thrust
+const FLAME_BASE_WIDTH = 0.2                                // Min flame width
+const FLAME_WIDTH_MULTIPLIER = 0.1                          // Additional flame width at full thrust
+const FLAME_GREEN_BASE = 0.5                                // Base green color value
+const FLAME_GREEN_REDUCTION = 0.2                           // How much green decreases at full thrust
+
+// Thruster jet colors [R, G, B, A]
+const ROTATION_JET_COLOR = [1.0, 0.0, 0.5, 0.9]             // Magenta/pink
+const BRAKE_JET_COLOR = [1.0, 0.0, 0.5, 0.9]                // Magenta/pink
+const STRAFE_JET_COLOR_RGB = [1.0, 0.3, 0.0]                // Orange (alpha added dynamically)
+const STRAFE_JET_ALPHA_MULTIPLIER = 0.9                     // Alpha = strafe_thrust * this
+
 export const player = {
   x: CENTER_X,
   y: CANVAS_SIZE - 100,
@@ -33,16 +105,35 @@ export const player = {
   fire_cooldown: 0
 }
 
-export const destroy_player = (player, game_state) => {
-  game_state.lives--
-  player.alive = false
-  player.respawn_timer = 3.0
-  playSound('player_explode')
-  retreat_enemies_to_center()
+export const spawn_player = (game_state, dt) => {
+  player.respawn_timer -= dt
+  if (player.respawn_timer <= 0) {
+    if (game_state.lives > 0) {
+      set_random_spawn_position()
+      player.alive = true
+      playSound('game_start', 0.5, 0.08)
+
+      // Forward thrust
+      player.vel_x += Math.sin(player.angle) * SPAWN_FORWARD_PUSH
+      player.vel_y += -Math.cos(player.angle) * SPAWN_FORWARD_PUSH
+
+      // Random left or right strafe
+      const strafe_direction = Math.random() > 0.5 ? 1 : -1
+      const strafe_x = strafe_direction * Math.cos(player.angle)
+      const strafe_y = strafe_direction * Math.sin(player.angle)
+      player.vel_x += strafe_x * SPAWN_SIDEWAYS_PUSH
+      player.vel_y += strafe_y * SPAWN_SIDEWAYS_PUSH
+
+    } else {
+      game_state.game_over = true
+      playSound('game_over', 1.0, 0.1)
+      toggle_info_box(true)
+    }
+  }
 }
 
 const set_random_spawn_position = () => {
-  const spawn_radius = CANVAS_SIZE * 0.42
+  const spawn_radius = CANVAS_SIZE * SPAWN_DISTANCE_FROM_CENTER_RATIO
   const random_angle = Math.random() * Math.PI * 2
   player.x = CENTER_X + Math.cos(random_angle) * spawn_radius
   player.y = CENTER_Y + Math.sin(random_angle) * spawn_radius
@@ -61,55 +152,20 @@ export const reset_player = () => {
   playSound('game_start', 0.5, 0.08)
 }
 
-export const spawn_player = (game_state, dt) => {
-  player.respawn_timer -= dt
-  if (player.respawn_timer <= 0) {
-    if (game_state.lives > 0) {
-      set_random_spawn_position()
-      player.alive = true
-      playSound('game_start', 0.5, 0.08)
-
-      // Apply spawn thrust directly
-      const spawn_forward_force = 60 // Forward thrust magnitude
-      const spawn_strafe_force = 40 // Strafe thrust magnitude
-
-      // Forward thrust
-      player.vel_x += Math.sin(player.angle) * spawn_forward_force
-      player.vel_y += -Math.cos(player.angle) * spawn_forward_force
-
-      // Random left or right strafe
-      const strafe_direction = Math.random() > 0.5 ? 1 : -1
-      const strafe_x = strafe_direction * Math.cos(player.angle)
-      const strafe_y = strafe_direction * Math.sin(player.angle)
-      player.vel_x += strafe_x * spawn_strafe_force
-      player.vel_y += strafe_y * spawn_strafe_force
-
-    } else {
-      game_state.game_over = true
-      playSound('game_over', 1.0, 0.1)
-      toggle_info_box(true)
-    }
-  }
+export const destroy_player = (player, game_state) => {
+  game_state.lives--
+  player.alive = false
+  player.respawn_timer = RESPAWN_DELAY_SECONDS
+  playSound('player_explode')
+  retreat_enemies_to_center()
 }
 
 const apply_input_events = (keys_pressed, dt, game_state) => {
-  const rotation_step = Math.PI / 8
-  const ROTATION_FACTOR = 6
-  const THRUST_FACTOR = 4
-  const THRUST_DECELERATE_FACTOR = 6
-  const MAX_TORPEDO_COUNT = 3
-  const SHIFT_DOWN = keys_pressed['ShiftKey']
-  const FORE_TORPEDO_SIZE = 8
-  const AFT_TORPEDO_SIZE = 7
-  const AFT_TORPEDO_SPEED_MODIFIER = 0.35
-  const AFT_TORPEDO_LIFE_MODIFIER = 1.0
-  const AFT_TORPEDO_COLOR = [1.0, 0.5, 0.0]
-  const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.1]
-  const FIRE_COOLDOWN_TIME = 0.20  // 200ms between shots
 
   let isRotatingOrBraking = false
 
   const check_keys = (key) => keys_pressed[key]
+  const SHIFT_DOWN = keys_pressed['ShiftKey']
 
   const launch_torpedo = () => {
     if (check_keys('Space')) {
@@ -154,7 +210,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
   const thrust_forward = () => {
     if (check_keys('KeyW')) {
-      const thrust_force = 300 * dt
+      const thrust_force = FORWARD_THRUST_FORCE * dt
       player.vel_x += Math.sin(player.angle) * thrust_force
       player.vel_y += -Math.cos(player.angle) * thrust_force
       player.thrust = Math.min(player.thrust + dt * THRUST_FACTOR, 1.0)
@@ -168,7 +224,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
   const thrust_reverse = () => {
     const apply_braking = (current_speed) => {
-      const new_speed = Math.max(current_speed - 800 * dt, 0)
+      const new_speed = Math.max(current_speed - BRAKING_DECELERATION * dt, 0)
       const speed_ratio = new_speed / current_speed
       player.vel_x *= speed_ratio
       player.vel_y *= speed_ratio
@@ -177,7 +233,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
     const apply_reverse_thrust = (forward_x, forward_y) => {
       const max_reverse_speed = player.max_speed * player.max_reverse_factor
-      const reverse_force = 200 * dt
+      const reverse_force = REVERSE_THRUST_FORCE * dt
       player.vel_x -= forward_x * reverse_force
       player.vel_y -= forward_y * reverse_force
 
@@ -208,7 +264,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
         apply_reverse_thrust(forward_x, forward_y)
       }
 
-      player.braking = current_speed > 10 || Math.abs(player.speed) > 5
+      player.braking = current_speed > BRAKING_VISUAL_THRESHOLD || Math.abs(player.speed) > REVERSE_VISUAL_THRESHOLD
       if (player.braking) isRotatingOrBraking = true
     } else {
       player.braking = false
@@ -221,11 +277,11 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
       const strafe_x = Math.cos(player.angle)
       const strafe_y = Math.sin(player.angle)
-      const strafe_force = 250 * dt
+      const strafe_force = STRAFE_THRUST_FORCE * dt
       player.vel_x += strafe_x * strafe_force
       player.vel_y += strafe_y * strafe_force
 
-      player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
+      player.strafe_thrust = Math.min(player.strafe_thrust + dt * STRAFE_THRUST_RAMP_UP_SPEED, 1.0)
       isRotatingOrBraking = true
       return true
     }
@@ -238,11 +294,11 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
       const strafe_x = -Math.cos(player.angle)
       const strafe_y = -Math.sin(player.angle)
-      const strafe_force = 250 * dt
+      const strafe_force = STRAFE_THRUST_FORCE * dt
       player.vel_x += strafe_x * strafe_force
       player.vel_y += strafe_y * strafe_force
 
-      player.strafe_thrust = Math.min(player.strafe_thrust + dt * 3, 1.0)
+      player.strafe_thrust = Math.min(player.strafe_thrust + dt * STRAFE_THRUST_RAMP_UP_SPEED, 1.0)
       isRotatingOrBraking = true
       return true
     }
@@ -251,7 +307,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
   const rotate_left = () => {
     if (check_keys('KeyA') && !SHIFT_DOWN) {
-      player.angle -= rotation_step * dt * ROTATION_FACTOR
+      player.angle -= ROTATION_STEP * dt * ROTATION_FACTOR
       player.rotation = -1
       isRotatingOrBraking = true
     }
@@ -259,7 +315,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
   const rotate_right = () => {
     if (check_keys('KeyD') && !SHIFT_DOWN) {
-      player.angle += rotation_step * dt * ROTATION_FACTOR
+      player.angle += ROTATION_STEP * dt * ROTATION_FACTOR
       player.rotation = 1
       isRotatingOrBraking = true
     }
@@ -268,7 +324,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
   const handle_strafing = () => {
     const did_strafe = strafe_right() || strafe_left()
     if (!did_strafe) {
-      player.strafe_thrust = Math.max(player.strafe_thrust - dt * 6, 0)
+      player.strafe_thrust = Math.max(player.strafe_thrust - dt * STRAFE_THRUST_RAMP_DOWN_SPEED, 0)
     }
   }
 
@@ -329,16 +385,15 @@ export const update_player = (dt, keys_pressed, game_state) => {
   player.x += player.vel_x * dt
   player.y += player.vel_y * dt
 
-  const margin = 20
-  if (player.x < -margin) {
-    player.x = CANVAS_SIZE + margin
-  } else if (player.x > CANVAS_SIZE + margin) {
-    player.x = -margin
+  if (player.x < -SCREEN_WRAP_BUFFER) {
+    player.x = CANVAS_SIZE + SCREEN_WRAP_BUFFER
+  } else if (player.x > CANVAS_SIZE + SCREEN_WRAP_BUFFER) {
+    player.x = -SCREEN_WRAP_BUFFER
   }
-  if (player.y < -margin) {
-    player.y = CANVAS_SIZE + margin
-  } else if (player.y > CANVAS_SIZE + margin) {
-    player.y = -margin
+  if (player.y < -SCREEN_WRAP_BUFFER) {
+    player.y = CANVAS_SIZE + SCREEN_WRAP_BUFFER
+  } else if (player.y > CANVAS_SIZE + SCREEN_WRAP_BUFFER) {
+    player.y = -SCREEN_WRAP_BUFFER
   }
 }
 
@@ -362,67 +417,65 @@ export const draw_player_ship = (
     rotate_matrix(angle)
   )
 
-  const offsets = [-0.5, 0, 0.5]
-  for (const offset of offsets) {
-    draw_line(offset, -size, -size * 0.7 + offset, size, ship_transform, color)
-    draw_line(-size * 0.7 + offset, size, size * 0.7 + offset, size, ship_transform, color)
-    draw_line(size * 0.7 + offset, size, offset, -size, ship_transform, color)
+  // Draw ship hull with bold line effect
+  for (const offset of SHIP_LINE_OFFSETS) {
+    draw_line(offset, -size, -size * SHIP_HULL_WIDTH_RATIO + offset, size, ship_transform, color)
+    draw_line(-size * SHIP_HULL_WIDTH_RATIO + offset, size, size * SHIP_HULL_WIDTH_RATIO + offset, size, ship_transform, color)
+    draw_line(size * SHIP_HULL_WIDTH_RATIO + offset, size, offset, -size, ship_transform, color)
   }
 
-  const tail_height = size * 0.4
-  const tail_width = size * 0.35
-  for (const offset of offsets) {
+  // Draw tail notch
+  const tail_height = size * SHIP_TAIL_NOTCH_HEIGHT_RATIO
+  const tail_width = size * SHIP_TAIL_NOTCH_WIDTH_RATIO
+  for (const offset of SHIP_LINE_OFFSETS) {
     draw_line(-tail_width + offset, size, offset, size - tail_height, ship_transform, color)
     draw_line(tail_width + offset, size, offset, size - tail_height, ship_transform, color)
   }
 
+  // Main engine flame
   if (thrust > 0) {
-
-    const flame_length = 1.0 + thrust * 3.2
-    const flame_width = 0.2 + thrust * 0.1
-    const flame_color = [1.0, 0.5 - thrust * 0.2, 0.0, thrust]
+    const flame_length = FLAME_BASE_LENGTH + thrust * FLAME_LENGTH_MULTIPLIER
+    const flame_width = FLAME_BASE_WIDTH + thrust * FLAME_WIDTH_MULTIPLIER
+    const flame_color = [1.0, FLAME_GREEN_BASE - thrust * FLAME_GREEN_REDUCTION, 0.0, thrust]
 
     draw_line(0, size, -size * flame_width, size * flame_length, ship_transform, flame_color)
     draw_line(0, size, size * flame_width, size * flame_length, ship_transform, flame_color)
   }
 
+  // Rotation thruster jets
   if (rotation !== 0) {
-    const jet_color = [1.0, 0.0, 0.5, 0.9]
-    const jet_length = size * 0.6
+    const jet_length = size * ROTATION_JET_LENGTH_RATIO
 
     if (rotation > 0) {
-
-      draw_line(-size * 0.7, -size * 0.5, -size * 0.7 - jet_length, -size * 0.3, ship_transform, jet_color)
-      draw_line(-size * 0.7, -size * 0.5, -size * 0.7 - jet_length, -size * 0.7, ship_transform, jet_color)
+      draw_line(-size * SHIP_HULL_WIDTH_RATIO, -size * ROTATION_JET_MOUNT_Y_RATIO, -size * SHIP_HULL_WIDTH_RATIO - jet_length, -size * ROTATION_JET_UPPER_SPREAD_RATIO, ship_transform, ROTATION_JET_COLOR)
+      draw_line(-size * SHIP_HULL_WIDTH_RATIO, -size * ROTATION_JET_MOUNT_Y_RATIO, -size * SHIP_HULL_WIDTH_RATIO - jet_length, -size * ROTATION_JET_LOWER_SPREAD_RATIO, ship_transform, ROTATION_JET_COLOR)
     } else {
-
-      draw_line(size * 0.7, -size * 0.5, size * 0.7 + jet_length, -size * 0.3, ship_transform, jet_color)
-      draw_line(size * 0.7, -size * 0.5, size * 0.7 + jet_length, -size * 0.7, ship_transform, jet_color)
+      draw_line(size * SHIP_HULL_WIDTH_RATIO, -size * ROTATION_JET_MOUNT_Y_RATIO, size * SHIP_HULL_WIDTH_RATIO + jet_length, -size * ROTATION_JET_UPPER_SPREAD_RATIO, ship_transform, ROTATION_JET_COLOR)
+      draw_line(size * SHIP_HULL_WIDTH_RATIO, -size * ROTATION_JET_MOUNT_Y_RATIO, size * SHIP_HULL_WIDTH_RATIO + jet_length, -size * ROTATION_JET_LOWER_SPREAD_RATIO, ship_transform, ROTATION_JET_COLOR)
     }
   }
 
+  // Braking jets
   if (braking) {
-    const jet_color = [1.0, 0.0, 0.5, 0.9]
-    const jet_length = size * 0.8
+    const jet_length = size * BRAKE_JET_LENGTH_RATIO
 
-    draw_line(0, -size, -size * 0.2, -size - jet_length, ship_transform, jet_color)
-    draw_line(0, -size, size * 0.2, -size - jet_length, ship_transform, jet_color)
+    draw_line(0, -size, -size * BRAKE_JET_WIDTH_RATIO, -size - jet_length, ship_transform, BRAKE_JET_COLOR)
+    draw_line(0, -size, size * BRAKE_JET_WIDTH_RATIO, -size - jet_length, ship_transform, BRAKE_JET_COLOR)
   }
 
+  // Strafe thruster jets
   if (strafe_thrust > 0) {
-    const strafe_color = [1.0, 0.3, 0.0, strafe_thrust * 0.9]
-    const strafe_jet_length = size * 1.2 * strafe_thrust
+    const strafe_color = [STRAFE_JET_COLOR_RGB[0], STRAFE_JET_COLOR_RGB[1], STRAFE_JET_COLOR_RGB[2], strafe_thrust * STRAFE_JET_ALPHA_MULTIPLIER]
+    const strafe_jet_length = size * STRAFE_JET_MAX_LENGTH_RATIO * strafe_thrust
 
     if (strafing > 0) {
-
-      draw_line(-size * 0.5, 0, -size * 0.5 - strafe_jet_length, size * 0.2, ship_transform, strafe_color)
-      draw_line(-size * 0.5, 0, -size * 0.5 - strafe_jet_length, -size * 0.2, ship_transform, strafe_color)
-      draw_line(-size * 0.5, 0, -size * 0.5 - strafe_jet_length * 0.7, 0, ship_transform, strafe_color)
+      draw_line(-size * STRAFE_JET_MOUNT_X_RATIO, 0, -size * STRAFE_JET_MOUNT_X_RATIO - strafe_jet_length, size * STRAFE_JET_VERTICAL_SPREAD_RATIO, ship_transform, strafe_color)
+      draw_line(-size * STRAFE_JET_MOUNT_X_RATIO, 0, -size * STRAFE_JET_MOUNT_X_RATIO - strafe_jet_length, -size * STRAFE_JET_VERTICAL_SPREAD_RATIO, ship_transform, strafe_color)
+      draw_line(-size * STRAFE_JET_MOUNT_X_RATIO, 0, -size * STRAFE_JET_MOUNT_X_RATIO - strafe_jet_length * STRAFE_JET_CENTER_LENGTH_RATIO, 0, ship_transform, strafe_color)
     } else if (strafing < 0) {
-
-      draw_line(size * 0.5, 0, size * 0.5 + strafe_jet_length, size * 0.2, ship_transform, strafe_color)
-      draw_line(size * 0.5, 0, size * 0.5 + strafe_jet_length, -size * 0.2, ship_transform, strafe_color)
-      draw_line(size * 0.5, 0, size * 0.5 + strafe_jet_length * 0.7, 0, ship_transform, strafe_color)
+      draw_line(size * STRAFE_JET_MOUNT_X_RATIO, 0, size * STRAFE_JET_MOUNT_X_RATIO + strafe_jet_length, size * STRAFE_JET_VERTICAL_SPREAD_RATIO, ship_transform, strafe_color)
+      draw_line(size * STRAFE_JET_MOUNT_X_RATIO, 0, size * STRAFE_JET_MOUNT_X_RATIO + strafe_jet_length, -size * STRAFE_JET_VERTICAL_SPREAD_RATIO, ship_transform, strafe_color)
+      draw_line(size * STRAFE_JET_MOUNT_X_RATIO, 0, size * STRAFE_JET_MOUNT_X_RATIO + strafe_jet_length * STRAFE_JET_CENTER_LENGTH_RATIO, 0, ship_transform, strafe_color)
     }
   }
 }
