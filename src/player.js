@@ -6,20 +6,6 @@ import { draw_line } from './renderer.js'
 import { toggle_info_box } from './ui.js'
 import { fire_torpedo, player_torpedoes } from './torpedoes.js'
 
-
-const ROTATION_STEP = Math.PI / 8
-const ROTATION_FACTOR = 6
-const THRUST_FACTOR = 4
-const THRUST_DECELERATE_FACTOR = 6
-const MAX_TORPEDO_COUNT = 3
-const FORE_TORPEDO_SIZE = 8
-const AFT_TORPEDO_SIZE = 7
-const AFT_TORPEDO_SPEED_MODIFIER = 0.35
-const AFT_TORPEDO_LIFE_MODIFIER = 1.0
-const AFT_TORPEDO_COLOR = [1.0, 0.5, 0.0]
-const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.1]
-const FIRE_COOLDOWN_TIME = 0.200
-
 // Spawn behavior
 const SPAWN_FORWARD_PUSH = 60                               // Initial forward velocity when respawning
 const SPAWN_SIDEWAYS_PUSH = 40                              // Initial sideways velocity when respawning
@@ -31,6 +17,10 @@ const FORWARD_THRUST_FORCE = 300                            // Engine power when
 const REVERSE_THRUST_FORCE = 400                            // Reverse thruster power
 const BRAKING_DECELERATION = 800                            // How fast the ship slows when braking
 const STRAFE_THRUST_FORCE = 250                             // Sideways thruster power
+const THRUST_FACTOR = 4
+const THRUST_DECELERATE_FACTOR = 6
+const ROTATION_STEP = Math.PI / 8
+const ROTATION_FACTOR = 6
 
 // Animation ramp speeds (how fast thruster visuals fade in/out)
 const STRAFE_THRUST_RAMP_UP_SPEED = 3
@@ -78,6 +68,16 @@ const ROTATION_JET_COLOR = [1.0, 0.0, 0.5, 0.9]             // Magenta/pink
 const BRAKE_JET_COLOR = [1.0, 0.0, 0.5, 0.9]                // Magenta/pink
 const STRAFE_JET_COLOR_RGB = [1.0, 0.3, 0.0]                // Orange (alpha added dynamically)
 const STRAFE_JET_ALPHA_MULTIPLIER = 0.9                     // Alpha = strafe_thrust * this
+
+// Weapons
+const MAX_TORPEDO_COUNT = 3
+const FORE_TORPEDO_SIZE = 8
+const AFT_TORPEDO_SIZE = 7
+const AFT_TORPEDO_SPEED_MODIFIER = 0.35
+const AFT_TORPEDO_LIFE_MODIFIER = 1.0
+const AFT_TORPEDO_COLOR = [1.0, 0.5, 0.0]
+const FORE_TORPEDO_COLOR = [1.0, 0.0, 0.1]
+const FIRE_COOLDOWN_TIME = 0.200
 
 export const player = {
   x: CENTER_X,
