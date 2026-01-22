@@ -12,22 +12,22 @@ import { clear_explosions, draw_explosions, update_explosions } from './explosio
 import { check_collisions } from './collisions.js'
 import { draw_ui, toggle_info_box } from './ui.js'
 import { draw_stars } from './stars.js'
-// import { autopilot_enabled, update_autopilot } from './autopilot.js'
+import { ENEMY_STARTING_COUNT,
+  ENEMY_STARTING_SPEED_MULTIPLIER,
+  PLAYER_STARTING_LIVES,
+  RING_STARTING_SPEED_MULTIPLIER } from './difficulty.js'
 
-const STARTING_LIVES = 4
-const STARTING_ENEMY_SPEED_MULTIPLIER = 8.0
-const STARTING_RING_SPEED_MULTIPLIER = 1.0
 
 const canvas = document.getElementById('gameCanvas')
 init_renderer(canvas)
 
 export const game_state = {
-  lives: STARTING_LIVES,
-  enemy_speed_multiplier: STARTING_ENEMY_SPEED_MULTIPLIER,
-  ring_speed_modifier: STARTING_RING_SPEED_MULTIPLIER,
+  lives: PLAYER_STARTING_LIVES,
+  enemy_speed_multiplier: ENEMY_STARTING_SPEED_MULTIPLIER,
+  ring_speed_modifier: RING_STARTING_SPEED_MULTIPLIER,
   round: 0,
   score: 0,
-  max_enemies: 3,
+  max_enemies: ENEMY_STARTING_COUNT,
   game_over: true,
   game_started: false,
   round_won: false,
@@ -41,7 +41,7 @@ let enemy_spawn_timer = 1.2
 
 const reset_game = (new_game = true) => {
   if (new_game) {
-    game_state.lives = STARTING_LIVES
+    game_state.lives = PLAYER_STARTING_LIVES
     game_state.round = 0
     game_state.score = 0
   } else {
@@ -50,7 +50,7 @@ const reset_game = (new_game = true) => {
 
   game_state.max_enemies = 3 + game_state.round
   game_state.enemy_speed_multiplier = new_game ? STARTING_ENEMY_SPEED_MULTIPLIER : (STARTING_ENEMY_SPEED_MULTIPLIER + game_state.round * 0.02)
-  game_state.ring_speed_modifier = new_game ? STARTING_RING_SPEED_MULTIPLIER : (STARTING_RING_SPEED_MULTIPLIER + game_state.round * 0.01)
+  game_state.ring_speed_modifier = new_game ? RING_STARTING_SPEED_MULTIPLIER : (RING_STARTING_SPEED_MULTIPLIER + game_state.round * 0.01)
 
   game_state.game_over = false
   game_state.game_started = true
