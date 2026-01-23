@@ -1,4 +1,29 @@
-import { CENTER_X, CENTER_Y } from './constants.js'
+import { CENTER_X,
+  CENTER_Y,
+  ENEMY_ALIGNMENT_DISTANCE,
+  ENEMY_ALIGNMENT_FACTOR,
+  ENEMY_ARRIVAL_THRESHOLD,
+  ENEMY_CLOSE_CHASE_FORCE,
+  ENEMY_DOCK_VELOCITY,
+  ENEMY_FAR_CHASE_FORCE,
+  ENEMY_JITTER_MAGNITUDE,
+  ENEMY_JITTER_MIN_INTERVAL,
+  ENEMY_JITTER_RANDOM_INTERVAL,
+  ENEMY_LINGER_BASE_TIME,
+  ENEMY_LINGER_RANDOM_TIME,
+  ENEMY_PRIMARY_COLOR,
+  ENEMY_RETREAT_VELOCITY,
+  ENEMY_RING_CHANGE_CHANCE,
+  ENEMY_RING_CHANGE_LINGER_BASE,
+  ENEMY_RING_CHANGE_LINGER_RANDOM,
+  ENEMY_SECONDARY_COLOR,
+  ENEMY_SECONDARY_SIZE_FACTOR,
+  ENEMY_SEEK_LIMIT,
+  ENEMY_SEPARATION_DISTANCE,
+  ENEMY_SEPARATION_FORCE,
+  ENEMY_SPARK_SIZE,
+  ENEMY_SPAWN_VELOCITY,
+  ENEMY_VELOCITY_DAMPING } from './constants.js'
 import { castle_rings, ring_spawning } from './castle.js'
 import { playSound } from './sound.js'
 import { draw_spark } from './renderer.js'
@@ -6,41 +31,6 @@ import { identity_matrix } from './math.js'
 
 
 export const enemy_sparks = []
-
-const ENEMY_SPARK_SIZE = 10
-const ENEMY_SEEK_LIMIT = 180
-
-// Movement & Physics
-const ENEMY_SPAWN_VELOCITY = 200
-const ENEMY_DOCK_VELOCITY = 100
-const ENEMY_RETREAT_VELOCITY = 100
-const ENEMY_FAR_CHASE_FORCE = 40
-const ENEMY_CLOSE_CHASE_FORCE = 60
-const ENEMY_VELOCITY_DAMPING = 0.98
-const ENEMY_SEPARATION_FORCE = 60
-const ENEMY_ALIGNMENT_FACTOR = 0.5
-
-// Distances & Thresholds
-const ENEMY_ARRIVAL_THRESHOLD = 5
-const ENEMY_SEPARATION_DISTANCE = 40
-const ENEMY_ALIGNMENT_DISTANCE = 100
-
-// Jitter (evasion behavior)
-const ENEMY_JITTER_MAGNITUDE = 160
-const ENEMY_JITTER_MIN_INTERVAL = 0.15
-const ENEMY_JITTER_RANDOM_INTERVAL = 0.2
-
-// Linger timing
-const ENEMY_LINGER_BASE_TIME = 2
-const ENEMY_LINGER_RANDOM_TIME = 3
-const ENEMY_RING_CHANGE_LINGER_BASE = 1
-const ENEMY_RING_CHANGE_LINGER_RANDOM = 2
-const ENEMY_RING_CHANGE_CHANCE = 0.30
-
-// Rendering
-const ENEMY_PRIMARY_COLOR = [1.0, 0.0, 1.0, 1.0]
-const ENEMY_SECONDARY_COLOR = [1.0, 1.0, 0.0, 0.7]
-const ENEMY_SECONDARY_SIZE_FACTOR = 0.75
 
 export const spawn_enemy = () => {
   const ring_index = Math.floor(Math.random() * castle_rings.length)
@@ -65,11 +55,12 @@ export const spawn_enemy = () => {
     spawn_target_y: target_y,
     spawn_ring_index: ring_index,
     spawn_angle: angle,
-    linger_timer: ENEMY_LINGER_BASE_TIME + Math.random() * ENEMY_LINGER_RANDOM_TIME
+    linger_timer: ENEMY_LINGER_BASE_TIME
+      + Math.random() * ENEMY_LINGER_RANDOM_TIME
   })
 }
 
-export const update_enemies = (dt, player, game_over, round_won, enemy_speed_multiplier) => {
+const update_enemies = (dt, player, game_over, round_won, enemy_speed_multiplier) => {
   const player_is_target = player.alive && !game_over && !round_won
 
   for (let index = 0; index < enemy_sparks.length; index += 1) {
@@ -247,6 +238,7 @@ export const update_enemies = (dt, player, game_over, round_won, enemy_speed_mul
     enemy.angle = Math.atan2(enemy.vel_y, enemy.vel_x) + Math.PI / 2
   }
 }
+export default update_enemies
 
 export const clear_enemies = () => {
   enemy_sparks.length = 0
@@ -306,16 +298,16 @@ export const draw_enemy_sparks = () => {
         angle: enemy.angle,
         size: enemy.size,
         transform,
-        color: [1.0, 0.0, 1.0, 1.0]
+        color: ENEMY_PRIMARY_COLOR
       })
       let angle_mod = Math.random() - 0.5
       draw_spark({
         x: enemy.x,
         y: enemy.y,
         angle: enemy.angle + angle_mod,
-        size: enemy.size * 0.75,
+        size: enemy.size * ENEMY_SECONDARY_SIZE_FACTOR,
         transform,
-        color: [1.0, 1.0, 0.0, 0.7]
+        color: ENEMY_SECONDARY_COLOR
       })
     }
   }

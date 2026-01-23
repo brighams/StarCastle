@@ -1,69 +1,48 @@
 import { identity_matrix } from './math.js'
 import { draw_circle, draw_line } from './renderer.js'
-
-// ============================================
-// EXPLOSION CONSTANTS
-// ============================================
-
-// Castle explosion parameters
-const CASTLE_EXPLOSION_MAX_SIZE = 180
-const CASTLE_EXPLOSION_LIFE = 1.8
-const CASTLE_EXPLOSION_SPIKES_BASE = 16
-const CASTLE_EXPLOSION_SPIKES_RANDOM = 8
-const CASTLE_EXPLOSION_INITIAL_SIZE = 5
-const CASTLE_EXPLOSION_DEBRIS_COUNT = 12
-const CASTLE_EXPLOSION_DEBRIS_SCALE = 1
-const CASTLE_INNER_RING_RADIUS = 60
-
-// Ship explosion parameters
-const SHIP_EXPLOSION_MAX_SIZE = 45
-const SHIP_EXPLOSION_LIFE = 0.8
-const SHIP_EXPLOSION_SPIKES_BASE = 10
-const SHIP_EXPLOSION_SPIKES_RANDOM = 4
-const SHIP_EXPLOSION_INITIAL_SIZE = 2
-const SHIP_EXPLOSION_DEBRIS_COUNT = 6
-const SHIP_EXPLOSION_DEBRIS_SCALE = 0.4
-
-// Spike generation parameters
-const SPIKE_ANGLE_VARIATION = 0.3
-const SPIKE_LENGTH_FACTOR_BASE = 0.6
-const SPIKE_LENGTH_FACTOR_RANDOM = 0.8
-const SPIKE_WOBBLE_SPEED_BASE = 2
-const SPIKE_WOBBLE_SPEED_RANDOM = 4
-const SPIKE_WOBBLE_AMOUNT_BASE = 0.1
-const SPIKE_WOBBLE_AMOUNT_RANDOM = 0.2
-
-// Drawing parameters - sizes
-const CORE_SIZE_FACTOR = 0.3
-const MID_SIZE_FACTOR = 0.6
-const CORE_SEGMENTS = 12
-const MID_SEGMENTS = 16
-const OUTER_SEGMENTS = 20
-const BASIC_EXPLOSION_SEGMENTS = 8
-
-// Drawing parameters - debris
-const DEBRIS_MIN_DISTANCE_FACTOR = 0.4
-const DEBRIS_DISTANCE_RANDOM = 0.5
-const DEBRIS_LENGTH_BASE = 5
-const DEBRIS_LENGTH_RANDOM = 15
-
-// Colors (RGBA)
-const BASIC_EXPLOSION_COLOR = [1.0, 0.5, 0.0]  // Orange
-const CORE_COLOR = [1.0, 1.0, 1.0]             // White
-const MID_COLOR = [1.0, 0.7, 0.0]              // Yellow-orange
-const OUTER_COLOR = [1.0, 0.3, 0.0]            // Red-orange
-const SPIKE_COLOR_BASE = [1.0, 0.5, 0.0]       // Orange base
-const SPIKE_COLOR_GREEN_RANDOM = 0.3           // Random green variation
-const DEBRIS_COLOR = [1.0, 0.8, 0.2]           // Yellow-orange
-
-// Alpha multipliers
-const MID_ALPHA_MULTIPLIER = 0.8
-const OUTER_ALPHA_MULTIPLIER = 0.6
-const DEBRIS_ALPHA_MULTIPLIER = 0.7
-const ALPHA_FADE_MULTIPLIER = 2
-
-// Time conversion
-const MS_TO_SECONDS = 1000
+import { ALPHA_FADE_MULTIPLIER,
+  BASIC_EXPLOSION_COLOR,
+  BASIC_EXPLOSION_SEGMENTS,
+  CASTLE_EXPLOSION_DEBRIS_COUNT,
+  CASTLE_EXPLOSION_DEBRIS_SCALE,
+  CASTLE_EXPLOSION_INITIAL_SIZE,
+  CASTLE_EXPLOSION_LIFE,
+  CASTLE_EXPLOSION_MAX_SIZE,
+  CASTLE_EXPLOSION_SPIKES_BASE,
+  CASTLE_EXPLOSION_SPIKES_RANDOM,
+  CASTLE_INNER_RING_RADIUS,
+  CORE_COLOR,
+  CORE_SEGMENTS,
+  CORE_SIZE_FACTOR,
+  DEBRIS_ALPHA_MULTIPLIER,
+  DEBRIS_COLOR,
+  DEBRIS_DISTANCE_RANDOM,
+  DEBRIS_LENGTH_BASE,
+  DEBRIS_LENGTH_RANDOM,
+  DEBRIS_MIN_DISTANCE_FACTOR,
+  MID_ALPHA_MULTIPLIER,
+  MID_COLOR,
+  MID_SEGMENTS,
+  MID_SIZE_FACTOR,
+  OUTER_ALPHA_MULTIPLIER,
+  OUTER_COLOR,
+  OUTER_SEGMENTS,
+  SHIP_EXPLOSION_DEBRIS_COUNT,
+  SHIP_EXPLOSION_DEBRIS_SCALE,
+  SHIP_EXPLOSION_INITIAL_SIZE,
+  SHIP_EXPLOSION_LIFE,
+  SHIP_EXPLOSION_MAX_SIZE,
+  SHIP_EXPLOSION_SPIKES_BASE,
+  SHIP_EXPLOSION_SPIKES_RANDOM,
+  SPIKE_ANGLE_VARIATION,
+  SPIKE_COLOR_BASE,
+  SPIKE_COLOR_GREEN_RANDOM,
+  SPIKE_LENGTH_FACTOR_BASE,
+  SPIKE_LENGTH_FACTOR_RANDOM,
+  SPIKE_WOBBLE_AMOUNT_BASE,
+  SPIKE_WOBBLE_AMOUNT_RANDOM,
+  SPIKE_WOBBLE_SPEED_BASE,
+  SPIKE_WOBBLE_SPEED_RANDOM } from './constants.js'
 
 // ============================================
 
@@ -113,11 +92,17 @@ const create_styled_explosion = (x, y, maxSize, life, num_spikes_base, num_spike
 }
 
 export const create_castle_explosion = (x, y) => {
-  castle_explosion = create_styled_explosion(x, y, CASTLE_EXPLOSION_MAX_SIZE, CASTLE_EXPLOSION_LIFE, CASTLE_EXPLOSION_SPIKES_BASE, CASTLE_EXPLOSION_SPIKES_RANDOM, true)
+  castle_explosion = create_styled_explosion(x, y, CASTLE_EXPLOSION_MAX_SIZE,
+    CASTLE_EXPLOSION_LIFE,
+    CASTLE_EXPLOSION_SPIKES_BASE,
+    CASTLE_EXPLOSION_SPIKES_RANDOM, true)
 }
 
 export const create_ship_explosion = (x, y) => {
-  styled_explosions.push(create_styled_explosion(x, y, SHIP_EXPLOSION_MAX_SIZE, SHIP_EXPLOSION_LIFE, SHIP_EXPLOSION_SPIKES_BASE, SHIP_EXPLOSION_SPIKES_RANDOM, false))
+  styled_explosions.push(create_styled_explosion(x, y, SHIP_EXPLOSION_MAX_SIZE,
+    SHIP_EXPLOSION_LIFE,
+    SHIP_EXPLOSION_SPIKES_BASE,
+    SHIP_EXPLOSION_SPIKES_RANDOM, false))
 }
 
 export const update_explosions = (dt) => {
@@ -161,16 +146,19 @@ export const update_explosions = (dt) => {
 }
 
 const draw_styled_explosion = (explosion, transform) => {
-  const time = performance.now() / MS_TO_SECONDS
+  const time = performance.now() / 1000
   const alpha = Math.min(1.0, explosion.life / explosion.maxLife * ALPHA_FADE_MULTIPLIER)
 
   const core_size = explosion.size * CORE_SIZE_FACTOR
-  draw_circle(explosion.x, explosion.y, core_size, CORE_SEGMENTS, transform, [...CORE_COLOR, alpha])
+  draw_circle(explosion.x, explosion.y, core_size,
+    CORE_SEGMENTS, transform, [...CORE_COLOR, alpha])
 
   const mid_size = explosion.size * MID_SIZE_FACTOR
-  draw_circle(explosion.x, explosion.y, mid_size, MID_SEGMENTS, transform, [...MID_COLOR, alpha * MID_ALPHA_MULTIPLIER])
+  draw_circle(explosion.x, explosion.y, mid_size,
+    MID_SEGMENTS, transform, [...MID_COLOR, alpha * MID_ALPHA_MULTIPLIER])
 
-  draw_circle(explosion.x, explosion.y, explosion.size, OUTER_SEGMENTS, transform, [...OUTER_COLOR, alpha * OUTER_ALPHA_MULTIPLIER])
+  draw_circle(explosion.x, explosion.y, explosion.size,
+    OUTER_SEGMENTS, transform, [...OUTER_COLOR, alpha * OUTER_ALPHA_MULTIPLIER])
 
   for (const spike of explosion.spikes) {
     const wobble = Math.sin(time * spike.wobble_speed) * spike.wobble_amount
@@ -182,7 +170,9 @@ const draw_styled_explosion = (explosion, transform) => {
     const x2 = explosion.x + Math.cos(angle) * length
     const y2 = explosion.y + Math.sin(angle) * length
 
-    const color = [SPIKE_COLOR_BASE[0], SPIKE_COLOR_BASE[1] + Math.random() * SPIKE_COLOR_GREEN_RANDOM, SPIKE_COLOR_BASE[2], alpha]
+    const color = [SPIKE_COLOR_BASE[0],
+      SPIKE_COLOR_BASE[1] + Math.random() * SPIKE_COLOR_GREEN_RANDOM,
+      SPIKE_COLOR_BASE[2], alpha]
     draw_line(x1, y1, x2, y2, transform, color)
   }
 

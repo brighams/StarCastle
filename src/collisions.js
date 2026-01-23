@@ -1,4 +1,14 @@
-import { CENTER_X, CENTER_Y } from './constants.js'
+import { CASTLE_CORE_HIT_RADIUS,
+  CENTER_X,
+  CENTER_Y,
+  ENEMY_EXPLOSION_DURATION,
+  ENEMY_EXPLOSION_PARTICLES,
+  PLAYER_RING_EXPLOSION_DURATION,
+  PLAYER_RING_EXPLOSION_PARTICLES,
+  RING_EXPLOSION_DURATION,
+  RING_EXPLOSION_PARTICLES,
+  TORPEDO_ENEMY_HIT_BUFFER,
+  TORPEDO_RING_HIT_DISTANCE } from './constants.js'
 import { cannon_projectile, castle_destroyed, castle_rings, clear_cannon_projectile } from './castle.js'
 import { destroy_torpedo, player_torpedoes } from './torpedoes.js'
 import { destroy_enemy, enemy_sparks, undock_one_enemy } from './enemies.js'
@@ -6,18 +16,6 @@ import { create_explosion, create_ship_explosion } from './explosions.js'
 import { playSound } from './sound.js'
 import { destroy_player } from './player.js'
 
-// Collision detection distances
-const TORPEDO_RING_HIT_DISTANCE = 8
-const CASTLE_CORE_HIT_RADIUS = 15
-const TORPEDO_ENEMY_HIT_BUFFER = 2
-
-// Explosion parameters
-const RING_EXPLOSION_PARTICLES = 15
-const RING_EXPLOSION_DURATION = 0.5
-const ENEMY_EXPLOSION_PARTICLES = 20
-const ENEMY_EXPLOSION_DURATION = 0.5
-const PLAYER_RING_EXPLOSION_PARTICLES = 25
-const PLAYER_RING_EXPLOSION_DURATION = 0.8
 
 export const check_collisions = (player, game_state) => {
   const player_center_dx = player.x - CENTER_X

@@ -1,4 +1,23 @@
-import { CENTER_X, CENTER_Y } from './constants.js'
+import { CANNON_COLOR,
+  CANNON_COOL_OFF_TIME,
+  CANNON_FIRE_WARMUP_TIME,
+  CANNON_PROJECTILE_BOUNDS_MAX,
+  CANNON_PROJECTILE_BOUNDS_MIN,
+  CANNON_SPARK_COLOR,
+  CANNON_SPARK_SIZE,
+  CANNON_SPARK_SPEED,
+  CANNON_THICKNESS,
+  CASTLE_CENTER_ROTATION_SPEED,
+  CASTLE_DESTROYED_CHECK_DELAY,
+  CENTER_X,
+  CENTER_Y,
+  ENEMY_SPEED_INCREASE_PER_ROUND,
+  HEX_COLOR,
+  HEX_RADIUS,
+  HEX_SIDES,
+  RING_RESPAWN_TIME,
+  RING_SPAWN_INITIAL_RADIUS } from './constants.js'
+
 import { identity_matrix } from './math.js'
 import { draw_line, draw_spark } from './renderer.js'
 import { are_rings_destroyed_by_explosion, create_castle_explosion, is_castle_exploding } from './explosions.js'
@@ -7,28 +26,7 @@ import { clear_torpedoes } from './torpedoes.js'
 import { retreat_enemies_to_center } from './enemies.js'
 import { player } from './player.js'
 import { checkAndUpdateHighScore } from './score.js'
-import { CANNON_COOL_OFF_TIME,
-  CANNON_FIRE_WARMUP_TIME,
-  CANNON_PROJECTILE_BOUNDS_MAX,
-  CANNON_PROJECTILE_BOUNDS_MIN,
-  CANNON_SPARK_SIZE,
-  CANNON_SPARK_SPEED,
-  CASTLE_CENTER_ROTATION_SPEED,
-  ENEMY_SPEED_INCREASE_PER_ROUND } from './difficulty.js'
 
-
-const CANNON_SPARK_COLOR = [0.0, 1.0, 1.0, 1.0]
-const CANNON_COLOR = [0.5, 0.5, 0.5, 1.0]
-const CANNON_THICKNESS = 0.8
-
-const HEX_COLOR = [1.0, 1.0, 1.0, 1.0]
-const HEX_RADIUS = 15
-const HEX_SIDES = 6
-
-const RING_RESPAWN_TIME = 1.0
-const RING_SPAWN_INITIAL_RADIUS = 0.001
-
-const CASTLE_DESTROYED_CHECK_DELAY = 1200
 
 export const castle_rings = [
 //  { round: 1, index: 0, radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.65, color: [0.0, 1.0, 0.0, 1.0] },

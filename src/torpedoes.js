@@ -1,13 +1,9 @@
 import { identity_matrix } from './math.js'
 import { draw_spark } from './renderer.js'
 import { playSound } from './sound.js'
-import { CANVAS_SIZE } from './constants.js'
+import { CANVAS_SIZE, TORPEDO_JITTER_TIMER, TORPEDO_JITTER_X, TORPEDO_JITTER_Y } from './constants.js'
 import { draw_space_mine } from './player.js'
 
-
-const TORPEDO_JITTER_X = 110
-const TORPEDO_JITTER_Y = 110
-const TORPEDO_JITTER_TIMER = 0.1
 
 export const player_torpedoes = []
 

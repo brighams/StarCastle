@@ -2,12 +2,11 @@ import { clear_screen, init_renderer } from './renderer.js'
 import { draw_player_ship, player, reset_player, update_player } from './player.js'
 import { clear_cannon_projectile, draw_castle, init_ring_faces, update_castle_rings } from './castle.js'
 import { clear_torpedoes, draw_torpedoes, remove_destroyed_torpedoes, update_torpedoes } from './torpedoes.js'
-import { clear_enemies,
+import update_enemies, { clear_enemies,
   draw_enemy_sparks,
   enemy_sparks,
   remove_destroyed_enemies,
-  spawn_enemies,
-  update_enemies } from './enemies.js'
+  spawn_enemies } from './enemies.js'
 import { clear_explosions, draw_explosions, update_explosions } from './explosions.js'
 import { check_collisions } from './collisions.js'
 import { draw_ui, toggle_info_box } from './ui.js'
@@ -15,8 +14,10 @@ import { draw_stars } from './stars.js'
 import { ENEMY_STARTING_COUNT,
   ENEMY_STARTING_SPEED_MULTIPLIER,
   PLAYER_STARTING_LIVES,
-  RING_STARTING_SPEED_MULTIPLIER } from './difficulty.js'
+  RING_STARTING_SPEED_MULTIPLIER } from './constants.js'
 
+
+const STARTING_ENEMY_SPEED_MULTIPLIER = 1.0
 
 const canvas = document.getElementById('gameCanvas')
 init_renderer(canvas)
