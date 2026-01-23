@@ -58,17 +58,19 @@
         <span class="control-key">A</span>
         <span class="control-description">Rotate Left</span>
         <span class="control-direction">(PORT)</span>
-        <span class="control-key" style="color:#ff7800;">SHIFT-A</span>
-        <span class="control-description" style="color:#ff7800;">Strafe Right</span>
-        <span class="control-direction">(STARBOARD)</span>
 
 
-        <span class="control-key">D</span>
-        <span class="control-description">Rotate Right</span>
-        <span class="control-direction">(STARBOARD)</span>
         <span class="control-key" style="color:#ff7800;">SHIFT-D</span>
         <span class="control-description" style="color:#ff7800;">Strafe Left</span>
         <span class="control-direction">(PORT)</span>
+        
+        <span class="control-key">D</span>
+        <span class="control-description">Rotate Right</span>
+        <span class="control-direction">(STARBOARD)</span>
+
+        <span class="control-key" style="color:#ff7800;">SHIFT-A</span>
+        <span class="control-description" style="color:#ff7800;">Strafe Right</span>
+        <span class="control-direction">(STARBOARD)</span>
 
         <span class="control-key">Spacebar</span>
         <span class="control-description">Fire Torpedo</span>
@@ -81,25 +83,52 @@
         <span class="control-key"></span>
         <span class="control-description">
           <a href="#" id="resetHighScore" style="color:#FFFF00; font-size: 14px; align-self:center; padding-top: 2px;">Reset High Score</a></span>
-        <span class="control-direction"><a style="color:#ff7800;" target="_GITHUB"
+        <span class="control-direction"><a style="color:#FFFF00; font-size: 14px; align-self:center; padding-top: 2px;"
+                                           target="_GITHUB"
                                            href="https://github.com/brighams/StarCastle">GitHub</a></span>
       </div>
     </div>
 
-    <!-- Volume Control Panel -->
-    <div class="volume-panel">
-      <div class="volume-toggle" id="volumeToggle" title="Volume Controls">
+    <div class="settings-control-panel">
+
+      <div class="settings-toggle" id="settingsToggleIcon" title="Settings Control Panel">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path
-            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+            d="M13.94 2.5h-3.88l-.42 2.04c-.53.17-1.03.39-1.5.65L5.9 3.9 3.9 5.9l1.29 2.24c-.27.47-.48.97-.65 1.5L2.5 10.06v3.88l2.04.42c.17.53.39 1.03.65 1.5L3.9 18.1l2 2 2.24-1.29c.47.27.97.48 1.5.65l.42 2.04h3.88l.42-2.04c.53-.17 1.03-.39 1.5-.65l2.24 1.29 2-2-1.29-2.24c.27-.47.48-.97.65-1.5l2.04-.42v-3.88l-2.04-.42a6.2 6.2 0 0 0-.65-1.5l1.29-2.24-2-2-2.24 1.29c-.47-.27-.97-.48-1.5-.65L13.94 2.5zM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8z"/>
         </svg>
       </div>
-      <div class="volume-popup" id="volumePopup">
-        <div class="volume-popup-title">◆ AUDIO ◆</div>
 
+      <div class="settings-panel" id="settingsPanel">
+        <div class="settings-panel-title">◆ DIFFICULTY ◆</div>
+        <div class="slider-control">
+          <div class="control-icon" id="difficultyIcon" title="Difficulty">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M12 3c-4.42 0-8 3.13-8 7 0 2.52 1.53 4.76 3.5 6v2c0 1.1.9 2 2 2h1v-2h1v2h1v-2h1v2h1c1.1 0 2-.9 2-2v-2c1.97-1.24 3.5-3.48 3.5-6 0-3.87-3.58-7-8-7zm-3 9c0-1.1.9-2 2-2s2 .9 2 2-2 .9-2 2-2-.9-2-2zm6 0c0-1.1.9-2 2-2s2 .9 2 2-2 .9-2 2-2-.9-2-2z"/>
+            </svg>
+          </div>
+          <div class="slider-container">
+            <div class="slider-track">
+              <div class="slider-fill" id="difficultyFill" style="width: 50%;"></div>
+              <div class="slider-notches">
+                <div class="slider-notch"></div>
+                <div class="slider-notch"></div>
+                <div class="slider-notch"></div>
+                <div class="slider-notch"></div>
+                <div class="slider-notch"></div>
+              </div>
+            </div>
+            <div class="slider-thumb" id="difficultyThumb" style="left: calc(50% - 7px);"></div>
+            <input type="range" class="slider-input" id="difficultySlider" min="0" max="100" value="50">
+          </div>
+          <span class="volume-label" id="difficultyLabel">50%</span>
+        </div>
+
+
+        <div class="settings-panel-title">◆ AUDIO ◆</div>
         <!-- Music Volume Control -->
-        <div class="volume-control">
-          <div class="volume-icon" id="musicIcon" title="Click to mute music">
+        <div class="slider-control">
+          <div class="control-icon" id="musicIcon" title="Click to mute music">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
             </svg>
@@ -122,8 +151,8 @@
         </div>
 
         <!-- Effects Volume Control (Deactivated) -->
-        <div class="volume-control">
-          <div class="volume-icon deactivated" id="effectsIcon" title="Not implemented yet">
+        <div class="slider-control">
+          <div class="control-icon deactivated" id="effectsIcon" title="Not implemented yet">
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
             </svg>

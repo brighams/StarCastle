@@ -1,11 +1,10 @@
 body {
   margin: 0;
-  padding: 0;
   background: #000;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 2em;
+  padding: 2em 0 0;
   min-height: 100vh;
   font-family: monospace;
   color: #fff;
@@ -33,7 +32,7 @@ body {
   position: absolute;
   width: 440px;
   height: 390px;
-  background-color: rgba(0, 0, 0, 0.0);
+  background-color: rgba(0, 0, 0, 9.0);
   border: 2px solid #00FFFF;
   border-radius: 10px;
   box-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
@@ -98,14 +97,14 @@ body {
 }
 
 /* Volume Control Panel */
-.volume-panel {
+.settings-control-panel {
   position: absolute;
   top: 188px;
   right: -172px;
   z-index: 100;
 }
 
-.volume-toggle {
+.settings-toggle {
   width: 40px;
   height: 40px;
   background-color: rgba(0, 0, 0, 0.9);
@@ -119,17 +118,17 @@ body {
   transition: box-shadow 0.2s;
 }
 
-.volume-toggle:hover {
+.settings-toggle:hover {
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
 }
 
-.volume-toggle svg {
+.settings-toggle svg {
   width: 24px;
   height: 24px;
   fill: #00FFFF;
 }
 
-.volume-popup {
+.settings-panel {
   display: none;
   position: absolute;
   bottom: 50px;
@@ -144,15 +143,15 @@ body {
   font-family: monospace;
 }
 
-.volume-popup.open {
+.settings-panel.open {
   display: block;
 }
 
-.volume-popup.visible {
+.settings-panel.visible {
   display: block;
 }
 
-.volume-popup-title {
+.settings-panel-title {
   color: #FF0088;
   font-size: 14px;
   font-weight: bold;
@@ -162,18 +161,18 @@ body {
   letter-spacing: 2px;
 }
 
-.volume-control {
+.slider-control {
   display: flex;
   align-items: center;
   margin-bottom: 15px;
   gap: 10px;
 }
 
-.volume-control:last-child {
+.slider-control:last-child {
   margin-bottom: 0;
 }
 
-.volume-icon {
+.control-icon {
   width: 28px;
   height: 28px;
   min-width: 28px;
@@ -187,34 +186,34 @@ body {
   transition: all 0.2s;
 }
 
-.volume-icon:hover {
+.control-icon:hover {
   box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
 }
 
-.volume-icon.muted {
+.control-icon.muted {
   border-color: #ff0088;
   opacity: 0.6;
 }
 
-.volume-icon.muted {
+.control-icon.muted {
   opacity: 0.4;
 }
 
-.volume-icon.muted svg {
+.control-icon.muted svg {
   fill: #ff0088;
 }
 
-.volume-icon.deactivated {
+.control-icon.deactivated {
   border-color: #555;
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.volume-icon.deactivated svg {
+.control-icon.deactivated svg {
   fill: #555;
 }
 
-.volume-icon svg {
+.control-icon svg {
   width: 16px;
   height: 16px;
   fill: #00FFFF;

@@ -13,8 +13,8 @@ window.addEventListener('load', () => {
   document.addEventListener('click', startAudio)
   document.addEventListener('keydown', startAudio)
 
-  const volumeToggle = document.getElementById('volumeToggle')
-  const volumePopup = document.getElementById('volumePopup')
+  const settingsToggle = document.getElementById('settingsToggleIcon')
+  const settingsPanel = document.getElementById('settingsPanel')
   const musicSlider = document.getElementById('musicSlider')
   const musicFill = document.getElementById('musicFill')
   const musicThumb = document.getElementById('musicThumb')
@@ -23,14 +23,14 @@ window.addEventListener('load', () => {
 
   let lastVolume = 0.5
 
-  volumeToggle.addEventListener('click', (e) => {
+  settingsToggle.addEventListener('click', (e) => {
     e.stopPropagation()
-    volumePopup.classList.toggle('visible')
+    settingsPanel.classList.toggle('visible')
   })
 
   document.addEventListener('click', (e) => {
-    if (!volumePopup.contains(e.target) && !volumeToggle.contains(e.target)) {
-      volumePopup.classList.remove('visible')
+    if (!settingsPanel.contains(e.target) && !settingsToggle.contains(e.target)) {
+      settingsPanel.classList.remove('visible')
     }
   })
 
