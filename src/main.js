@@ -1,6 +1,6 @@
 import { clear_screen, init_renderer } from './renderer.js'
 import { draw_player_ship, player, reset_player, update_player } from './player.js'
-import { clear_cannon_projectile, draw_castle, init_ring_faces, update_castle_rings } from './castle.js'
+import { draw_castle, reset_castle, ring_spawning, update_castle_rings } from './castle.js'
 import { clear_torpedoes, draw_torpedoes, remove_destroyed_torpedoes, update_torpedoes } from './torpedoes.js'
 import update_enemies, { clear_enemies,
   draw_enemy_sparks,
@@ -33,7 +33,8 @@ export const game_state = {
   game_started: false,
   round_won: false,
   pyrrhic_victory: false,
-  autopilot_on: false
+  autopilot_on: false,
+  round_starting: false
 }
 
 let keys_pressed = {}
@@ -56,15 +57,15 @@ const reset_game = (new_game = true) => {
   game_state.game_over = false
   game_state.game_started = true
   game_state.round_won = false
+  game_state.round_starting = true
 
   toggle_info_box(false)
 
   clear_explosions()
   clear_enemies()
   clear_torpedoes()
-  clear_cannon_projectile()
   reset_player()
-  init_ring_faces()
+  reset_castle()
 
   enemy_spawn_timer = 1.2
 
@@ -122,6 +123,19 @@ const update_game = (current_time) => {
   const dt = (current_time - last_time) / 1000
   last_time = current_time
 
+  update_castle_rings(dt, player, game_state)
+  if (game_state.round_starting) {
+    if (!ring_spawning()) {
+      game_state.round_starting = false
+    } else {
+      update_player(dt, keys_pressed, game_state)
+      update_torpedoes(dt)
+      remove_destroyed_torpedoes()
+      update_explosions(dt)
+      return
+    }
+  }
+
   enemy_spawn_timer -= dt
   if (enemy_spawn_timer <= 0 && enemy_sparks.length < game_state.max_enemies) {
     if (Math.random() < 0.3) {
@@ -129,8 +143,6 @@ const update_game = (current_time) => {
     }
     enemy_spawn_timer = 3
   }
-
-  update_castle_rings(dt, player, game_state)
   update_player(dt, keys_pressed, game_state)
   update_torpedoes(dt)
   remove_destroyed_torpedoes()
@@ -145,5 +157,5 @@ const game_loop = (current_time) => {
   render_frame()
 }
 
-init_ring_faces()
+reset_castle()
 requestAnimationFrame(game_loop)

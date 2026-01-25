@@ -3,54 +3,26 @@ export const CENTER_X = CANVAS_SIZE / 2
 export const CENTER_Y = CANVAS_SIZE / 2
 export const TOP_RIGHT_X = CANVAS_SIZE - 16
 export const TOP_RIGHT_Y = 16
-//
-// All constants here manage difficulty progression
-//
+export const SCREEN_WRAP_EDGE_MARGIN = 20
 
 export const ENEMY_SPEED_INCREASE_PER_ROUND = 0.2
-export const ENEMY_STARTING_COUNT = 3
-export const PLAYER_STARTING_LIVES = 4
-export const ENEMY_STARTING_SPEED_MULTIPLIER = 8.0
-export const RING_STARTING_SPEED_MULTIPLIER = 1.0
-
-export const CASTLE_CENTER_ROTATION_SPEED = 0.8
-
-export const CANNON_SPARK_SIZE = 24
-export const CANNON_COOL_OFF_TIME = 1.3
-export const CANNON_FIRE_WARMUP_TIME = 200
-export const CANNON_SPARK_SPEED = 300
-export const CANNON_PROJECTILE_BOUNDS_MIN = -50
-export const CANNON_PROJECTILE_BOUNDS_MAX = 1074
-
-export const CANNON_SPARK_COLOR = [0.0, 1.0, 1.0, 1.0]
-export const CANNON_COLOR = [0.5, 0.5, 0.5, 1.0]
-export const CANNON_THICKNESS = 0.8
-
-export const HEX_COLOR = [1.0, 1.0, 1.0, 1.0]
-export const HEX_RADIUS = 15
-export const HEX_SIDES = 6
-
-export const RING_RESPAWN_TIME = 1.0
-export const RING_SPAWN_INITIAL_RADIUS = 0.001
-
-export const CASTLE_DESTROYED_CHECK_DELAY = 1200
-
-export const ENEMY_SPARK_SIZE = 10
-export const ENEMY_SEEK_LIMIT = 180
-
-// Movement & Physics
+export const ENEMY_STARTING_COUNT = 4
+export const ENEMY_STARTING_SPEED_MULTIPLIER = 1.2
 export const ENEMY_SPAWN_VELOCITY = 200
 export const ENEMY_DOCK_VELOCITY = 100
 export const ENEMY_RETREAT_VELOCITY = 100
-export const ENEMY_FAR_CHASE_FORCE = 40
+export const ENEMY_FAR_CHASE_FORCE = 60
 export const ENEMY_CLOSE_CHASE_FORCE = 60
-export const ENEMY_VELOCITY_DAMPING = 0.98
+export const ENEMY_VELOCITY_DAMPING = 1.0
 export const ENEMY_SEPARATION_FORCE = 60
 export const ENEMY_ALIGNMENT_FACTOR = 0.5
 
-export const ENEMY_ARRIVAL_THRESHOLD = 5
-export const ENEMY_SEPARATION_DISTANCE = 40
-export const ENEMY_ALIGNMENT_DISTANCE = 100
+export const ENEMY_DOCK_ARRIVAL_THRESHOLD = 5
+export const ENEMY_FLOCKING_SEPARATION_DISTANCE = 40
+export const ENEMY_FLOCKING_ALIGNMENT_DISTANCE = 100
+
+export const ENEMY_SPARK_SIZE = 10
+export const ENEMY_FLOCKING_DISTANCE = 180
 
 export const ENEMY_JITTER_MAGNITUDE = 160
 export const ENEMY_JITTER_MIN_INTERVAL = 0.15
@@ -66,14 +38,42 @@ export const ENEMY_PRIMARY_COLOR = [1.0, 0.0, 1.0, 1.0]
 export const ENEMY_SECONDARY_COLOR = [1.0, 1.0, 0.0, 0.7]
 export const ENEMY_SECONDARY_SIZE_FACTOR = 0.75
 
-export const TORPEDO_RING_HIT_DISTANCE = 8
+export const RING_STARTING_SPEED_MULTIPLIER = 1.0
+export const RING_RESPAWN_TIME = 1.0
+export const RING_SPAWN_INITIAL_RADIUS = 0.001
+
+export const ENEMY_EXPLOSION_PARTICLES = 20
+export const ENEMY_EXPLOSION_DURATION = 0.5
+
+export const CASTLE_DESTROYED_CHECK_DELAY = 1200
+export const CASTLE_CENTER_ROTATION_SPEED = 0.8
+
+export const CANNON_SPARK_SIZE = 24
+export const CANNON_COOL_OFF_TIME = 1.3
+export const CANNON_FIRE_WARMUP_TIME = 200
+export const CANNON_SPARK_SPEED = 300
+export const CANNON_PROJECTILE_BOUNDS_MIN = -50
+export const CANNON_PROJECTILE_BOUNDS_MAX = 1074
+
+export const CANNON_SPARK_COLOR = [0.0, 1.0, 1.0, 1.0]
+export const CANNON_COLOR = [0.5, 0.5, 0.5, 1.0]
+export const CANNON_THICKNESS = 0.8
+
+export const CASTLE_CENTRAL_HEX_COLOR = [1.0, 1.0, 1.0, 1.0]
+export const CASTLE_CENTRAL_HEX_RADIUS = 15
+export const CASTLE_CENTRAL_HEX_SIDES = 6
+
+// Movement & Physics
+
 export const CASTLE_CORE_HIT_RADIUS = 15
+export const CASTLE_INNER_RING_RADIUS = 60
+
+export const TORPEDO_RING_HIT_DISTANCE = 8
 export const TORPEDO_ENEMY_HIT_BUFFER = 2
 
 export const RING_EXPLOSION_PARTICLES = 15
 export const RING_EXPLOSION_DURATION = 0.5
-export const ENEMY_EXPLOSION_PARTICLES = 20
-export const ENEMY_EXPLOSION_DURATION = 0.5
+
 export const PLAYER_RING_EXPLOSION_PARTICLES = 25
 export const PLAYER_RING_EXPLOSION_DURATION = 0.8
 
@@ -84,7 +84,6 @@ export const CASTLE_EXPLOSION_SPIKES_RANDOM = 8
 export const CASTLE_EXPLOSION_INITIAL_SIZE = 5
 export const CASTLE_EXPLOSION_DEBRIS_COUNT = 12
 export const CASTLE_EXPLOSION_DEBRIS_SCALE = 1
-export const CASTLE_INNER_RING_RADIUS = 60
 
 export const SHIP_EXPLOSION_MAX_SIZE = 45
 export const SHIP_EXPLOSION_LIFE = 0.8
@@ -128,31 +127,30 @@ export const DEBRIS_ALPHA_MULTIPLIER = 0.7
 export const ALPHA_FADE_MULTIPLIER = 2
 
 // Spawn behavior
-export const SPAWN_FORWARD_PUSH = 60                               // Initial forward velocity when respawning
-export const SPAWN_SIDEWAYS_PUSH = 40                              // Initial sideways velocity when respawning
-export const SPAWN_DISTANCE_FROM_CENTER_RATIO = 0.42               // How far from center to spawn (fraction of canvas)
-export const RESPAWN_DELAY_SECONDS = 3.0                           // Time before player respawns after death
+export const PLAYER_STARTING_LIVES = 4
 
-// Physics forces (units per second squared)
-export const FORWARD_THRUST_FORCE = 300                            // Engine power when pressing forward
-export const REVERSE_THRUST_FORCE = 400                            // Reverse thruster power
-export const BRAKING_DECELERATION = 800                            // How fast the ship slows when braking
-export const STRAFE_THRUST_FORCE = 250                             // Sideways thruster power
-export const THRUST_FACTOR = 4
-export const THRUST_DECELERATE_FACTOR = 6
-export const ROTATION_STEP = Math.PI / 8
+export const PLAYER_SPAWN_FORWARD_PUSH = 60                               // Initial forward velocity when respawning
+export const PLAYER_SPAWN_SIDEWAYS_PUSH = 40                              // Initial sideways velocity when respawning
+export const PLAYER_SPAWN_DISTANCE_FROM_CENTER_RATIO = 0.42               // How far from center to spawn (fraction of canvas)
+export const PLAYER_RESPAWN_DELAY_SECONDS = 3.0                           // Time before player respawns after death
+
+// Player SHIP Physics forces (units per second squared)
+export const PLAYER_SHIP_FORWARD_THRUST_FORCE = 300                            // Engine power when pressing forward
+export const PLAYER_SHIP_REVERSE_THRUST_FORCE = 400                            // Reverse thruster power
+export const PLAYER_SHIP_BRAKING_DECELERATION = 800                            // How fast the ship slows when braking
+export const PLAYER_SHIP_STRAFE_THRUST_FORCE = 250                             // Sideways thruster power
+export const PLAYER_SHIP_THRUST_FACTOR = 4
+export const PLAYER_SHIP_THRUST_DECELERATE_FACTOR = 6
+export const PLAYER_SHIP_ROTATION_STEP = Math.PI / 8
 export const ROTATION_FACTOR = 6
 
 // Animation ramp speeds (how fast thruster visuals fade in/out)
-export const STRAFE_THRUST_RAMP_UP_SPEED = 3
-export const STRAFE_THRUST_RAMP_DOWN_SPEED = 6
+export const PLAYER_SHIP_STRAFE_THRUST_RAMP_UP_SPEED = 3
+export const PLAYER_SHIP_STRAFE_THRUST_RAMP_DOWN_SPEED = 6
 
 // Speed thresholds for visual effects
-export const BRAKING_VISUAL_THRESHOLD = 10                         // Min speed to show braking jets
-export const REVERSE_VISUAL_THRESHOLD = 5                          // Min speed to show reverse jets
-
-// Screen wrap boundary
-export const SCREEN_WRAP_BUFFER = 20                               // Pixels beyond edge before wrapping
+export const PLAYER_SHIP_BRAKING_VISUAL_THRESHOLD = 10                         // Min speed to show braking jets
+export const PLAYER_SHIP_REVERSE_VISUAL_THRESHOLD = 5                          // Min speed to show reverse jets
 
 // Ship geometry ratios (relative to ship size)
 export const SHIP_HULL_WIDTH_RATIO = 0.7                           // How wide the hull sides are

@@ -9,7 +9,7 @@ import { CASTLE_CORE_HIT_RADIUS,
   RING_EXPLOSION_PARTICLES,
   TORPEDO_ENEMY_HIT_BUFFER,
   TORPEDO_RING_HIT_DISTANCE } from './constants.js'
-import { cannon_projectile, castle_destroyed, castle_rings, clear_cannon_projectile } from './castle.js'
+import { castle_destroyed, clear_cannon_projectile, get_castle_projectile, get_castle_rings } from './castle.js'
 import { destroy_torpedo, player_torpedoes } from './torpedoes.js'
 import { destroy_enemy, enemy_sparks, undock_one_enemy } from './enemies.js'
 import { create_explosion, create_ship_explosion } from './explosions.js'
@@ -21,6 +21,8 @@ export const check_collisions = (player, game_state) => {
   const player_center_dx = player.x - CENTER_X
   const player_center_dy = player.y - CENTER_Y
   const player_center_distance = Math.sqrt(player_center_dx * player_center_dx + player_center_dy * player_center_dy)
+  const castle_rings = get_castle_rings()
+  const cannon_projectile = get_castle_projectile()
 
   // ========== CHECK CANNON PROJECTILE HIT PLAYER
   if (cannon_projectile && player.alive) {

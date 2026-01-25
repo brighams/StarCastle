@@ -5,8 +5,6 @@ import { AFT_TORPEDO_COLOR,
   BRAKE_JET_COLOR,
   BRAKE_JET_LENGTH_RATIO,
   BRAKE_JET_WIDTH_RATIO,
-  BRAKING_DECELERATION,
-  BRAKING_VISUAL_THRESHOLD,
   CANVAS_SIZE,
   CENTER_X,
   CENTER_Y,
@@ -19,37 +17,39 @@ import { AFT_TORPEDO_COLOR,
   FLAME_WIDTH_MULTIPLIER,
   FORE_TORPEDO_COLOR,
   FORE_TORPEDO_SIZE,
-  FORWARD_THRUST_FORCE,
   MAX_TORPEDO_COUNT,
-  RESPAWN_DELAY_SECONDS,
-  REVERSE_THRUST_FORCE,
-  REVERSE_VISUAL_THRESHOLD,
+  PLAYER_RESPAWN_DELAY_SECONDS,
+  PLAYER_SHIP_BRAKING_DECELERATION,
+  PLAYER_SHIP_BRAKING_VISUAL_THRESHOLD,
+  PLAYER_SHIP_FORWARD_THRUST_FORCE,
+  PLAYER_SHIP_REVERSE_THRUST_FORCE,
+  PLAYER_SHIP_REVERSE_VISUAL_THRESHOLD,
+  PLAYER_SHIP_ROTATION_STEP,
+  PLAYER_SHIP_STRAFE_THRUST_FORCE,
+  PLAYER_SHIP_STRAFE_THRUST_RAMP_DOWN_SPEED,
+  PLAYER_SHIP_STRAFE_THRUST_RAMP_UP_SPEED,
+  PLAYER_SHIP_THRUST_DECELERATE_FACTOR,
+  PLAYER_SHIP_THRUST_FACTOR,
+  PLAYER_SPAWN_DISTANCE_FROM_CENTER_RATIO,
+  PLAYER_SPAWN_FORWARD_PUSH,
+  PLAYER_SPAWN_SIDEWAYS_PUSH,
   ROTATION_FACTOR,
   ROTATION_JET_COLOR,
   ROTATION_JET_LENGTH_RATIO,
   ROTATION_JET_LOWER_SPREAD_RATIO,
   ROTATION_JET_MOUNT_Y_RATIO,
   ROTATION_JET_UPPER_SPREAD_RATIO,
-  ROTATION_STEP,
-  SCREEN_WRAP_BUFFER,
+  SCREEN_WRAP_EDGE_MARGIN,
   SHIP_HULL_WIDTH_RATIO,
   SHIP_LINE_OFFSETS,
   SHIP_TAIL_NOTCH_HEIGHT_RATIO,
   SHIP_TAIL_NOTCH_WIDTH_RATIO,
-  SPAWN_DISTANCE_FROM_CENTER_RATIO,
-  SPAWN_FORWARD_PUSH,
-  SPAWN_SIDEWAYS_PUSH,
   STRAFE_JET_ALPHA_MULTIPLIER,
   STRAFE_JET_CENTER_LENGTH_RATIO,
   STRAFE_JET_COLOR_RGB,
   STRAFE_JET_MAX_LENGTH_RATIO,
   STRAFE_JET_MOUNT_X_RATIO,
-  STRAFE_JET_VERTICAL_SPREAD_RATIO,
-  STRAFE_THRUST_FORCE,
-  STRAFE_THRUST_RAMP_DOWN_SPEED,
-  STRAFE_THRUST_RAMP_UP_SPEED,
-  THRUST_DECELERATE_FACTOR,
-  THRUST_FACTOR } from './constants.js'
+  STRAFE_JET_VERTICAL_SPREAD_RATIO } from './constants.js'
 import { playSound, startAttitudeThruster, startMainThruster, stopAttitudeThruster, stopMainThruster } from './sound.js'
 import { retreat_enemies_to_center } from './enemies.js'
 import { identity_matrix, multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
@@ -93,15 +93,15 @@ export const spawn_player = (game_state, dt) => {
       playSound('game_start', 0.5, 0.08)
 
       // Forward thrust
-      player.vel_x += Math.sin(player.angle) * SPAWN_FORWARD_PUSH
-      player.vel_y += -Math.cos(player.angle) * SPAWN_FORWARD_PUSH
+      player.vel_x += Math.sin(player.angle) * PLAYER_SPAWN_FORWARD_PUSH
+      player.vel_y += -Math.cos(player.angle) * PLAYER_SPAWN_FORWARD_PUSH
 
       // Random left or right strafe
       const strafe_direction = Math.random() > 0.5 ? 1 : -1
       const strafe_x = strafe_direction * Math.cos(player.angle)
       const strafe_y = strafe_direction * Math.sin(player.angle)
-      player.vel_x += strafe_x * SPAWN_SIDEWAYS_PUSH
-      player.vel_y += strafe_y * SPAWN_SIDEWAYS_PUSH
+      player.vel_x += strafe_x * PLAYER_SPAWN_SIDEWAYS_PUSH
+      player.vel_y += strafe_y * PLAYER_SPAWN_SIDEWAYS_PUSH
 
     } else {
       game_state.game_over = true
@@ -112,7 +112,7 @@ export const spawn_player = (game_state, dt) => {
 }
 
 const set_random_spawn_position = () => {
-  const spawn_radius = CANVAS_SIZE * SPAWN_DISTANCE_FROM_CENTER_RATIO
+  const spawn_radius = CANVAS_SIZE * PLAYER_SPAWN_DISTANCE_FROM_CENTER_RATIO
   const random_angle = Math.random() * Math.PI * 2
   player.x = CENTER_X + Math.cos(random_angle) * spawn_radius
   player.y = CENTER_Y + Math.sin(random_angle) * spawn_radius
@@ -134,7 +134,7 @@ export const reset_player = () => {
 export const destroy_player = (player, game_state) => {
   game_state.lives--
   player.alive = false
-  player.respawn_timer = RESPAWN_DELAY_SECONDS
+  player.respawn_timer = PLAYER_RESPAWN_DELAY_SECONDS
   playSound('player_explode')
   retreat_enemies_to_center()
 }
@@ -193,21 +193,21 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
   const thrust_forward = () => {
     if (check_keys('KeyW')) {
-      const thrust_force = FORWARD_THRUST_FORCE * dt
+      const thrust_force = PLAYER_SHIP_FORWARD_THRUST_FORCE * dt
       player.vel_x += Math.sin(player.angle) * thrust_force
       player.vel_y += -Math.cos(player.angle) * thrust_force
-      player.thrust = Math.min(player.thrust + dt * THRUST_FACTOR, 1.0)
+      player.thrust = Math.min(player.thrust + dt * PLAYER_SHIP_THRUST_FACTOR, 1.0)
       startMainThruster()
     } else {
       // decelerate while not thrusting
-      player.thrust = Math.max(player.thrust - dt * THRUST_DECELERATE_FACTOR, 0)
+      player.thrust = Math.max(player.thrust - dt * PLAYER_SHIP_THRUST_DECELERATE_FACTOR, 0)
       stopMainThruster()
     }
   }
 
   const thrust_reverse = () => {
     const apply_braking = (current_speed) => {
-      const new_speed = Math.max(current_speed - BRAKING_DECELERATION * dt, 0)
+      const new_speed = Math.max(current_speed - PLAYER_SHIP_BRAKING_DECELERATION * dt, 0)
       const speed_ratio = new_speed / current_speed
       player.vel_x *= speed_ratio
       player.vel_y *= speed_ratio
@@ -216,7 +216,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
     const apply_reverse_thrust = (forward_x, forward_y) => {
       const max_reverse_speed = player.max_speed * player.max_reverse_factor
-      const reverse_force = REVERSE_THRUST_FORCE * dt
+      const reverse_force = PLAYER_SHIP_REVERSE_THRUST_FORCE * dt
       player.vel_x -= forward_x * reverse_force
       player.vel_y -= forward_y * reverse_force
 
@@ -247,8 +247,8 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
         apply_reverse_thrust(forward_x, forward_y)
       }
 
-      player.braking = current_speed > BRAKING_VISUAL_THRESHOLD
-        || Math.abs(player.speed) > REVERSE_VISUAL_THRESHOLD
+      player.braking = current_speed > PLAYER_SHIP_BRAKING_VISUAL_THRESHOLD
+        || Math.abs(player.speed) > PLAYER_SHIP_REVERSE_VISUAL_THRESHOLD
       if (player.braking) isRotatingOrBraking = true
     } else {
       player.braking = false
@@ -261,12 +261,12 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
       const strafe_x = Math.cos(player.angle)
       const strafe_y = Math.sin(player.angle)
-      const strafe_force = STRAFE_THRUST_FORCE * dt
+      const strafe_force = PLAYER_SHIP_STRAFE_THRUST_FORCE * dt
       player.vel_x += strafe_x * strafe_force
       player.vel_y += strafe_y * strafe_force
 
       player.strafe_thrust =
-        Math.min(player.strafe_thrust + dt * STRAFE_THRUST_RAMP_UP_SPEED, 1.0)
+        Math.min(player.strafe_thrust + dt * PLAYER_SHIP_STRAFE_THRUST_RAMP_UP_SPEED, 1.0)
       isRotatingOrBraking = true
       return true
     }
@@ -279,12 +279,12 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
       const strafe_x = -Math.cos(player.angle)
       const strafe_y = -Math.sin(player.angle)
-      const strafe_force = STRAFE_THRUST_FORCE * dt
+      const strafe_force = PLAYER_SHIP_STRAFE_THRUST_FORCE * dt
       player.vel_x += strafe_x * strafe_force
       player.vel_y += strafe_y * strafe_force
 
       player.strafe_thrust =
-        Math.min(player.strafe_thrust + dt * STRAFE_THRUST_RAMP_UP_SPEED, 1.0)
+        Math.min(player.strafe_thrust + dt * PLAYER_SHIP_STRAFE_THRUST_RAMP_UP_SPEED, 1.0)
       isRotatingOrBraking = true
       return true
     }
@@ -293,7 +293,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
   const rotate_left = () => {
     if (check_keys('KeyA') && !SHIFT_DOWN) {
-      player.angle -= ROTATION_STEP * dt * ROTATION_FACTOR
+      player.angle -= PLAYER_SHIP_ROTATION_STEP * dt * ROTATION_FACTOR
       player.rotation = -1
       isRotatingOrBraking = true
     }
@@ -301,7 +301,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
 
   const rotate_right = () => {
     if (check_keys('KeyD') && !SHIFT_DOWN) {
-      player.angle += ROTATION_STEP * dt * ROTATION_FACTOR
+      player.angle += PLAYER_SHIP_ROTATION_STEP * dt * ROTATION_FACTOR
       player.rotation = 1
       isRotatingOrBraking = true
     }
@@ -311,7 +311,7 @@ const apply_input_events = (keys_pressed, dt, game_state) => {
     const did_strafe = strafe_right() || strafe_left()
     if (!did_strafe) {
       player.strafe_thrust =
-        Math.max(player.strafe_thrust - dt * STRAFE_THRUST_RAMP_DOWN_SPEED, 0)
+        Math.max(player.strafe_thrust - dt * PLAYER_SHIP_STRAFE_THRUST_RAMP_DOWN_SPEED, 0)
     }
   }
 
@@ -371,15 +371,15 @@ export const update_player = (dt, keys_pressed, game_state) => {
   player.x += player.vel_x * dt
   player.y += player.vel_y * dt
 
-  if (player.x < -SCREEN_WRAP_BUFFER) {
-    player.x = CANVAS_SIZE + SCREEN_WRAP_BUFFER
-  } else if (player.x > CANVAS_SIZE + SCREEN_WRAP_BUFFER) {
-    player.x = -SCREEN_WRAP_BUFFER
+  if (player.x < -SCREEN_WRAP_EDGE_MARGIN) {
+    player.x = CANVAS_SIZE + SCREEN_WRAP_EDGE_MARGIN
+  } else if (player.x > CANVAS_SIZE + SCREEN_WRAP_EDGE_MARGIN) {
+    player.x = -SCREEN_WRAP_EDGE_MARGIN
   }
-  if (player.y < -SCREEN_WRAP_BUFFER) {
-    player.y = CANVAS_SIZE + SCREEN_WRAP_BUFFER
-  } else if (player.y > CANVAS_SIZE + SCREEN_WRAP_BUFFER) {
-    player.y = -SCREEN_WRAP_BUFFER
+  if (player.y < -SCREEN_WRAP_EDGE_MARGIN) {
+    player.y = CANVAS_SIZE + SCREEN_WRAP_EDGE_MARGIN
+  } else if (player.y > CANVAS_SIZE + SCREEN_WRAP_EDGE_MARGIN) {
+    player.y = -SCREEN_WRAP_EDGE_MARGIN
   }
 }
 
