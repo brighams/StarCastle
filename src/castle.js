@@ -142,27 +142,20 @@ export const update_castle_rings = (dt, player, game_state) => {
   castle_state.center_rotation += CASTLE_CENTER_ROTATION_SPEED * dt
 
   const cannon = castle_state.cannon
+  let all_rings_spawned = true
 
   for (let ring_index = 0; ring_index < castle_state.rings.length; ring_index += 1) {
     const ring = castle_state.rings[ring_index]
     ring.rotation += ring.rotationSpeed * dt * game_state.ring_speed_modifier
 
     if (castle_state.spawn_in_progress) {
-      if (ring_index < castle_state.spawn_ring_index) {
+      if (ring.spawn_radius < ring.radius) {
+        ring.spawn_radius += dt * ring.radius
+      }
+      if (ring.spawn_radius >= ring.radius) {
         ring.spawn_radius = ring.radius
-      } else if (ring_index === castle_state.spawn_ring_index) {
-        if (ring.spawn_radius < ring.radius) {
-          ring.spawn_radius += dt * ring.radius
-        }
-        if (ring.spawn_radius >= ring.radius) {
-          ring.spawn_radius = ring.radius
-          castle_state.spawn_ring_index += 1
-          if (castle_state.spawn_ring_index >= castle_state.rings.length) {
-            castle_state.spawn_in_progress = false
-          }
-        }
       } else {
-        ring.spawn_radius = RING_SPAWN_INITIAL_RADIUS
+        all_rings_spawned = false
       }
     } else if (ring.spawn_radius < ring.radius) {
       ring.spawn_radius += dt * ring.radius
@@ -187,6 +180,9 @@ export const update_castle_rings = (dt, player, game_state) => {
   }
 
   if (castle_state.spawn_in_progress) {
+    if (all_rings_spawned) {
+      castle_state.spawn_in_progress = false
+    }
     return
   }
 
