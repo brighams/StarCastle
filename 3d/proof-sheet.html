@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Model Proof Sheet - StarKeeper 3D</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1a1a;
+      font-family: 'Courier New', monospace;
+      color: #fff;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #0f0;
+      text-shadow: 0 0 10px #0f0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .model-frame {
+      border: 2px solid #333;
+      padding: 10px;
+      background: #000;
+    }
+
+    .model-title {
+      text-align: center;
+      color: #0ff;
+      margin-bottom: 10px;
+      font-size: 18px;
+    }
+
+    canvas {
+      width: 100%;
+      height: 350px;
+      display: block;
+      border: 1px solid #444;
+      cursor: grab;
+    }
+
+    canvas:active {
+      cursor: grabbing;
+    }
+
+    .model-info {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+    }
+
+    .controls {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: #222;
+      border: 1px solid #444;
+    }
+  </style>
+</head>
+<body>
+<h1>StarKeeper 3D - Model Proof Sheet</h1>
+
+<div class="controls">
+  Click and Drag = Rotate | Wheel = Zoom | All models are interactive
+</div>
+
+<div class="grid">
+  <div class="model-frame">
+    <div class="model-title">Player Ship</div>
+    <canvas id="ship"></canvas>
+    <div class="model-info">Triangular fighter with 3D volume</div>
+  </div>
+
+  <div class="model-frame">
+    <div class="model-title">Castle Ring (Outer - 12 segments)</div>
+    <canvas id="ring-outer"></canvas>
+    <div class="model-info">Radius: 120, Segments: 12, Green</div>
+  </div>
+
+  <div class="model-frame">
+    <div class="model-title">Castle Ring (Middle - 8 segments)</div>
+    <canvas id="ring-middle"></canvas>
+    <div class="model-info">Radius: 90, Segments: 8, Blue</div>
+  </div>
+
+  <div class="model-frame">
+    <div class="model-title">Castle Ring (Inner - 6 segments)</div>
+    <canvas id="ring-inner"></canvas>
+    <div class="model-info">Radius: 60, Segments: 6, Yellow</div>
+  </div>
+
+  <div class="model-frame">
+    <div class="model-title">Central Hexagon</div>
+    <canvas id="hexagon"></canvas>
+    <div class="model-info">6-sided core structure (3D)</div>
+  </div>
+
+  <div class="model-frame">
+    <div class="model-title">Cannon</div>
+    <canvas id="cannon"></canvas>
+    <div class="model-info">Castle defense turret</div>
+  </div>
+
+  <div class="model-frame">
+    <div class="model-title">Spark / Projectile</div>
+    <canvas id="spark"></canvas>
+    <div class="model-info">4-pointed star particle</div>
+  </div>
+
+  <div class="model-frame">
+    <div class="model-title">Enemy Spark</div>
+    <canvas id="enemy"></canvas>
+    <div class="model-info">Dual-colored enemy model</div>
+  </div>
+</div>
+
+<script type="module">
+  import { mat4 } from './src/math3d.js'
+  import { createShipModel, createRingModel, createHexagonModel, createCannonModel, createSparkModel } from './src/models.js'
+
+  // Simple WebGL renderer for each canvas
+  class ModelViewer {
+    constructor(canvasId, model, color, initialDistance = 80, animate = false) {
+      this.canvas = document.getElementById(canvasId)
+      this.model = model
+      this.color = color
+      this.animate = animate
+      this.rotation = 0
+
+      this.camera = {
+        distance: initialDistance,
+        pitch: 0.3,
+        yaw: 0.5,
+        target: { x: 0, y: 0, z: 0 }
+      }
+
+      this.mouse = {
+        down: false,
+        lastX: 0,
+        lastY: 0
+      }
+
+      this.setupCanvas()
+      this.setupControls()
+      this.startRenderLoop()
+    }
+
+    setupCanvas() {
+      this.canvas.width = 400
+      this.canvas.height = 350
+
+      this.gl = this.canvas.getContext('webgl', { antialias: true })
+      if (!this.gl) {
+        console.error('WebGL not supported')
+        return
+      }
+
+      const gl = this.gl
+
+      // Setup WebGL
+      gl.enable(gl.DEPTH_TEST)
+      gl.enable(gl.BLEND)
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
+
+      // Create shader program
+      const vertexShader = this.compileShader(`
+        attribute vec3 aPosition;
+        attribute vec4 aColor;
+        uniform mat4 uProjection;
+        uniform mat4 uView;
+        uniform mat4 uModel;
+        varying vec4 vColor;
+        void main() {
+          gl_Position = uProjection * uView * uModel * vec4(aPosition, 1.0);
+          vColor = aColor;
+        }
+      `, gl.VERTEX_SHADER)
+
+      const fragmentShader = this.compileShader(`
+        precision mediump float;
+        varying vec4 vColor;
+        void main() {
+          gl_FragColor = vColor;
+        }
+      `, gl.FRAGMENT_SHADER)
+
+      this.program = gl.createProgram()
+      gl.attachShader(this.program, vertexShader)
+      gl.attachShader(this.program, fragmentShader)
+      gl.linkProgram(this.program)
+
+      // Setup projection matrix
+      const aspect = 400 / 350
+      this.projectionMatrix = mat4.perspective(60, aspect, 0.1, 2000)
+    }
+
+    compileShader(source, type) {
+      const gl = this.gl
+      const shader = gl.createShader(type)
+      gl.shaderSource(shader, source)
+      gl.compileShader(shader)
+      return shader
+    }
+
+    setupControls() {
+      this.canvas.addEventListener('mousedown', (e) => {
+        this.mouse.down = true
+        this.mouse.lastX = e.clientX
+        this.mouse.lastY = e.clientY
+        e.preventDefault()
+      })
+
+      this.canvas.addEventListener('mouseup', () => {
+        this.mouse.down = false
+      })
+
+      this.canvas.addEventListener('mouseleave', () => {
+        this.mouse.down = false
+      })
+
+      this.canvas.addEventListener('mousemove', (e) => {
+        if (this.mouse.down) {
+          const dx = e.clientX - this.mouse.lastX
+          const dy = e.clientY - this.mouse.lastY
+
+          this.camera.yaw -= dx * 0.01
+          this.camera.pitch += dy * 0.01
+
+          this.camera.pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, this.camera.pitch))
+
+          this.mouse.lastX = e.clientX
+          this.mouse.lastY = e.clientY
+        }
+      })
+
+      this.canvas.addEventListener('wheel', (e) => {
+        this.camera.distance += e.deltaY * 0.1
+        this.camera.distance = Math.max(20, Math.min(300, this.camera.distance))
+        e.preventDefault()
+      })
+    }
+
+    startRenderLoop() {
+      const render = () => {
+        if (this.animate) {
+          this.rotation += 0.01
+        }
+        this.render()
+        requestAnimationFrame(render)
+      }
+      render()
+    }
+
+    render() {
+      const gl = this.gl
+
+      gl.clearColor(0, 0, 0, 1)
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+      const cameraPos = {
+        x: this.camera.target.x + Math.sin(this.camera.yaw) * Math.cos(this.camera.pitch) * this.camera.distance,
+        y: this.camera.target.y + Math.sin(this.camera.pitch) * this.camera.distance,
+        z: this.camera.target.z + Math.cos(this.camera.yaw) * Math.cos(this.camera.pitch) * this.camera.distance
+      }
+
+      const viewMatrix = mat4.lookAt(cameraPos, this.camera.target, { x: 0, y: 1, z: 0 })
+
+      // Apply rotation if animating
+      let modelMatrix = mat4.identity()
+      if (this.animate) {
+        modelMatrix = mat4.rotateY(this.rotation)
+      }
+
+      this.drawWireframeModel(this.model, this.color, modelMatrix, viewMatrix)
+    }
+
+    drawWireframeModel(model, color, modelMatrix, viewMatrix) {
+      const gl = this.gl
+
+      if (!model.edges || model.edges.length === 0) return
+
+      for (const edge of model.edges) {
+        const v1Idx = edge[0] * 3
+        const v2Idx = edge[1] * 3
+
+        const vertices = new Float32Array([
+          model.vertices[v1Idx], model.vertices[v1Idx + 1], model.vertices[v1Idx + 2],
+          model.vertices[v2Idx], model.vertices[v2Idx + 1], model.vertices[v2Idx + 2]
+        ])
+
+        const colors = new Float32Array([
+          color[0], color[1], color[2], color[3] || 1.0,
+          color[0], color[1], color[2], color[3] || 1.0
+        ])
+
+        const posBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
+
+        const colorBuffer = gl.createBuffer()
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+        gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW)
+
+        gl.useProgram(this.program)
+
+        const aPosition = gl.getAttribLocation(this.program, 'aPosition')
+        gl.bindBuffer(gl.ARRAY_BUFFER, posBuffer)
+        gl.enableVertexAttribArray(aPosition)
+        gl.vertexAttribPointer(aPosition, 3, gl.FLOAT, false, 0, 0)
+
+        const aColor = gl.getAttribLocation(this.program, 'aColor')
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+        gl.enableVertexAttribArray(aColor)
+        gl.vertexAttribPointer(aColor, 4, gl.FLOAT, false, 0, 0)
+
+        gl.uniformMatrix4fv(gl.getUniformLocation(this.program, 'uProjection'), false, this.projectionMatrix)
+        gl.uniformMatrix4fv(gl.getUniformLocation(this.program, 'uView'), false, viewMatrix)
+        gl.uniformMatrix4fv(gl.getUniformLocation(this.program, 'uModel'), false, modelMatrix)
+
+        gl.drawArrays(gl.LINES, 0, 2)
+
+        gl.deleteBuffer(posBuffer)
+        gl.deleteBuffer(colorBuffer)
+      }
+    }
+  }
+
+  // Dual-colored enemy viewer
+  class EnemyViewer extends ModelViewer {
+    constructor(canvasId) {
+      super(canvasId, createSparkModel(10), [1, 0, 1, 1], 40)
+      this.secondaryModel = createSparkModel(7.5)
+    }
+
+    render() {
+      const gl = this.gl
+
+      gl.clearColor(0, 0, 0, 1)
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+      const cameraPos = {
+        x: this.camera.target.x + Math.sin(this.camera.yaw) * Math.cos(this.camera.pitch) * this.camera.distance,
+        y: this.camera.target.y + Math.sin(this.camera.pitch) * this.camera.distance,
+        z: this.camera.target.z + Math.cos(this.camera.yaw) * Math.cos(this.camera.pitch) * this.camera.distance
+      }
+
+      const viewMatrix = mat4.lookAt(cameraPos, this.camera.target, { x: 0, y: 1, z: 0 })
+      const modelMatrix = mat4.identity()
+
+      this.drawWireframeModel(this.model, [1, 0, 1, 1], modelMatrix, viewMatrix)
+      this.drawWireframeModel(this.secondaryModel, [1, 1, 0, 0.7], modelMatrix, viewMatrix)
+    }
+  }
+
+  // Create all model viewers
+  new ModelViewer('ship', createShipModel(), [1, 1, 1, 1], 50)
+  new ModelViewer('ring-outer', createRingModel(120, 12), [0, 1, 0, 1], 180, true)
+  new ModelViewer('ring-middle', createRingModel(90, 8), [0, 0, 1, 1], 150, true)
+  new ModelViewer('ring-inner', createRingModel(60, 6), [1, 1, 0, 1], 120, true)
+  new ModelViewer('hexagon', createHexagonModel(15), [1, 1, 1, 1], 50)
+  new ModelViewer('cannon', createCannonModel(18), [0.5, 0.5, 0.5, 1], 50)
+  new ModelViewer('spark', createSparkModel(10), [1, 0, 1, 1], 40)
+  new EnemyViewer('enemy')
+</script>
+</body>
+</html>
