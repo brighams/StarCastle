@@ -129,6 +129,18 @@ export const reset_player = () => {
   player.respawn_timer = 0
   player.thrust = 0
   playSound('game_start', 0.5, 0.08)
+
+  // Add spawn drift like respawn
+  // Forward thrust
+  player.vel_x += Math.sin(player.angle) * PLAYER_SPAWN_FORWARD_PUSH
+  player.vel_y += -Math.cos(player.angle) * PLAYER_SPAWN_FORWARD_PUSH
+
+  // Random left or right strafe
+  const strafe_direction = Math.random() > 0.5 ? 1 : -1
+  const strafe_x = strafe_direction * Math.cos(player.angle)
+  const strafe_y = strafe_direction * Math.sin(player.angle)
+  player.vel_x += strafe_x * PLAYER_SPAWN_SIDEWAYS_PUSH
+  player.vel_y += strafe_y * PLAYER_SPAWN_SIDEWAYS_PUSH
 }
 
 export const destroy_player = (player, game_state) => {

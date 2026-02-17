@@ -1,7 +1,7 @@
 import { CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y } from './constants.js'
 import { identity_matrix } from './math.js'
 import { getHighScore } from './score.js'
-import { game_state } from './main.js'
+import { game_state, ENABLE_AUTOPILOT } from './main.js'
 import { draw_player_ship } from './player.js'
 import { draw_animated_text, draw_text } from './text.js'
 
@@ -40,7 +40,10 @@ export const draw_ui = (lives, score, game_over, round_won) => {
     draw_animated_text('BY BRIGHAM@STARKEEPER.IO', CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
     draw_animated_text('INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE', CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
     draw_animated_text('INSERT BITCOIN OR PRESS ENTER TO START', CENTER_X, CENTER_Y + 150, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0)
-    draw_animated_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 190, 2, transform, [1.0, 1.0, 0.0, 1.0], 3.0)
+    if (ENABLE_AUTOPILOT) {
+      draw_animated_text('PRESS BACKSPACE FOR AUTOPILOT DEMO', CENTER_X, CENTER_Y + 190, 2, transform, [0.0, 1.0, 0.0, 1.0], 3.0)
+    }
+    draw_animated_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + (ENABLE_AUTOPILOT ? 230 : 190), 2, transform, [1.0, 1.0, 0.0, 1.0], 3.0)
   } else if (round_won) {
     if (!game_state.pyrrhic_victory) {
       draw_text('ROUND WON', CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0])
@@ -56,5 +59,11 @@ export const draw_ui = (lives, score, game_over, round_won) => {
   } else {
     draw_text(`HIGH ${getHighScore()} SCORE ${score}`, TOP_RIGHT_X - 120, TOP_RIGHT_Y, 3, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text('STARKEEPER ONE', CENTER_X - 32, 16, 3, transform, [0.0, 1.0, 1.0, 1.0])
+
+    // Show autopilot indicator
+    if (ENABLE_AUTOPILOT && game_state.autopilot_on) {
+      draw_animated_text('AUTOPILOT ACTIVE', 100, TOP_RIGHT_Y, 2, transform, [0.0, 1.0, 0.0, 1.0], 2.0)
+      draw_text('PRESS BACKSPACE TO DISABLE', 100, TOP_RIGHT_Y + 25, 1.5, transform, [0.5, 1.0, 0.5, 0.8])
+    }
   }
 }

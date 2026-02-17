@@ -11,11 +11,15 @@ import { clear_explosions, draw_explosions, update_explosions } from './explosio
 import { check_collisions } from './collisions.js'
 import { draw_ui, toggle_info_box } from './ui.js'
 import { draw_stars } from './stars.js'
+import { autopilot_enabled, update_autopilot } from './autopilot.js'
 import { ENEMY_STARTING_COUNT,
   ENEMY_STARTING_SPEED_MULTIPLIER,
   PLAYER_STARTING_LIVES,
   RING_STARTING_SPEED_MULTIPLIER } from './constants.js'
 
+// ========== FEATURE FLAGS ==========
+export const ENABLE_AUTOPILOT = false
+// ===================================
 
 const STARTING_ENEMY_SPEED_MULTIPLIER = 1.0
 
@@ -92,17 +96,16 @@ document.addEventListener('keydown', (e) => {
     }
   }
 
-  // if (keys_pressed['Backspace']) {
-  //   autopilot_enabled(true, game_state)
-  // }
+  // Toggle autopilot with Backspace
+  if (ENABLE_AUTOPILOT && e.code === 'Backspace') {
+    autopilot_enabled(!game_state.autopilot_on, game_state)
+    e.preventDefault() // Prevent browser back navigation
+  }
 })
 
 document.addEventListener('keyup', (e) => {
   check_shift_key(e)
   keys_pressed[e.code] = false
-  // if (keys_pressed['Backspace']) {
-  //   autopilot_enabled(false, game_state)
-  // }
 })
 
 const render_frame = () => {
@@ -143,7 +146,13 @@ const update_game = (current_time) => {
     }
     enemy_spawn_timer = 3
   }
-  update_player(dt, keys_pressed, game_state)
+
+  // Use autopilot input if enabled, otherwise use player input
+  const active_keys = (ENABLE_AUTOPILOT && game_state.autopilot_on)
+    ? update_autopilot(player, game_state, dt)
+    : keys_pressed
+
+  update_player(dt, active_keys, game_state)
   update_torpedoes(dt)
   remove_destroyed_torpedoes()
   update_enemies(dt, player, game_state.game_over, game_state.round_won, game_state.enemy_speed_multiplier)
