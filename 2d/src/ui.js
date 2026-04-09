@@ -27,23 +27,36 @@ const draw_player_remaining_lives = (lives, transform) => {
   }
 }
 
+const BITCOIN_Y_START = CENTER_Y + 150
+const BITCOIN_Y_END = 730
+const TITLE_LINES = (transform) => {
+  draw_animated_text('STARKEEPER ONE', CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
+  draw_animated_text('BY BRIGHAM@STARKEEPER.IO', CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
+  draw_animated_text('INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE', CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
+}
+
 export const draw_ui = (lives, score, game_over, round_won) => {
   const transform = identity_matrix()
+  const { entice_mode, entice_animation_t } = game_state
 
-  if (!game_over) {
+  if (!game_over && !entice_mode) {
     draw_player_remaining_lives(lives, transform)
   }
 
   if (game_over) {
-    draw_animated_text('STARKEEPER ONE', CENTER_X, CENTER_Y - 300, 8, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
-    draw_animated_text('BY BRIGHAM@STARKEEPER.IO', CENTER_X, CENTER_Y - 220, 1.5, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
-    draw_animated_text('INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE', CENTER_X, CENTER_Y - 180, 2, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
-    draw_animated_text('INSERT BITCOIN OR PRESS ENTER TO START', CENTER_X, CENTER_Y + 150, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0)
-    draw_animated_text('PRESS TAB FOR INSTRUCTIONS', CENTER_X, CENTER_Y + 195, 2.5, transform, [1.0, 0.0, 0.533, 1.0], 3.0)
-    if (ENABLE_AUTOPILOT) {
-      draw_animated_text('PRESS BACKSPACE FOR AUTOPILOT DEMO', CENTER_X, CENTER_Y + 240, 2, transform, [0.0, 1.0, 0.0, 1.0], 3.0)
-    }
-    draw_animated_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + (ENABLE_AUTOPILOT ? 280 : 240), 2, transform, [1.0, 1.0, 0.0, 1.0], 3.0)
+    const animating = entice_animation_t >= 0
+    const t_s = animating ? entice_animation_t * entice_animation_t * (3 - 2 * entice_animation_t) : 0
+    const bitcoin_y = BITCOIN_Y_START + (BITCOIN_Y_END - BITCOIN_Y_START) * t_s
+
+    TITLE_LINES(transform)
+    draw_animated_text('INSERT BITCOIN OR PRESS ENTER TO START', CENTER_X, bitcoin_y, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0)
+
+    const fade = 1 - t_s
+    draw_animated_text('PRESS TAB FOR INSTRUCTIONS', CENTER_X, CENTER_Y + 195, 2.5, transform, [1.0, 0.0, 0.533, fade], 3.0)
+    draw_animated_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 240, 2, transform, [1.0, 1.0, 0.0, fade], 3.0)
+  } else if (entice_mode) {
+    TITLE_LINES(transform)
+    draw_animated_text('INSERT BITCOIN OR PRESS ENTER TO START', CENTER_X, BITCOIN_Y_END, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0)
   } else if (round_won) {
     if (!game_state.pyrrhic_victory) {
       draw_text('ROUND WON', CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0])

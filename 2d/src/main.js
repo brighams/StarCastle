@@ -12,13 +12,14 @@ import { check_collisions } from './collisions.js'
 import { draw_ui, toggle_debug, toggle_info_box } from './ui.js'
 import { draw_stars } from './stars.js'
 import { autopilot_enabled, update_autopilot } from './autopilot.js'
+import { update_brain, reset_brain, commands_to_keys } from './brain.js'
 import { ENEMY_STARTING_COUNT,
   ENEMY_STARTING_SPEED_MULTIPLIER,
   PLAYER_STARTING_LIVES,
   RING_STARTING_SPEED_MULTIPLIER } from './constants.js'
 
 // ========== FEATURE FLAGS ==========
-export const ENABLE_AUTOPILOT = false
+export const ENABLE_AUTOPILOT = true
 // ===================================
 
 const STARTING_ENEMY_SPEED_MULTIPLIER = 1.0
@@ -52,14 +53,31 @@ export const game_state = {
   round_won: false,
   pyrrhic_victory: false,
   autopilot_on: false,
-  round_starting: false
+  round_starting: false,
+  entice_mode: false,
+  entice_animation_t: -1
 }
 
 let keys_pressed = {}
+let brain_keys = {}
 let last_time = 0
 let enemy_spawn_timer = 1.2
+let idle_timer = 0
+
+const ENTICE_DELAY = 5
+const ENTICE_ANIM_DURATION = 1.5
+
+const start_entice_mode = () => {
+  reset_game(true)
+  game_state.entice_mode = true
+}
 
 const reset_game = (new_game = true) => {
+  idle_timer = 0
+  brain_keys = {}
+  game_state.entice_mode = false
+  game_state.entice_animation_t = -1
+  reset_brain()
   apply_display_scale()
 
   if (new_game) {
@@ -102,10 +120,12 @@ const check_shift_key = (e) => {
 
 document.addEventListener('keydown', (e) => {
   check_shift_key(e)
-  keys_pressed[e.code] = true
+  if (!game_state.entice_mode) {
+    keys_pressed[e.code] = true
+  }
 
   if (e.key === 'Enter') {
-    if (game_state.game_over) {
+    if (game_state.game_over || game_state.entice_mode) {
       reset_game(true)
     } else if (game_state.round_won) {
       reset_game(false)
@@ -134,7 +154,9 @@ document.addEventListener('keydown', (e) => {
 
 document.addEventListener('keyup', (e) => {
   check_shift_key(e)
-  keys_pressed[e.code] = false
+  if (!game_state.entice_mode) {
+    keys_pressed[e.code] = false
+  }
 })
 
 const render_frame = () => {
@@ -155,12 +177,38 @@ const update_game = (current_time) => {
   const dt = (current_time - last_time) / 1000
   last_time = current_time
 
+  // If player died during entice mode, restart it immediately
+  if (game_state.game_over && game_state.entice_mode) {
+    start_entice_mode()
+    return
+  }
+
+  if (game_state.game_over) {
+    if (game_state.entice_animation_t < 0) {
+      idle_timer += dt
+      if (idle_timer >= ENTICE_DELAY) {
+        game_state.entice_animation_t = 0
+      }
+    } else {
+      game_state.entice_animation_t = Math.min(1, game_state.entice_animation_t + dt / ENTICE_ANIM_DURATION)
+      if (game_state.entice_animation_t >= 1) {
+        start_entice_mode()
+        return
+      }
+    }
+  }
+
+  if (game_state.entice_mode) {
+    brain_keys = update_brain(dt, player)
+  }
+
   update_castle_rings(dt, player, game_state)
   if (game_state.round_starting) {
     if (!ring_spawning()) {
       game_state.round_starting = false
     } else {
-      update_player(dt, keys_pressed, game_state)
+      const rk = game_state.entice_mode ? brain_keys : keys_pressed
+      update_player(dt, rk, game_state)
       update_torpedoes(dt)
       remove_destroyed_torpedoes()
       update_explosions(dt)
@@ -176,10 +224,11 @@ const update_game = (current_time) => {
     enemy_spawn_timer = 3
   }
 
-  // Use autopilot input if enabled, otherwise use player input
-  const active_keys = (ENABLE_AUTOPILOT && game_state.autopilot_on)
-    ? update_autopilot(player, game_state, dt)
-    : keys_pressed
+  const active_keys = game_state.entice_mode
+    ? brain_keys
+    : (ENABLE_AUTOPILOT && game_state.autopilot_on)
+      ? update_autopilot(player, game_state, dt)
+      : keys_pressed
 
   update_player(dt, active_keys, game_state)
   update_torpedoes(dt)

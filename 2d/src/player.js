@@ -145,6 +145,8 @@ export const destroy_player = (player, game_state) => {
   game_state.lives--
   player.alive = false
   player.respawn_timer = PLAYER_RESPAWN_DELAY_SECONDS
+  stopMainThruster()
+  stopAttitudeThruster()
   playSound('player_explode')
   retreat_enemies_to_center()
 }

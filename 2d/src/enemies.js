@@ -1,16 +1,7 @@
 import { CENTER_X,
   CENTER_Y,
-  ENEMY_ALIGNMENT_FACTOR,
-  ENEMY_CLOSE_CHASE_FORCE,
   ENEMY_DOCK_ARRIVAL_THRESHOLD,
   ENEMY_DOCK_VELOCITY,
-  ENEMY_FAR_CHASE_FORCE,
-  ENEMY_FLOCKING_ALIGNMENT_DISTANCE,
-  ENEMY_FLOCKING_DISTANCE,
-  ENEMY_FLOCKING_SEPARATION_DISTANCE,
-  ENEMY_JITTER_MAGNITUDE,
-  ENEMY_JITTER_MIN_INTERVAL,
-  ENEMY_JITTER_RANDOM_INTERVAL,
   ENEMY_LINGER_BASE_TIME,
   ENEMY_LINGER_RANDOM_TIME,
   ENEMY_PRIMARY_COLOR,
@@ -20,10 +11,10 @@ import { CENTER_X,
   ENEMY_RING_CHANGE_LINGER_RANDOM,
   ENEMY_SECONDARY_COLOR,
   ENEMY_SECONDARY_SIZE_FACTOR,
-  ENEMY_SEPARATION_FORCE,
   ENEMY_SPARK_SIZE,
   ENEMY_SPAWN_VELOCITY,
   ENEMY_VELOCITY_DAMPING } from './constants.js'
+import { update_spark_chase } from './spark_brain.js'
 import { get_castle_rings, ring_spawning } from './castle.js'
 import { playSound } from './sound.js'
 import { draw_spark } from './renderer.js'
@@ -168,74 +159,6 @@ const apply_docking_movement = (enemy, dt, castle_rings) => {
   return true
 }
 
-const apply_flocking = (enemy, index, dt, enemy_speed_multiplier, dx, dy, distance_to_player) => {
-  let align_x = 0
-  let align_y = 0
-  let separate_x = 0
-  let separate_y = 0
-  let neighbors = 0
-
-  for (let other_index = 0; other_index < enemy_sparks.length; other_index++) {
-    const other = enemy_sparks[other_index]
-    if (index !== other_index && !other.docked) {
-      const other_dx = other.x - enemy.x
-      const other_dy = other.y - enemy.y
-      const other_distance = Math.sqrt(other_dx * other_dx + other_dy * other_dy)
-
-      if (other_distance < ENEMY_FLOCKING_SEPARATION_DISTANCE && other_distance > 0) {
-        separate_x -= other_dx / other_distance
-        separate_y -= other_dy / other_distance
-      }
-
-      if (other_distance < ENEMY_FLOCKING_ALIGNMENT_DISTANCE) {
-        align_x += other.vel_x
-        align_y += other.vel_y
-        neighbors++
-      }
-    }
-  }
-
-  if (neighbors > 0) {
-    align_x /= neighbors
-    align_y /= neighbors
-    enemy.vel_x += align_x * dt * ENEMY_ALIGNMENT_FACTOR
-    enemy.vel_y += align_y * dt * ENEMY_ALIGNMENT_FACTOR
-  }
-
-  enemy.vel_x += separate_x * dt * ENEMY_SEPARATION_FORCE
-  enemy.vel_y += separate_y * dt * ENEMY_SEPARATION_FORCE
-
-  enemy.vel_x += (dx / distance_to_player) * ENEMY_FAR_CHASE_FORCE * dt * enemy_speed_multiplier
-  enemy.vel_y += (dy / distance_to_player) * ENEMY_FAR_CHASE_FORCE * dt * enemy_speed_multiplier
-}
-
-const apply_close_chase = (enemy, dt, enemy_speed_multiplier, dx, dy, distance_to_player) => {
-  enemy.jitter_timer -= dt
-  if (enemy.jitter_timer <= 0) {
-    enemy.jitter_x = (Math.random() - 0.5) * ENEMY_JITTER_MAGNITUDE
-    enemy.jitter_y = (Math.random() - 0.5) * ENEMY_JITTER_MAGNITUDE
-    enemy.jitter_timer = ENEMY_JITTER_MIN_INTERVAL + Math.random() * ENEMY_JITTER_RANDOM_INTERVAL
-  }
-
-  enemy.vel_x += (dx / distance_to_player) * ENEMY_CLOSE_CHASE_FORCE * dt * enemy_speed_multiplier
-  enemy.vel_y += (dy / distance_to_player) * ENEMY_CLOSE_CHASE_FORCE * dt * enemy_speed_multiplier
-
-  enemy.x += enemy.jitter_x * dt
-  enemy.y += enemy.jitter_y * dt
-}
-
-const apply_chase_movement = (enemy, index, dt, enemy_speed_multiplier, player) => {
-  enemy.dock_ring = null
-  const dx = player.x - enemy.x
-  const dy = player.y - enemy.y
-  const distance_to_player = Math.sqrt(dx * dx + dy * dy)
-
-  if (distance_to_player > ENEMY_FLOCKING_DISTANCE) {
-    apply_flocking(enemy, index, dt, enemy_speed_multiplier, dx, dy, distance_to_player)
-  } else {
-    apply_close_chase(enemy, dt, enemy_speed_multiplier, dx, dy, distance_to_player)
-  }
-}
 
 const update_enemy = (enemy, index, dt, player, player_is_target, enemy_speed_multiplier, castle_rings) => {
   if (!enemy.alive) return
@@ -248,7 +171,7 @@ const update_enemy = (enemy, index, dt, player, player_is_target, enemy_speed_mu
     return
   }
 
-  apply_chase_movement(enemy, index, dt, enemy_speed_multiplier, player)
+  update_spark_chase(enemy, index, dt, player, enemy_speed_multiplier)
   enemy.vel_x *= ENEMY_VELOCITY_DAMPING
   enemy.vel_y *= ENEMY_VELOCITY_DAMPING
   enemy.x += enemy.vel_x * dt

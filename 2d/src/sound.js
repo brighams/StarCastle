@@ -1,5 +1,13 @@
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
 
+const masterEffectsGain = audioCtx.createGain()
+masterEffectsGain.gain.setValueAtTime(0.5, audioCtx.currentTime)
+masterEffectsGain.connect(audioCtx.destination)
+
+export const setEffectsVolume = (value) => {
+  masterEffectsGain.gain.setValueAtTime(value, audioCtx.currentTime)
+}
+
 // Looping sound state
 let mainThrusterOsc = null
 let mainThrusterGain = null
@@ -19,7 +27,7 @@ const createOscillator = (type, frequency, startTime, duration, gainNode) => {
 const createGain = (volume, startTime) => {
   const gainNode = audioCtx.createGain()
   gainNode.gain.setValueAtTime(volume, startTime)
-  gainNode.connect(audioCtx.destination)
+  gainNode.connect(masterEffectsGain)
   return gainNode
 }
 
@@ -50,7 +58,7 @@ const effects = {
     fuzzGain.gain.setValueAtTime(0, now)
     fuzzGain.gain.linearRampToValueAtTime(volume * 0.5, now + 0.15) // Fade in the grit
     fuzzGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6)
-    fuzzGain.connect(audioCtx.destination)
+    fuzzGain.connect(masterEffectsGain)
 
     const sawtoothOsc = audioCtx.createOscillator()
     sawtoothOsc.type = 'sawtooth'
@@ -142,7 +150,7 @@ const effects = {
 
     noiseSource.connect(noiseFilter)
     noiseFilter.connect(noiseGain)
-    noiseGain.connect(audioCtx.destination)
+    noiseGain.connect(masterEffectsGain)
     noiseSource.start(now)
     noiseSource.stop(now + duration * 1.5)
 
@@ -206,7 +214,7 @@ const effects = {
 
     noiseSource.connect(noiseFilter)
     noiseFilter.connect(noiseGain)
-    noiseGain.connect(audioCtx.destination)
+    noiseGain.connect(masterEffectsGain)
     noiseSource.start(now)
     noiseSource.stop(now + duration)
 
@@ -271,7 +279,7 @@ const effects = {
 
     noiseSource.connect(noiseFilter)
     noiseFilter.connect(noiseGain)
-    noiseGain.connect(audioCtx.destination)
+    noiseGain.connect(masterEffectsGain)
 
     noiseSource.start(now)
     noiseSource.stop(now + duration)
@@ -282,7 +290,7 @@ const effects = {
     boomGain.gain.exponentialRampToValueAtTime(volume, now + 0.01)
     boomGain.gain.exponentialRampToValueAtTime(volume * 0.5, now + 0.15)
     boomGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8)
-    boomGain.connect(audioCtx.destination)
+    boomGain.connect(masterEffectsGain)
 
     const boomOsc = audioCtx.createOscillator()
     boomOsc.type = 'sine'
@@ -298,7 +306,7 @@ const effects = {
     crunchGain.gain.exponentialRampToValueAtTime(volume * 0.8, now + 0.01)
     crunchGain.gain.exponentialRampToValueAtTime(volume * 0.3, now + 0.2)
     crunchGain.gain.exponentialRampToValueAtTime(0.001, now + 0.6)
-    crunchGain.connect(audioCtx.destination)
+    crunchGain.connect(masterEffectsGain)
 
     const crunchOsc = audioCtx.createOscillator()
     crunchOsc.type = 'sawtooth'
@@ -314,7 +322,7 @@ const effects = {
     echoGain.gain.setValueAtTime(0.001, now + echoDelay)
     echoGain.gain.exponentialRampToValueAtTime(volume * 0.4, now + echoDelay + 0.02)
     echoGain.gain.exponentialRampToValueAtTime(0.001, now + echoDelay + 0.5)
-    echoGain.connect(audioCtx.destination)
+    echoGain.connect(masterEffectsGain)
 
     const echoOsc = audioCtx.createOscillator()
     echoOsc.type = 'sawtooth'
@@ -355,7 +363,7 @@ const effects = {
 
     noiseSource.connect(noiseFilter)
     noiseFilter.connect(noiseGain)
-    noiseGain.connect(audioCtx.destination)
+    noiseGain.connect(masterEffectsGain)
 
     noiseSource.start(now)
     noiseSource.stop(now + duration)
@@ -366,7 +374,7 @@ const effects = {
     toneGain.gain.exponentialRampToValueAtTime(volume * 0.6, now + 0.08)
     toneGain.gain.exponentialRampToValueAtTime(volume * 0.3, now + duration * 0.6)
     toneGain.gain.exponentialRampToValueAtTime(0.001, now + duration)
-    toneGain.connect(audioCtx.destination)
+    toneGain.connect(masterEffectsGain)
 
     const toneOsc = audioCtx.createOscillator()
     toneOsc.type = 'sawtooth'
@@ -380,7 +388,7 @@ const effects = {
     const subGain = audioCtx.createGain()
     subGain.gain.setValueAtTime(volume * 0.5, now)
     subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15)
-    subGain.connect(audioCtx.destination)
+    subGain.connect(masterEffectsGain)
 
     const subOsc = audioCtx.createOscillator()
     subOsc.type = 'sine'
@@ -403,7 +411,7 @@ const effects = {
     chargeGain.gain.setValueAtTime(0.001, now)
     chargeGain.gain.exponentialRampToValueAtTime(volume * 0.8, now + chargeTime * 0.7)
     chargeGain.gain.exponentialRampToValueAtTime(volume, now + chargeTime)
-    chargeGain.connect(audioCtx.destination)
+    chargeGain.connect(masterEffectsGain)
 
     const chargeOsc = audioCtx.createOscillator()
     chargeOsc.type = 'sine'
@@ -434,7 +442,7 @@ const effects = {
       pulseGain.gain.exponentialRampToValueAtTime(volume * pulse.vol, pulseStart + 0.015)
       pulseGain.gain.exponentialRampToValueAtTime(volume * pulse.vol * 0.5, pulseStart + pulseDuration * 0.5)
       pulseGain.gain.exponentialRampToValueAtTime(0.001, pulseStart + pulseDuration)
-      pulseGain.connect(audioCtx.destination)
+      pulseGain.connect(masterEffectsGain)
 
       const pulseOsc = audioCtx.createOscillator()
       pulseOsc.type = 'sine'
@@ -449,7 +457,7 @@ const effects = {
       harmonicGain.gain.setValueAtTime(0.001, pulseStart)
       harmonicGain.gain.exponentialRampToValueAtTime(volume * pulse.vol * 0.4, pulseStart + 0.02)
       harmonicGain.gain.exponentialRampToValueAtTime(0.001, pulseStart + pulseDuration * 0.7)
-      harmonicGain.connect(audioCtx.destination)
+      harmonicGain.connect(masterEffectsGain)
 
       const harmonic = audioCtx.createOscillator()
       harmonic.type = 'sine' // Changed to sine for cleaner high frequencies
@@ -463,7 +471,7 @@ const effects = {
       const attackGain = audioCtx.createGain()
       attackGain.gain.setValueAtTime(volume * pulse.vol * 0.25, pulseStart) // Reduced from 0.35
       attackGain.gain.exponentialRampToValueAtTime(0.001, pulseStart + 0.03)
-      attackGain.connect(audioCtx.destination)
+      attackGain.connect(masterEffectsGain)
 
       const attackOsc = audioCtx.createOscillator()
       attackOsc.type = 'square'
@@ -482,7 +490,7 @@ const effects = {
     tailGain.gain.setValueAtTime(volume * 0.4, tailStart) // Reduced from 0.5
     tailGain.gain.exponentialRampToValueAtTime(volume * 0.25, tailStart + tailDuration * 0.3)
     tailGain.gain.exponentialRampToValueAtTime(0.001, tailStart + tailDuration)
-    tailGain.connect(audioCtx.destination)
+    tailGain.connect(masterEffectsGain)
 
     const tailOsc = audioCtx.createOscillator()
     tailOsc.type = 'sine'
@@ -508,7 +516,7 @@ const effects = {
     chargeGain.gain.setValueAtTime(0.001, now)
     chargeGain.gain.exponentialRampToValueAtTime(volume * 0.6, now + chargeTime * 0.8)
     chargeGain.gain.setValueAtTime(volume * 0.7, now + chargeTime)
-    chargeGain.connect(audioCtx.destination)
+    chargeGain.connect(masterEffectsGain)
 
     const chargeOsc = audioCtx.createOscillator()
     chargeOsc.type = 'sawtooth'
@@ -523,7 +531,7 @@ const effects = {
     chargeOsc2Gain.gain.setValueAtTime(0.001, now)
     chargeOsc2Gain.gain.exponentialRampToValueAtTime(volume * 0.3, now + chargeTime * 0.7)
     chargeOsc2Gain.gain.exponentialRampToValueAtTime(volume * 0.4, now + chargeTime)
-    chargeOsc2Gain.connect(audioCtx.destination)
+    chargeOsc2Gain.connect(masterEffectsGain)
 
     const chargeOsc2 = audioCtx.createOscillator()
     chargeOsc2.type = 'sine'
@@ -537,7 +545,7 @@ const effects = {
     const rumbleGain = audioCtx.createGain()
     rumbleGain.gain.setValueAtTime(volume * 0.4, now)
     rumbleGain.gain.linearRampToValueAtTime(volume * 0.6, now + chargeTime)
-    rumbleGain.connect(audioCtx.destination)
+    rumbleGain.connect(masterEffectsGain)
 
     const rumbleOsc = audioCtx.createOscillator()
     rumbleOsc.type = 'triangle'
@@ -577,7 +585,7 @@ const effects = {
 
     noiseSource.connect(bandpass)
     bandpass.connect(noiseGain)
-    noiseGain.connect(audioCtx.destination)
+    noiseGain.connect(masterEffectsGain)
 
     noiseSource.start(fireStart)
     noiseSource.stop(fireStart + fireTime)
@@ -587,7 +595,7 @@ const effects = {
     fireOscGain.gain.setValueAtTime(volume * 0.5, fireStart)
     fireOscGain.gain.exponentialRampToValueAtTime(volume * 0.3, fireStart + 0.1)
     fireOscGain.gain.exponentialRampToValueAtTime(0.001, fireStart + fireTime * 0.6)
-    fireOscGain.connect(audioCtx.destination)
+    fireOscGain.connect(masterEffectsGain)
 
     const fireOsc = audioCtx.createOscillator()
     fireOsc.type = 'sawtooth'
@@ -602,7 +610,7 @@ const effects = {
     const punchGain = audioCtx.createGain()
     punchGain.gain.setValueAtTime(volume * 0.8, fireStart)
     punchGain.gain.exponentialRampToValueAtTime(0.001, fireStart + 0.15)
-    punchGain.connect(audioCtx.destination)
+    punchGain.connect(masterEffectsGain)
 
     const punchOsc = audioCtx.createOscillator()
     punchOsc.type = 'sine'
@@ -645,7 +653,7 @@ const effects = {
 
     fuzzSource.connect(fuzzFilter)
     fuzzFilter.connect(fuzzGain)
-    fuzzGain.connect(audioCtx.destination)
+    fuzzGain.connect(masterEffectsGain)
 
     fuzzSource.start(fuzzStart)
     fuzzSource.stop(fuzzStart + fuzzDuration)
@@ -655,7 +663,7 @@ const effects = {
     growlGain.gain.setValueAtTime(0.001, fuzzStart)
     growlGain.gain.exponentialRampToValueAtTime(volume * 0.4, fuzzStart + fuzzDuration * 0.3)
     growlGain.gain.exponentialRampToValueAtTime(0.001, fuzzStart + fuzzDuration)
-    growlGain.connect(audioCtx.destination)
+    growlGain.connect(masterEffectsGain)
 
     const growlOsc = audioCtx.createOscillator()
     growlOsc.type = 'sawtooth'
@@ -682,7 +690,7 @@ export const startMainThruster = (volume = 0.08) => {
   mainThrusterGain = audioCtx.createGain()
   mainThrusterGain.gain.setValueAtTime(0.001, now)
   mainThrusterGain.gain.exponentialRampToValueAtTime(volume, now + 0.15)
-  mainThrusterGain.connect(audioCtx.destination)
+  mainThrusterGain.connect(masterEffectsGain)
 
   // Main thruster: layered triangle waves for smooth rocket rumble
   const baseFreq = 55 // Low A note
@@ -769,7 +777,7 @@ export const startAttitudeThruster = (volume = 0.03) => {
   attitudeThrusterGain = audioCtx.createGain()
   attitudeThrusterGain.gain.setValueAtTime(0.001, now)
   attitudeThrusterGain.gain.exponentialRampToValueAtTime(volume, now + 0.08)
-  attitudeThrusterGain.connect(audioCtx.destination)
+  attitudeThrusterGain.connect(masterEffectsGain)
 
   // Attitude thrusters: same rocket sound but higher pitched and quieter
   const baseFreq = 110 // Higher than main thruster

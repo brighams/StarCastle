@@ -1,5 +1,7 @@
+import { setEffectsVolume } from './sound.js'
+
 window.addEventListener('load', () => {
-  const audio = new Audio('./public/sound/orbit-d0d-main-version-29627-02-39.mp3')
+  const audio = new Audio('./2d/public/sound/orbit-d0d-main-version-29627-02-39.mp3')
   audio.loop = true
   audio.volume = 0.5
 
@@ -64,6 +66,45 @@ window.addEventListener('load', () => {
       const restored = Math.round(lastVolume * 100)
       musicSlider.value = restored
       updateMusicVolume(restored)
+    }
+  })
+
+  const effectsSlider = document.getElementById('effectsSlider')
+  const effectsFill = document.getElementById('effectsFill')
+  const effectsThumb = document.getElementById('effectsThumb')
+  const effectsLabel = document.getElementById('effectsLabel')
+  const effectsIcon = document.getElementById('effectsIcon')
+
+  let lastEffectsVolume = 0.5
+
+  const updateEffectsVolume = (value) => {
+    const percent = value
+    setEffectsVolume(value / 100)
+    effectsFill.style.width = `${percent}%`
+    effectsThumb.style.left = `calc(${percent}% - 7px)`
+    effectsLabel.textContent = `${Math.round(percent)}%`
+    if (value === 0) {
+      effectsIcon.classList.add('muted')
+    } else {
+      effectsIcon.classList.remove('muted')
+    }
+  }
+
+  effectsSlider.addEventListener('input', (e) => {
+    const value = parseInt(e.target.value)
+    updateEffectsVolume(value)
+    if (value > 0) lastEffectsVolume = value / 100
+  })
+
+  effectsIcon.addEventListener('click', () => {
+    if (effectsSlider.value > 0) {
+      lastEffectsVolume = effectsSlider.value / 100
+      effectsSlider.value = 0
+      updateEffectsVolume(0)
+    } else {
+      const restored = Math.round(lastEffectsVolume * 100)
+      effectsSlider.value = restored
+      updateEffectsVolume(restored)
     }
   })
 })
