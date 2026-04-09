@@ -126,6 +126,10 @@ document.addEventListener('keydown', (e) => {
     autopilot_enabled(!game_state.autopilot_on, game_state)
     e.preventDefault() // Prevent browser back navigation
   }
+
+  if (e.code === 'KeyX' && window.self !== window.top) {
+    window.parent.postMessage({ type: 'starcastle-exit' }, '*')
+  }
 })
 
 document.addEventListener('keyup', (e) => {

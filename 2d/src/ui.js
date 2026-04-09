@@ -73,4 +73,8 @@ export const draw_ui = (lives, score, game_over, round_won) => {
       draw_text(`SHIP ${Math.round(player.x)} ${Math.round(player.y)}`, CENTER_X, 786, 1.5, transform, [0.3, 1.0, 0.3, 1.0])
     }
   }
+
+  if (window.self !== window.top) {
+    draw_animated_text('PRESS X TO EXIT', CENTER_X, 790, 2, transform, [1.0, 0.45, 0.0, 1.0], 2.0)
+  }
 }
