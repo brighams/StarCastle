@@ -1,7 +1,8 @@
 import { setEffectsVolume } from './sound.js'
+import musicSrc from '../public/sound/orbit-d0d-main-version-29627-02-39.mp3'
 
 window.addEventListener('load', () => {
-  const audio = new Audio('./2d/public/sound/orbit-d0d-main-version-29627-02-39.mp3')
+  const audio = new Audio(musicSrc)
   audio.loop = true
   audio.volume = 0.5
 
