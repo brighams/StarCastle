@@ -770,6 +770,8 @@ export const stopMainThruster = () => {
 }
 
 export const startAttitudeThruster = (volume = 0.03) => {
+  // DISABLED UNTIL WE GET BETTER SOUNDS
+  return
   if (audioCtx.state === 'suspended') audioCtx.resume()
   if (attitudeThrusterOsc) return // Already playing
 
@@ -814,6 +816,8 @@ export const startAttitudeThruster = (volume = 0.03) => {
 }
 
 export const stopAttitudeThruster = () => {
+  // DISABLED UNTIL WE GET BETTER SOUNDS
+  return
   if (!attitudeThrusterOsc) return
 
   const now = audioCtx.currentTime
