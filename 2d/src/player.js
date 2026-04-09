@@ -54,7 +54,6 @@ import { playSound, startAttitudeThruster, startMainThruster, stopAttitudeThrust
 import { retreat_enemies_to_center } from './enemies.js'
 import { identity_matrix, multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
 import { draw_circle, draw_line, draw_spark } from './renderer.js'
-import { toggle_info_box } from './ui.js'
 import { fire_torpedo, player_torpedoes } from './torpedoes.js'
 
 
@@ -106,7 +105,6 @@ export const spawn_player = (game_state, dt) => {
     } else {
       game_state.game_over = true
       playSound('game_over', 1.0, 0.1)
-      toggle_info_box(true)
     }
   }
 }

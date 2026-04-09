@@ -191,5 +191,7 @@ const game_loop = (current_time) => {
   render_frame()
 }
 
+apply_display_scale()
+window.addEventListener('resize', apply_display_scale)
 reset_castle()
 requestAnimationFrame(game_loop)
