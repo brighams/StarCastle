@@ -28,10 +28,10 @@ body {
 }
 
 .info-box {
-  display: block;
+  display: none;
   position: absolute;
   width: 440px;
-  height: 390px;
+  height: 590px;
   background-color: rgba(0, 0, 0, 9.0);
   border: 2px solid #00FFFF;
   border-radius: 10px;
@@ -42,7 +42,8 @@ body {
   text-align: left;
   z-index: 110;
   left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .info-text {
@@ -99,8 +100,8 @@ body {
 /* Volume Control Panel */
 .settings-control-panel {
   position: absolute;
-  top: 188px;
-  right: -172px;
+  bottom: 15px;
+  left: 15px;
   z-index: 100;
 }
 
@@ -132,7 +133,7 @@ body {
   display: none;
   position: absolute;
   bottom: 50px;
-  right: 0;
+  left: 0;
   width: 200px;
   background-color: rgba(0, 0, 0, 0.95);
   border: 2px solid #00FFFF;

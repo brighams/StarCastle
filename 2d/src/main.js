@@ -9,7 +9,7 @@ import update_enemies, { clear_enemies,
   spawn_enemies } from './enemies.js'
 import { clear_explosions, draw_explosions, update_explosions } from './explosions.js'
 import { check_collisions } from './collisions.js'
-import { draw_ui, toggle_info_box } from './ui.js'
+import { draw_ui, toggle_debug, toggle_info_box } from './ui.js'
 import { draw_stars } from './stars.js'
 import { autopilot_enabled, update_autopilot } from './autopilot.js'
 import { ENEMY_STARTING_COUNT,
@@ -25,6 +25,19 @@ const STARTING_ENEMY_SPEED_MULTIPLIER = 1.0
 
 const canvas = document.getElementById('gameCanvas')
 init_renderer(canvas)
+
+export let render_scale = 1.0
+
+const apply_display_scale = () => {
+  const size = Math.min(800, window.innerWidth, window.innerHeight)
+  render_scale = size / 800
+  canvas.style.width = `${size}px`
+  canvas.style.height = `${size}px`
+  document.body.style.padding = '0'
+  document.body.style.alignItems = 'center'
+  document.body.style.height = '100vh'
+  document.body.style.overflow = 'hidden'
+}
 
 export const game_state = {
   lives: PLAYER_STARTING_LIVES,
@@ -46,6 +59,8 @@ let last_time = 0
 let enemy_spawn_timer = 1.2
 
 const reset_game = (new_game = true) => {
+  apply_display_scale()
+
   if (new_game) {
     game_state.lives = PLAYER_STARTING_LIVES
     game_state.round = 0
@@ -94,6 +109,15 @@ document.addEventListener('keydown', (e) => {
     } else if (game_state.round_won) {
       reset_game(false)
     }
+  }
+
+  if (e.code === 'Tab') {
+    if (!game_state.game_over && !game_state.round_won) {
+      toggle_debug()
+    } else {
+      toggle_info_box()
+    }
+    e.preventDefault()
   }
 
   // Toggle autopilot with Backspace
