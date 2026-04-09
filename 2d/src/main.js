@@ -1,4 +1,4 @@
-import { clear_screen, init_renderer } from './renderer.js'
+import { clear_screen, init_renderer, resize_viewport } from './renderer.js'
 import { draw_player_ship, player, reset_player, update_player } from './player.js'
 import { draw_castle, reset_castle, ring_spawning, update_castle_rings } from './castle.js'
 import { clear_torpedoes, draw_torpedoes, remove_destroyed_torpedoes, update_torpedoes } from './torpedoes.js'
@@ -29,10 +29,11 @@ init_renderer(canvas)
 export let render_scale = 1.0
 
 const apply_display_scale = () => {
-  const size = Math.min(800, window.innerWidth, window.innerHeight)
+  const size = Math.min(window.innerWidth, window.innerHeight)
   render_scale = size / 800
-  canvas.style.width = `${size}px`
-  canvas.style.height = `${size}px`
+  canvas.width = size
+  canvas.height = size
+  resize_viewport(size, size)
   document.body.style.padding = '0'
   document.body.style.alignItems = 'center'
   document.body.style.height = '100vh'
