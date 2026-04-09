@@ -54,9 +54,15 @@ export const draw_ui = (lives, score, game_over, round_won) => {
     const fade = 1 - t_s
     draw_animated_text('PRESS TAB FOR INSTRUCTIONS', CENTER_X, CENTER_Y + 195, 2.5, transform, [1.0, 0.0, 0.533, fade], 3.0)
     draw_animated_text(`HIGH SCORE: ${getHighScore()}`, CENTER_X, CENTER_Y + 240, 2, transform, [1.0, 1.0, 0.0, fade], 3.0)
+    if (window.self !== window.top) {
+      draw_animated_text('PRESS X TO EXIT', CENTER_X, 762, 3, transform, [1.0, 0.45, 0.0, 1.0], 2.0)
+    }
   } else if (entice_mode) {
     TITLE_LINES(transform)
     draw_animated_text('INSERT BITCOIN OR PRESS ENTER TO START', CENTER_X, BITCOIN_Y_END, 3, transform, [0.0, 0.9, 0.9, 1.0], 3.0)
+    if (window.self !== window.top) {
+      draw_animated_text('PRESS X TO EXIT', CENTER_X, 762, 3, transform, [1.0, 0.45, 0.0, 1.0], 2.0)
+    }
   } else if (round_won) {
     if (!game_state.pyrrhic_victory) {
       draw_text('ROUND WON', CENTER_X, CENTER_Y - 200, 5, transform, [1.0, 0.84, 0.0, 1.0])
@@ -87,7 +93,4 @@ export const draw_ui = (lives, score, game_over, round_won) => {
     }
   }
 
-  if (window.self !== window.top) {
-    draw_animated_text('PRESS X TO EXIT', CENTER_X, 762, 3, transform, [1.0, 0.45, 0.0, 1.0], 2.0)
-  }
 }
