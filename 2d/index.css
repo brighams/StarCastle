@@ -99,7 +99,7 @@ body {
 /* Volume Control Panel */
 .settings-control-panel {
   position: absolute;
-  bottom: 15px;
+  top: 1em;
   left: 15px;
   z-index: 100;
 }
@@ -131,9 +131,11 @@ body {
 .settings-panel {
   display: none;
   position: absolute;
-  bottom: 50px;
+  top: 50px;
   left: 0;
   width: 200px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
   background-color: rgba(0, 0, 0, 0.95);
   border: 2px solid #00FFFF;
   border-radius: 10px;

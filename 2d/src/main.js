@@ -133,7 +133,7 @@ document.addEventListener('keydown', (e) => {
   }
 
   if (e.code === 'Tab') {
-    if (!game_state.game_over && !game_state.round_won) {
+    if (!game_state.game_over && !game_state.round_won && !game_state.entice_mode) {
       toggle_debug()
     } else {
       toggle_info_box()
