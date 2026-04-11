@@ -94,16 +94,6 @@ const TITLE_LINES = (transform) => {
     [1.0, 0.0, 0.5, 1.0],
     3.0,
   );
-
-  // draw_animated_text(
-  //   "INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE",
-  //   cx,
-  //   cy + UI_TAGLINE_Y_OFFSET,
-  //   2,
-  //   transform,
-  //   [1.0, 0.0, 0.5, 1.0],
-  //   3.0,
-  // );
 };
 
 const draw_radar = (transform) => {
