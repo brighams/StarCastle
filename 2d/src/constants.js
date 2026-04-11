@@ -5,14 +5,18 @@ export const TOP_RIGHT_X = CANVAS_SIZE - 16;
 export const TOP_RIGHT_Y = 16;
 export const SCREEN_WRAP_EDGE_MARGIN = 20;
 
-export const WORLD_SIZE = 2000;
+export const WORLD_SIZE = 6000;
 export const WORLD_RADIUS = 1000;
-export const PLAYER_SPAWN_OUTER_RING_MIN = 800;
-export const PLAYER_SPAWN_OUTER_RING_MAX = 1000;
+
+export const PLAYER_SPAWN_OUTER_RING_MIN = 950;
+export const PLAYER_SPAWN_OUTER_RING_MAX = 980;
+
+export const CASTLE_START_COUNT = 2;
+export const CASTLE_SPAWN_RADIUS_MIN = 300;
+export const CASTLE_SPAWN_RADIUS_MAX = 800;
+export const CASTLE_MIN_SEPARATION = 1000;
 
 export const RADAR_RADIUS = 80;
-export const RADAR_CENTER_X = CANVAS_SIZE - 100;
-export const RADAR_CENTER_Y = 100;
 
 export const ENEMY_SPARK_SIZE = 10;
 export const ENEMY_FLOCKING_DISTANCE = 180;
@@ -38,7 +42,7 @@ export const ENEMY_SECONDARY_COLOR = [1.0, 1.0, 0.0, 0.7];
 export const ENEMY_SECONDARY_SIZE_FACTOR = 0.75;
 
 export const ENEMY_SPEED_INCREASE_PER_ROUND = 0.2;
-export const ENEMY_STARTING_COUNT = 3;
+export const ENEMY_STARTING_COUNT = 6;
 export const ENEMY_STARTING_SPEED_MULTIPLIER = 1.5;
 
 export const ENEMY_RING_CHANGE_LINGER_BASE = 1;

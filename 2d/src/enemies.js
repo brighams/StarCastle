@@ -14,7 +14,7 @@ import { ENEMY_DOCK_ARRIVAL_THRESHOLD,
   ENEMY_VELOCITY_DAMPING,
   WORLD_RADIUS } from './constants.js'
 import { update_spark_chase } from './spark_brain.js'
-import { get_castle_rings, ring_spawning } from './castle.js'
+import { get_castle, get_castles, get_castle_rings, ring_spawning } from './castle.js'
 import { playSound } from './sound.js'
 import { draw_spark } from './renderer.js'
 import { world_transform } from './camera.js'
@@ -22,22 +22,23 @@ import { world_transform } from './camera.js'
 
 export const enemy_sparks = []
 
-// const ENEMY_CLOSE_DISTANCE = 220
-
-export const spawn_enemy = () => {
-  const castle_rings = get_castle_rings()
+export const spawn_enemy = (castle_index) => {
+  const castle = get_castle(castle_index)
+  if (!castle || castle.is_destroyed) return
+  const castle_rings = get_castle_rings(castle_index)
   const ring_index = Math.floor(Math.random() * castle_rings.length)
   const ring = castle_rings[ring_index]
   const angle = Math.random() * Math.PI * 2
-  const target_x = Math.cos(angle) * ring.radius
-  const target_y = Math.sin(angle) * ring.radius
+  const target_x = castle.x + Math.cos(angle) * ring.radius
+  const target_y = castle.y + Math.sin(angle) * ring.radius
 
   enemy_sparks.push({
     alive: true,
     spawning: true,
+    castle_index,
     size: ENEMY_SPARK_SIZE,
-    x: 0,
-    y: 0,
+    x: castle.x,
+    y: castle.y,
     angle: 0,
     vel_x: 0,
     vel_y: 0,
@@ -77,10 +78,11 @@ const apply_spawn_movement = (enemy, dt) => {
 }
 
 const apply_lingering_movement = (enemy, dt, castle_rings) => {
+  const castle = get_castle(enemy.castle_index)
   const ring = castle_rings[enemy.spawn_ring_index]
   enemy.spawn_angle += ring.rotationSpeed * dt
-  enemy.x = Math.cos(enemy.spawn_angle) * ring.radius
-  enemy.y = Math.sin(enemy.spawn_angle) * ring.radius
+  enemy.x = castle.x + Math.cos(enemy.spawn_angle) * ring.radius
+  enemy.y = castle.y + Math.sin(enemy.spawn_angle) * ring.radius
   enemy.angle = enemy.spawn_angle + Math.PI / 2
 
   enemy.linger_timer -= dt
@@ -89,8 +91,8 @@ const apply_lingering_movement = (enemy, dt, castle_rings) => {
       enemy.spawn_ring_index = (enemy.spawn_ring_index + 1) % castle_rings.length
       const new_ring = castle_rings[enemy.spawn_ring_index]
       enemy.spawn_angle = Math.random() * Math.PI * 2
-      enemy.x = Math.cos(enemy.spawn_angle) * new_ring.radius
-      enemy.y = Math.sin(enemy.spawn_angle) * new_ring.radius
+      enemy.x = castle.x + Math.cos(enemy.spawn_angle) * new_ring.radius
+      enemy.y = castle.y + Math.sin(enemy.spawn_angle) * new_ring.radius
       enemy.linger_timer = ENEMY_RING_CHANGE_LINGER_BASE + Math.random() * ENEMY_RING_CHANGE_LINGER_RANDOM
     } else {
       enemy.lingering = false
@@ -100,10 +102,11 @@ const apply_lingering_movement = (enemy, dt, castle_rings) => {
 }
 
 const apply_docked_movement = (enemy, dt, castle_rings, player_is_target) => {
+  const castle = get_castle(enemy.castle_index)
   const ring = castle_rings[enemy.dock_ring]
   enemy.dock_angle += ring.rotationSpeed * dt
-  enemy.x = Math.cos(enemy.dock_angle) * ring.radius
-  enemy.y = Math.sin(enemy.dock_angle) * ring.radius
+  enemy.x = castle.x + Math.cos(enemy.dock_angle) * ring.radius
+  enemy.y = castle.y + Math.sin(enemy.dock_angle) * ring.radius
   enemy.angle = enemy.dock_angle + Math.PI / 2
 
   if (player_is_target) {
@@ -120,8 +123,9 @@ const choose_dock_ring = (enemy, castle_rings) => {
 
 const apply_docking_movement = (enemy, dt, castle_rings) => {
   choose_dock_ring(enemy, castle_rings)
+  const castle = get_castle(enemy.castle_index)
   const ring = castle_rings[enemy.dock_ring]
-  const angle_to_dock = Math.atan2(enemy.y, enemy.x)
+  const angle_to_dock = Math.atan2(enemy.y - castle.y, enemy.x - castle.x)
 
   const segment_angle = (Math.PI * 2) / ring.segments
   const normalized_angle = ((angle_to_dock - ring.rotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2)
@@ -133,8 +137,8 @@ const apply_docking_movement = (enemy, dt, castle_rings) => {
     return true
   }
 
-  const target_x = Math.cos(angle_to_dock) * ring.radius
-  const target_y = Math.sin(angle_to_dock) * ring.radius
+  const target_x = castle.x + Math.cos(angle_to_dock) * ring.radius
+  const target_y = castle.y + Math.sin(angle_to_dock) * ring.radius
 
   const dx = target_x - enemy.x
   const dy = target_y - enemy.y
@@ -159,8 +163,18 @@ const apply_docking_movement = (enemy, dt, castle_rings) => {
 }
 
 
-const update_enemy = (enemy, index, dt, player, player_is_target, enemy_speed_multiplier, castle_rings) => {
+const update_enemy = (enemy, index, dt, player, player_is_target, enemy_speed_multiplier) => {
   if (!enemy.alive) return
+
+  const castle = get_castle(enemy.castle_index)
+  const castle_rings = get_castle_rings(enemy.castle_index)
+
+  if (castle?.is_destroyed && (enemy.spawning || enemy.lingering || enemy.docked)) {
+    enemy.spawning = false
+    enemy.lingering = false
+    enemy.docked = false
+  }
+
   if (enemy.spawning && apply_spawn_movement(enemy, dt)) return
   if (enemy.lingering && apply_lingering_movement(enemy, dt, castle_rings)) return
   if (enemy.docked && apply_docked_movement(enemy, dt, castle_rings, player_is_target)) return
@@ -193,12 +207,11 @@ const update_enemy = (enemy, index, dt, player, player_is_target, enemy_speed_mu
 }
 
 const update_enemies = (dt, player, game_over, round_won, enemy_speed_multiplier) => {
-  const castle_rings = get_castle_rings()
   const player_is_target = player.alive && !game_over && !round_won
 
   for (let index = 0; index < enemy_sparks.length; index += 1) {
     const enemy = enemy_sparks[index]
-    update_enemy(enemy, index, dt, player, player_is_target, enemy_speed_multiplier, castle_rings)
+    update_enemy(enemy, index, dt, player, player_is_target, enemy_speed_multiplier)
   }
 }
 export default update_enemies
@@ -207,25 +220,31 @@ export const clear_enemies = () => {
   enemy_sparks.length = 0
 }
 
-export const spawn_enemies = (max_enemies, chance = 0.5) => {
+export const spawn_enemies = (max_enemies_per_castle, chance = 0.5) => {
   if (ring_spawning()) return
-  const alive_enemies = enemy_sparks.filter(e => e.alive).length
-  if (alive_enemies >= max_enemies) return
-  for (let i = 0; i < max_enemies && enemy_sparks.length < max_enemies; i++) {
-    if (Math.random() <= chance) {
-      spawn_enemy()
+  const living_castles = get_castles().filter(c => !c.is_destroyed)
+  for (const castle of living_castles) {
+    const castle_index = get_castles().indexOf(castle)
+    const castle_enemies = enemy_sparks.filter(e => e.alive && e.castle_index === castle_index).length
+    if (castle_enemies >= max_enemies_per_castle) continue
+    for (let i = castle_enemies; i < max_enemies_per_castle; i++) {
+      if (Math.random() <= chance) {
+        spawn_enemy(castle_index)
+      }
     }
   }
 }
 
-export const retreat_enemies_to_center = () => {
+export const retreat_enemies_to_castle = () => {
   for (const enemy of enemy_sparks) {
-    const enemy_center_dx = -enemy.x
-    const enemy_center_dy = -enemy.y
-    const enemy_center_distance = Math.sqrt(enemy_center_dx * enemy_center_dx + enemy_center_dy * enemy_center_dy)
-    if (enemy_center_distance > 0) {
-      enemy.vel_x = (enemy_center_dx / enemy_center_distance) * ENEMY_RETREAT_VELOCITY
-      enemy.vel_y = (enemy_center_dy / enemy_center_distance) * ENEMY_RETREAT_VELOCITY
+    const castle = get_castle(enemy.castle_index)
+    if (!castle || castle.is_destroyed) continue
+    const dx = castle.x - enemy.x
+    const dy = castle.y - enemy.y
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    if (distance > 0) {
+      enemy.vel_x = (dx / distance) * ENEMY_RETREAT_VELOCITY
+      enemy.vel_y = (dy / distance) * ENEMY_RETREAT_VELOCITY
     }
   }
 }

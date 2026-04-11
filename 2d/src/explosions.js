@@ -48,7 +48,7 @@ import { ALPHA_FADE_MULTIPLIER,
 
 export const explosions = []
 
-export let castle_explosion = null
+const castle_explosions = {}
 export const styled_explosions = []
 
 export const create_explosion = (x, y, maxSize, life) => {
@@ -91,8 +91,8 @@ const create_styled_explosion = (x, y, maxSize, life, num_spikes_base, num_spike
   }
 }
 
-export const create_castle_explosion = (x, y) => {
-  castle_explosion = create_styled_explosion(x, y, CASTLE_EXPLOSION_MAX_SIZE,
+export const create_castle_explosion = (x, y, castle_index) => {
+  castle_explosions[castle_index] = create_styled_explosion(x, y, CASTLE_EXPLOSION_MAX_SIZE,
     CASTLE_EXPLOSION_LIFE,
     CASTLE_EXPLOSION_SPIKES_BASE,
     CASTLE_EXPLOSION_SPIKES_RANDOM, true)
@@ -129,18 +129,17 @@ export const update_explosions = (dt) => {
     }
   }
 
-  if (castle_explosion) {
-    castle_explosion.life -= dt
-    const progress = 1 - (castle_explosion.life / castle_explosion.maxLife)
-
+  for (const key of Object.keys(castle_explosions)) {
+    const explosion = castle_explosions[key]
+    explosion.life -= dt
+    const progress = 1 - (explosion.life / explosion.maxLife)
     const eased_progress = 1 - Math.pow(1 - progress, 2)
-    castle_explosion.size = CASTLE_EXPLOSION_INITIAL_SIZE + (castle_explosion.maxSize - CASTLE_EXPLOSION_INITIAL_SIZE) * eased_progress
-    if (!castle_explosion.rings_destroyed && castle_explosion.size >= castle_explosion.inner_ring_radius) {
-      castle_explosion.rings_destroyed = true
+    explosion.size = CASTLE_EXPLOSION_INITIAL_SIZE + (explosion.maxSize - CASTLE_EXPLOSION_INITIAL_SIZE) * eased_progress
+    if (!explosion.rings_destroyed && explosion.size >= explosion.inner_ring_radius) {
+      explosion.rings_destroyed = true
     }
-
-    if (castle_explosion.life <= 0) {
-      castle_explosion = null
+    if (explosion.life <= 0) {
+      delete castle_explosions[key]
     }
   }
 }
@@ -205,21 +204,19 @@ export const draw_explosions = () => {
     draw_styled_explosion(explosion, transform)
   }
 
-  if (castle_explosion) {
-    draw_styled_explosion(castle_explosion, transform)
+  for (const explosion of Object.values(castle_explosions)) {
+    draw_styled_explosion(explosion, transform)
   }
 }
 
 export const clear_explosions = () => {
   explosions.length = 0
   styled_explosions.length = 0
-  castle_explosion = null
+  for (const key of Object.keys(castle_explosions)) delete castle_explosions[key]
 }
 
-export const is_castle_exploding = () => {
-  return castle_explosion !== null
-}
+export const is_castle_exploding = (castle_index) =>
+  castle_explosions[castle_index] != null
 
-export const are_rings_destroyed_by_explosion = () => {
-  return castle_explosion && castle_explosion.rings_destroyed
-}
+export const are_rings_destroyed_by_explosion = (castle_index) =>
+  castle_explosions[castle_index]?.rings_destroyed ?? false

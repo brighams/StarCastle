@@ -5,6 +5,7 @@ import { BRAIN_TICK,
   BRAIN_AIM_TOLERANCE,
   BRAIN_AIM_JITTER,
   BRAIN_FIRE_CHANCE } from './constants.js'
+import { get_castles } from './castle.js'
 
 let brain_timer = 0
 let orbit_direction = 1   // 1 = CCW (strafe_right), -1 = CW (strafe_left)
@@ -60,9 +61,28 @@ const normalize_angle = (a) => {
   return a
 }
 
+const nearest_living_castle = (player) => {
+  let nearest = null
+  let nearest_dist_sq = Infinity
+  for (const castle of get_castles()) {
+    if (castle.is_destroyed) continue
+    const dx = castle.x - player.x
+    const dy = castle.y - player.y
+    const dist_sq = dx * dx + dy * dy
+    if (dist_sq < nearest_dist_sq) {
+      nearest_dist_sq = dist_sq
+      nearest = castle
+    }
+  }
+  return nearest
+}
+
 const think = (player) => {
-  const dx   = -player.x
-  const dy   = -player.y
+  const target = nearest_living_castle(player)
+  const tx = target ? target.x : 0
+  const ty = target ? target.y : 0
+  const dx   = tx - player.x
+  const dy   = ty - player.y
   const dist = Math.sqrt(dx * dx + dy * dy)
 
   // Angle the ship must face to point at the castle

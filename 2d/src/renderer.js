@@ -52,7 +52,9 @@ const create_program = (gl, vertexShader, fragmentShader) => {
   return program
 }
 
-let gl, positionBuffer, positionLocation, transformLocation, colorLocation
+let gl, positionBuffer, positionLocation, transformLocation, colorLocation, resolutionLocation
+
+export const viewport = { width: 800, height: 800 }
 
 export const init_renderer = (canvas) => {
   gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl')
@@ -67,7 +69,7 @@ export const init_renderer = (canvas) => {
   const program = create_program(gl, vertexShader, fragmentShader)
 
   positionLocation = gl.getAttribLocation(program, 'a_position')
-  const resolutionLocation = gl.getUniformLocation(program, 'u_resolution')
+  resolutionLocation = gl.getUniformLocation(program, 'u_resolution')
   transformLocation = gl.getUniformLocation(program, 'u_transform')
   colorLocation = gl.getUniformLocation(program, 'u_color')
 
@@ -76,12 +78,17 @@ export const init_renderer = (canvas) => {
   gl.viewport(0, 0, canvas.width, canvas.height)
   gl.useProgram(program)
   gl.uniform2f(resolutionLocation, canvas.width, canvas.height)
+  viewport.width = canvas.width
+  viewport.height = canvas.height
 
   return gl
 }
 
 export const resize_viewport = (w, h) => {
+  viewport.width = w
+  viewport.height = h
   gl.viewport(0, 0, w, h)
+  gl.uniform2f(resolutionLocation, w, h)
 }
 
 export const clear_screen = () => {

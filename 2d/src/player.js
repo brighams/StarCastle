@@ -59,7 +59,7 @@ import { AFT_TORPEDO_COLOR,
   STRAFE_JET_MOUNT_X_RATIO,
   STRAFE_JET_VERTICAL_SPREAD_RATIO } from './constants.js'
 import { playSound, startAttitudeThruster, startMainThruster, stopAttitudeThruster, stopMainThruster } from './sound.js'
-import { retreat_enemies_to_center } from './enemies.js'
+import { retreat_enemies_to_castle } from './enemies.js'
 import { multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
 import { world_transform } from './camera.js'
 import { draw_circle, draw_line, draw_spark } from './renderer.js'
@@ -157,7 +157,7 @@ export const destroy_player = (player, game_state) => {
   stopMainThruster()
   stopAttitudeThruster()
   playSound('player_explode')
-  retreat_enemies_to_center()
+  retreat_enemies_to_castle()
 }
 
 const apply_input_events = (keys_pressed, dt, game_state) => {

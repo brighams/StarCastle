@@ -60,12 +60,12 @@ export const torpedoRingCollision = (torpedo, ringSegment) => {
 /**
  * Checks if a torpedo hits the castle core
  */
-export const torpedoCastleCoreCollision = (torpedo) => {
+export const torpedoCastleCoreCollision = (torpedo, castle) => {
   return circlePointCollision(
     torpedo.x,
     torpedo.y,
-    0,
-    0,
+    castle.x,
+    castle.y,
     CASTLE_CORE_HIT_RADIUS
   )
 }
@@ -160,41 +160,46 @@ export const getRingSegmentPoints = (ring, faceIndex, centerX = 0, centerY = 0) 
  * Checks all torpedo collisions and returns collision results
  * This is a pure function that doesn't mutate state
  */
-export const checkAllTorpedoCollisions = (torpedoes, rings, enemies, centerX = 0, centerY = 0) => {
+export const checkAllTorpedoCollisions = (torpedoes, castles, enemies) => {
   const results = []
 
   for (const torpedo of torpedoes) {
     if (!torpedo.alive) continue
 
-    // Check ring collisions
-    for (const ring of rings) {
-      const segment_angle = (Math.PI * 2) / ring.segments
+    for (let castle_index = 0; castle_index < castles.length; castle_index++) {
+      const castle = castles[castle_index]
+      if (castle.is_destroyed) continue
 
-      for (let face of ring.faces) {
-        if (face.destroyed || face.respawn_timer > 0) continue
+      // Check ring collisions
+      for (const ring of castle.rings) {
+        for (let face of ring.faces) {
+          if (face.destroyed || face.respawn_timer > 0) continue
 
-        const segmentPoints = getRingSegmentPoints(ring, face.index, centerX, centerY)
-        const collision = torpedoRingCollision(torpedo, segmentPoints)
+          const segmentPoints = getRingSegmentPoints(ring, face.index, castle.x, castle.y)
+          const collision = torpedoRingCollision(torpedo, segmentPoints)
 
-        if (collision.hit) {
-          results.push({
-            type: 'torpedo-ring',
-            torpedo,
-            ring,
-            face,
-            collision
-          })
-          break
+          if (collision.hit) {
+            results.push({
+              type: 'torpedo-ring',
+              torpedo,
+              ring,
+              face,
+              collision
+            })
+            break
+          }
         }
       }
-    }
 
-    // Check castle core collision
-    if (torpedoCastleCoreCollision(torpedo)) {
-      results.push({
-        type: 'torpedo-castle',
-        torpedo
-      })
+      // Check castle core collision
+      if (torpedoCastleCoreCollision(torpedo, castle)) {
+        results.push({
+          type: 'torpedo-castle',
+          torpedo,
+          castle,
+          castle_index
+        })
+      }
     }
 
     // Check enemy collisions
