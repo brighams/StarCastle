@@ -20,7 +20,6 @@ import {
   projectilePlayerCollision,
   checkAllTorpedoCollisions
 } from './collisionDetection.js'
-import { CENTER_X, CENTER_Y } from './constants.js'
 
 /**
  * Handles torpedo hitting a ring face

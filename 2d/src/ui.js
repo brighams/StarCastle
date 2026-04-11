@@ -1,4 +1,5 @@
 import { CANVAS_SIZE, CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y,
+  RADAR_RADIUS, RADAR_CENTER_X, RADAR_CENTER_Y, WORLD_RADIUS,
   UI_AUTOPILOT_HINT_Y_OFFSET,
   UI_AUTOPILOT_X,
   UI_BITCOIN_Y_END,
@@ -24,6 +25,7 @@ import { CANVAS_SIZE, CENTER_X, CENTER_Y, TOP_RIGHT_X, TOP_RIGHT_Y,
   UI_TAGLINE_Y_OFFSET,
   UI_TITLE_Y_OFFSET } from './constants.js'
 import { identity_matrix } from './math.js'
+import { draw_circle, draw_line } from './renderer.js'
 import { getHighScore } from './score.js'
 import { game_state, ENABLE_AUTOPILOT, render_scale } from './main.js'
 import { draw_player_ship, player } from './player.js'
@@ -52,6 +54,29 @@ const TITLE_LINES = (transform) => {
   draw_animated_text('STARKEEPER ONE', CENTER_X, CENTER_Y + UI_TITLE_Y_OFFSET, 8, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
   draw_animated_text('BY BRIGHAM@STARKEEPER.IO', CENTER_X, CENTER_Y + UI_SUBTITLE_Y_OFFSET, 1.5, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
   draw_animated_text('INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE', CENTER_X, CENTER_Y + UI_TAGLINE_Y_OFFSET, 2, transform, [1.0, 0.0, 0.5, 1.0], 3.0)
+}
+
+const draw_radar = (transform) => {
+  const scale = RADAR_RADIUS / WORLD_RADIUS
+
+  draw_circle(RADAR_CENTER_X, RADAR_CENTER_Y, RADAR_RADIUS, 48, transform, [0.0, 0.4, 0.4, 0.35])
+  draw_circle(RADAR_CENTER_X, RADAR_CENTER_Y, RADAR_RADIUS, 48, transform, [0.0, 0.8, 0.8, 0.8])
+
+  const sq = 4
+  draw_line(RADAR_CENTER_X - sq, RADAR_CENTER_Y - sq, RADAR_CENTER_X + sq, RADAR_CENTER_Y - sq, transform, [1.0, 0.0, 0.0, 1.0])
+  draw_line(RADAR_CENTER_X + sq, RADAR_CENTER_Y - sq, RADAR_CENTER_X + sq, RADAR_CENTER_Y + sq, transform, [1.0, 0.0, 0.0, 1.0])
+  draw_line(RADAR_CENTER_X + sq, RADAR_CENTER_Y + sq, RADAR_CENTER_X - sq, RADAR_CENTER_Y + sq, transform, [1.0, 0.0, 0.0, 1.0])
+  draw_line(RADAR_CENTER_X - sq, RADAR_CENTER_Y + sq, RADAR_CENTER_X - sq, RADAR_CENTER_Y - sq, transform, [1.0, 0.0, 0.0, 1.0])
+
+  const rx = player.x * scale
+  const ry = player.y * scale
+  const rd = Math.sqrt(rx * rx + ry * ry)
+  const clamp_r = RADAR_RADIUS - 5
+  const px = RADAR_CENTER_X + (rd > clamp_r ? (rx / rd) * clamp_r : rx)
+  const py = RADAR_CENTER_Y + (rd > clamp_r ? (ry / rd) * clamp_r : ry)
+  const xs = 4
+  draw_line(px - xs, py - xs, px + xs, py + xs, transform, [1.0, 1.0, 1.0, 1.0])
+  draw_line(px + xs, py - xs, px - xs, py + xs, transform, [1.0, 1.0, 1.0, 1.0])
 }
 
 export const draw_ui = (lives, score, game_over, round_won) => {
@@ -97,6 +122,7 @@ export const draw_ui = (lives, score, game_over, round_won) => {
   } else {
     draw_text(`HIGH ${getHighScore()} SCORE ${score}`, TOP_RIGHT_X + UI_HUD_SCORE_X_OFFSET, TOP_RIGHT_Y, 3, transform, [1.0, 0.0, 0.5, 1.0])
     draw_text('STARKEEPER ONE', CENTER_X + UI_HUD_TITLE_X_OFFSET, UI_HUD_TITLE_Y, 3, transform, [0.0, 1.0, 1.0, 1.0])
+    draw_radar(transform)
 
     // Show autopilot indicator
     if (ENABLE_AUTOPILOT && game_state.autopilot_on) {

@@ -1,8 +1,9 @@
-import { identity_matrix } from './math.js'
 import { draw_spark } from './renderer.js'
 import { playSound } from './sound.js'
-import { CANVAS_SIZE, TORPEDO_INNER_SPARK_SIZE_RATIO, TORPEDO_JITTER_TIMER,
-  TORPEDO_JITTER_TIMER_MIN, TORPEDO_JITTER_X, TORPEDO_JITTER_Y } from './constants.js'
+import { TORPEDO_INNER_SPARK_SIZE_RATIO, TORPEDO_JITTER_TIMER,
+  TORPEDO_JITTER_TIMER_MIN, TORPEDO_JITTER_X, TORPEDO_JITTER_Y,
+  WORLD_RADIUS } from './constants.js'
+import { world_transform } from './camera.js'
 import { draw_space_mine } from './player.js'
 
 
@@ -55,10 +56,9 @@ export const update_torpedoes = (dt) => {
         torpedo.y += torpedo.jitter_y * dt
       }
 
-      if (torpedo.x < 0) torpedo.x += CANVAS_SIZE
-      else if (torpedo.x > CANVAS_SIZE) torpedo.x -= CANVAS_SIZE
-      if (torpedo.y < 0) torpedo.y += CANVAS_SIZE
-      else if (torpedo.y > CANVAS_SIZE) torpedo.y -= CANVAS_SIZE
+      if (torpedo.x * torpedo.x + torpedo.y * torpedo.y > WORLD_RADIUS * WORLD_RADIUS) {
+        torpedo.alive = false
+      }
 
       torpedo.life -= dt * 1000
       if (torpedo.life <= 0) {
@@ -81,7 +81,7 @@ export const draw_torpedo = ({ x, y, angle, size, transform, color }) => {
 }
 
 export const draw_torpedoes = () => {
-  const transform = identity_matrix()
+  const transform = world_transform()
   for (const torpedo of player_torpedoes) {
     if (torpedo.alive) {
       if (!torpedo.is_space_mine) {

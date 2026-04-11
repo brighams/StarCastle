@@ -1,9 +1,9 @@
-import { identity_matrix } from './math.js'
 import { draw_line } from './renderer.js'
-import { CANVAS_SIZE, STAR_COUNT, STAR_MIN_SIZE, STAR_SIZE_RANGE,
+import { WORLD_SIZE, STAR_COUNT, STAR_MIN_SIZE, STAR_SIZE_RANGE,
   STAR_MIN_TWINKLE_RATE, STAR_TWINKLE_RATE_RANGE,
   STAR_MIN_BRIGHTNESS, STAR_BRIGHTNESS_RANGE,
   STAR_MIN_ALPHA } from './constants.js'
+import { world_transform } from './camera.js'
 
 const stars = []
 
@@ -12,8 +12,8 @@ export const init_stars = () => {
 
   for (let i = 0; i < STAR_COUNT; i++) {
     stars.push({
-      x: Math.random() * CANVAS_SIZE,
-      y: Math.random() * CANVAS_SIZE,
+      x: (Math.random() - 0.5) * WORLD_SIZE,
+      y: (Math.random() - 0.5) * WORLD_SIZE,
       size: STAR_MIN_SIZE + Math.random() * STAR_SIZE_RANGE,
       twinkle_rate: STAR_MIN_TWINKLE_RATE + Math.random() * STAR_TWINKLE_RATE_RANGE,
       twinkle_offset: Math.random() * Math.PI * 2,
@@ -24,7 +24,7 @@ export const init_stars = () => {
 
 export const draw_stars = () => {
   const time = performance.now() / 1000
-  const transform = identity_matrix()
+  const transform = world_transform()
 
   for (const star of stars) {
     const twinkle = Math.sin(time * star.twinkle_rate + star.twinkle_offset)

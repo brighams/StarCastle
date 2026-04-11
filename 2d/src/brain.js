@@ -1,5 +1,4 @@
-import { CENTER_X, CENTER_Y,
-  BRAIN_TICK,
+import { BRAIN_TICK,
   BRAIN_BURST_DURATION,
   BRAIN_NEAR_THRESHOLD,
   BRAIN_FAR_THRESHOLD,
@@ -62,8 +61,8 @@ const normalize_angle = (a) => {
 }
 
 const think = (player) => {
-  const dx   = CENTER_X - player.x
-  const dy   = CENTER_Y - player.y
+  const dx   = -player.x
+  const dy   = -player.y
   const dist = Math.sqrt(dx * dx + dy * dy)
 
   // Angle the ship must face to point at the castle

@@ -5,9 +5,6 @@ import { AFT_TORPEDO_COLOR,
   BRAKE_JET_COLOR,
   BRAKE_JET_LENGTH_RATIO,
   BRAKE_JET_WIDTH_RATIO,
-  CANVAS_SIZE,
-  CENTER_X,
-  CENTER_Y,
   FIRE_COOLDOWN_TIME,
   FLAME_BASE_LENGTH,
   FLAME_BASE_WIDTH,
@@ -30,7 +27,6 @@ import { AFT_TORPEDO_COLOR,
   PLAYER_SHIP_STRAFE_THRUST_RAMP_UP_SPEED,
   PLAYER_SHIP_THRUST_DECELERATE_FACTOR,
   PLAYER_SHIP_THRUST_FACTOR,
-  PLAYER_SPAWN_DISTANCE_FROM_CENTER_RATIO,
   PLAYER_SPAWN_FORWARD_PUSH,
   PLAYER_SPAWN_SIDEWAYS_PUSH,
   ROTATION_FACTOR,
@@ -44,10 +40,12 @@ import { AFT_TORPEDO_COLOR,
   PLAYER_MAX_STRAFE_FACTOR,
   PLAYER_SIZE,
   PLAYER_SPAWN_ANIM_TIMER,
+  PLAYER_SPAWN_OUTER_RING_MIN,
+  PLAYER_SPAWN_OUTER_RING_MAX,
   PLAYER_TORPEDO_LIFE,
   PLAYER_TORPEDO_SPEED,
-  SCREEN_WRAP_EDGE_MARGIN,
   SHIP_HULL_WIDTH_RATIO,
+  WORLD_RADIUS,
   SPACE_MINE_INNER_COLOR,
   SPACE_MINE_INNER_SEGMENTS,
   SPACE_MINE_INNER_SIZE_RATIO,
@@ -62,14 +60,15 @@ import { AFT_TORPEDO_COLOR,
   STRAFE_JET_VERTICAL_SPREAD_RATIO } from './constants.js'
 import { playSound, startAttitudeThruster, startMainThruster, stopAttitudeThruster, stopMainThruster } from './sound.js'
 import { retreat_enemies_to_center } from './enemies.js'
-import { identity_matrix, multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
+import { multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
+import { world_transform } from './camera.js'
 import { draw_circle, draw_line, draw_spark } from './renderer.js'
 import { fire_torpedo, player_torpedoes } from './torpedoes.js'
 
 
 export const player = {
-  x: CENTER_X,
-  y: CANVAS_SIZE - 100,
+  x: 0,
+  y: PLAYER_SPAWN_OUTER_RING_MIN,
   angle: 0,
   vel_x: 0,
   vel_y: 0,
@@ -120,15 +119,15 @@ export const spawn_player = (game_state, dt) => {
 }
 
 const set_random_spawn_position = () => {
-  const spawn_radius = CANVAS_SIZE * PLAYER_SPAWN_DISTANCE_FROM_CENTER_RATIO
   const random_angle = Math.random() * Math.PI * 2
-  player.x = CENTER_X + Math.cos(random_angle) * spawn_radius
-  player.y = CENTER_Y + Math.sin(random_angle) * spawn_radius
+  const spawn_radius = PLAYER_SPAWN_OUTER_RING_MIN
+    + Math.random() * (PLAYER_SPAWN_OUTER_RING_MAX - PLAYER_SPAWN_OUTER_RING_MIN)
+  player.x = Math.cos(random_angle) * spawn_radius
+  player.y = Math.sin(random_angle) * spawn_radius
   player.vel_x = 0
   player.vel_y = 0
   player.speed = 0
-  // Point towards the center (castle)
-  player.angle = Math.atan2(CENTER_X - player.x, -(CENTER_Y - player.y))
+  player.angle = Math.atan2(-player.x, player.y)
 }
 
 export const reset_player = () => {
@@ -393,15 +392,16 @@ export const update_player = (dt, keys_pressed, game_state) => {
   player.x += player.vel_x * dt
   player.y += player.vel_y * dt
 
-  if (player.x < -SCREEN_WRAP_EDGE_MARGIN) {
-    player.x = CANVAS_SIZE + SCREEN_WRAP_EDGE_MARGIN
-  } else if (player.x > CANVAS_SIZE + SCREEN_WRAP_EDGE_MARGIN) {
-    player.x = -SCREEN_WRAP_EDGE_MARGIN
-  }
-  if (player.y < -SCREEN_WRAP_EDGE_MARGIN) {
-    player.y = CANVAS_SIZE + SCREEN_WRAP_EDGE_MARGIN
-  } else if (player.y > CANVAS_SIZE + SCREEN_WRAP_EDGE_MARGIN) {
-    player.y = -SCREEN_WRAP_EDGE_MARGIN
+  const dist_sq = player.x * player.x + player.y * player.y
+  if (dist_sq >= WORLD_RADIUS * WORLD_RADIUS) {
+    const dist = Math.sqrt(dist_sq)
+    const nx = player.x / dist
+    const ny = player.y / dist
+    const dot = player.vel_x * nx + player.vel_y * ny
+    player.vel_x -= 2 * dot * nx
+    player.vel_y -= 2 * dot * ny
+    player.x = nx * (WORLD_RADIUS - 1)
+    player.y = ny * (WORLD_RADIUS - 1)
   }
 }
 
@@ -421,12 +421,13 @@ export const draw_player_ship = (
     rotation = 0,
     braking = false,
     strafing = 0,
-    strafe_thrust = 0
+    strafe_thrust = 0,
+    transform = null
   }
 ) => {
-  const transform = identity_matrix()
+  const base = transform ?? world_transform()
   const ship_transform = multiply_matrices(
-    multiply_matrices(transform, translate_matrix(x, y)),
+    multiply_matrices(base, translate_matrix(x, y)),
     rotate_matrix(angle)
   )
 

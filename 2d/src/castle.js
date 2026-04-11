@@ -2,8 +2,6 @@ import { CANNON_COLOR,
   CANNON_COOL_OFF_TIME,
   CANNON_FIRE_WARMUP_TIME,
   CANNON_LENGTH,
-  CANNON_PROJECTILE_BOUNDS_MAX,
-  CANNON_PROJECTILE_BOUNDS_MIN,
   CANNON_ROTATION_SPEED,
   CANNON_SPARK_COLOR,
   CANNON_SPARK_SIZE,
@@ -15,8 +13,6 @@ import { CANNON_COLOR,
   CASTLE_CENTRAL_HEX_SIDES,
   CASTLE_DESTROYED_CHECK_DELAY,
   CASTLE_INNER_RING_RADIUS,
-  CENTER_X,
-  CENTER_Y,
   ENEMY_SPEED_INCREASE_PER_ROUND,
   RING_GLOW_BASE,
   RING_GLOW_INNER_ALPHA,
@@ -38,9 +34,10 @@ import { CANNON_COLOR,
   RING_OUTER_ROTATION_SPEED,
   RING_OUTER_SEGMENTS,
   RING_RESPAWN_TIME,
-  RING_SPAWN_INITIAL_RADIUS } from './constants.js'
+  RING_SPAWN_INITIAL_RADIUS,
+  WORLD_RADIUS } from './constants.js'
 
-import { identity_matrix } from './math.js'
+import { world_transform } from './camera.js'
 import { draw_line, draw_spark } from './renderer.js'
 import { are_rings_destroyed_by_explosion, create_castle_explosion, is_castle_exploding } from './explosions.js'
 import { playSound } from './sound.js'
@@ -80,7 +77,7 @@ export const clear_cannon_projectile = () => {
 }
 
 export const castle_destroyed = (game_state) => {
-  create_castle_explosion(CENTER_X, CENTER_Y)
+  create_castle_explosion(0, 0)
   playSound('castle_explode')
   retreat_enemies_to_center()
   castle_state.cannon.is_destroyed = true
@@ -208,7 +205,7 @@ export const update_castle_rings = (dt, player, game_state) => {
   }
 
   if (player.alive) {
-    const target_angle = Math.atan2(player.y - CENTER_Y, player.x - CENTER_X)
+    const target_angle = Math.atan2(player.y, player.x)
 
     let angle_diff = target_angle - cannon.angle
     while (angle_diff > Math.PI) angle_diff -= Math.PI * 2
@@ -229,8 +226,8 @@ export const update_castle_rings = (dt, player, game_state) => {
       playSound('cannon_fire')
       setTimeout(() => {
         castle_state.cannon_projectile = {
-          x: CENTER_X + Math.cos(cannon.angle) * cannon.length,
-          y: CENTER_Y + Math.sin(cannon.angle) * cannon.length,
+          x: Math.cos(cannon.angle) * cannon.length,
+          y: Math.sin(cannon.angle) * cannon.length,
           angle: cannon.angle,
           vx: Math.cos(cannon.angle) * CANNON_SPARK_SPEED,
           vy: Math.sin(cannon.angle) * CANNON_SPARK_SPEED,
@@ -245,7 +242,8 @@ export const update_castle_rings = (dt, player, game_state) => {
     castle_state.cannon_projectile.x += castle_state.cannon_projectile.vx * dt
     castle_state.cannon_projectile.y += castle_state.cannon_projectile.vy * dt
 
-    if (castle_state.cannon_projectile.x < CANNON_PROJECTILE_BOUNDS_MIN || castle_state.cannon_projectile.x > CANNON_PROJECTILE_BOUNDS_MAX || castle_state.cannon_projectile.y < CANNON_PROJECTILE_BOUNDS_MIN || castle_state.cannon_projectile.y > CANNON_PROJECTILE_BOUNDS_MAX) {
+    const p = castle_state.cannon_projectile
+    if (p.x * p.x + p.y * p.y > WORLD_RADIUS * WORLD_RADIUS) {
       castle_state.cannon_projectile = null
     }
   }
@@ -260,7 +258,7 @@ export const draw_castle = () => {
     return
   }
 
-  const transform = identity_matrix()
+  const transform = world_transform()
 
   const glow_pulse = RING_GLOW_BASE + Math.sin(castle_state.ring_glow_time * RING_GLOW_PULSE_SPEED) * RING_GLOW_PULSE_AMOUNT
 
@@ -273,10 +271,10 @@ export const draw_castle = () => {
       const start_angle = face.index * segment_angle + ring.rotation
       const end_angle = (face.index + 1) * segment_angle + ring.rotation
 
-      const x1 = CENTER_X + Math.cos(start_angle) * draw_radius
-      const y1 = CENTER_Y + Math.sin(start_angle) * draw_radius
-      const x2 = CENTER_X + Math.cos(end_angle) * draw_radius
-      const y2 = CENTER_Y + Math.sin(end_angle) * draw_radius
+      const x1 = Math.cos(start_angle) * draw_radius
+      const y1 = Math.sin(start_angle) * draw_radius
+      const x2 = Math.cos(end_angle) * draw_radius
+      const y2 = Math.sin(end_angle) * draw_radius
 
       const glow_color = [ring.color[0], ring.color[1], ring.color[2], glow_pulse * RING_GLOW_OUTER_ALPHA]
       const glow_color_inner = [ring.color[0], ring.color[1], ring.color[2], glow_pulse * RING_GLOW_INNER_ALPHA]
@@ -303,24 +301,24 @@ export const draw_castle = () => {
   }
 
   const cannon = castle_state.cannon
-  const cannon_end_x = CENTER_X + Math.cos(cannon.angle) * cannon.length
-  const cannon_end_y = CENTER_Y + Math.sin(cannon.angle) * cannon.length
+  const cannon_end_x = Math.cos(cannon.angle) * cannon.length
+  const cannon_end_y = Math.sin(cannon.angle) * cannon.length
 
   const perp_x = Math.cos(cannon.angle + Math.PI / 2)
   const perp_y = Math.sin(cannon.angle + Math.PI / 2)
 
   for (let offset = -CANNON_THICKNESS; offset <= CANNON_THICKNESS; offset++) {
-    draw_line(CENTER_X + perp_x * offset, CENTER_Y + perp_y * offset, cannon_end_x + perp_x * offset, cannon_end_y + perp_y * offset, transform, CANNON_COLOR)
+    draw_line(perp_x * offset, perp_y * offset, cannon_end_x + perp_x * offset, cannon_end_y + perp_y * offset, transform, CANNON_COLOR)
   }
 
   for (let i = 0; i < CASTLE_CENTRAL_HEX_SIDES; i++) {
     const angle1 = castle_state.center_rotation + (i / CASTLE_CENTRAL_HEX_SIDES) * Math.PI * 2
     const angle2 = castle_state.center_rotation + ((i + 1) / CASTLE_CENTRAL_HEX_SIDES) * Math.PI * 2
 
-    const x1 = CENTER_X + Math.cos(angle1) * CASTLE_CENTRAL_HEX_RADIUS
-    const y1 = CENTER_Y + Math.sin(angle1) * CASTLE_CENTRAL_HEX_RADIUS
-    const x2 = CENTER_X + Math.cos(angle2) * CASTLE_CENTRAL_HEX_RADIUS
-    const y2 = CENTER_Y + Math.sin(angle2) * CASTLE_CENTRAL_HEX_RADIUS
+    const x1 = Math.cos(angle1) * CASTLE_CENTRAL_HEX_RADIUS
+    const y1 = Math.sin(angle1) * CASTLE_CENTRAL_HEX_RADIUS
+    const x2 = Math.cos(angle2) * CASTLE_CENTRAL_HEX_RADIUS
+    const y2 = Math.sin(angle2) * CASTLE_CENTRAL_HEX_RADIUS
 
     draw_line(x1, y1, x2, y2, transform, CASTLE_CENTRAL_HEX_COLOR)
   }

@@ -1,4 +1,4 @@
-import { identity_matrix } from './math.js'
+import { world_transform } from './camera.js'
 import { draw_circle, draw_line } from './renderer.js'
 import { ALPHA_FADE_MULTIPLIER,
   BASIC_EXPLOSION_COLOR,
@@ -193,7 +193,7 @@ const draw_styled_explosion = (explosion, transform) => {
 }
 
 export const draw_explosions = () => {
-  const transform = identity_matrix()
+  const transform = world_transform()
 
   for (const explosion of explosions) {
     const alpha = explosion.life / explosion.maxLife

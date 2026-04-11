@@ -1,4 +1,5 @@
 import { clear_screen, init_renderer, resize_viewport } from './renderer.js'
+import { update_camera } from './camera.js'
 import { draw_player_ship, player, reset_player, update_player } from './player.js'
 import { draw_castle, reset_castle, ring_spawning, update_castle_rings } from './castle.js'
 import { clear_torpedoes, draw_torpedoes, remove_destroyed_torpedoes, update_torpedoes } from './torpedoes.js'
@@ -165,6 +166,7 @@ document.addEventListener('keyup', (e) => {
 })
 
 const render_frame = () => {
+  update_camera(player)
   clear_screen()
   draw_stars()
   draw_castle()

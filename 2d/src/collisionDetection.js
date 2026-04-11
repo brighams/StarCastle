@@ -1,8 +1,6 @@
 // Pure collision detection functions for testability
 import {
   CASTLE_CORE_HIT_RADIUS,
-  CENTER_X,
-  CENTER_Y,
   TORPEDO_ENEMY_HIT_BUFFER,
   TORPEDO_RING_HIT_DISTANCE
 } from './constants.js'
@@ -66,8 +64,8 @@ export const torpedoCastleCoreCollision = (torpedo) => {
   return circlePointCollision(
     torpedo.x,
     torpedo.y,
-    CENTER_X,
-    CENTER_Y,
+    0,
+    0,
     CASTLE_CORE_HIT_RADIUS
   )
 }
@@ -104,7 +102,7 @@ export const projectilePlayerCollision = (projectile, player) => {
  * Checks if player hits a ring
  * Returns { hit: boolean, faceIndex: number }
  */
-export const playerRingCollision = (player, ring, centerX = CENTER_X, centerY = CENTER_Y) => {
+export const playerRingCollision = (player, ring, centerX = 0, centerY = 0) => {
   const player_center_dx = player.x - centerX
   const player_center_dy = player.y - centerY
   const player_center_distance = Math.sqrt(
@@ -145,7 +143,7 @@ export const enemyPlayerCollision = (enemy, player) => {
 /**
  * Gets ring segment endpoints for collision detection
  */
-export const getRingSegmentPoints = (ring, faceIndex, centerX = CENTER_X, centerY = CENTER_Y) => {
+export const getRingSegmentPoints = (ring, faceIndex, centerX = 0, centerY = 0) => {
   const segment_angle = (Math.PI * 2) / ring.segments
   const start_angle = faceIndex * segment_angle + ring.rotation
   const end_angle = (faceIndex + 1) * segment_angle + ring.rotation
@@ -162,7 +160,7 @@ export const getRingSegmentPoints = (ring, faceIndex, centerX = CENTER_X, center
  * Checks all torpedo collisions and returns collision results
  * This is a pure function that doesn't mutate state
  */
-export const checkAllTorpedoCollisions = (torpedoes, rings, enemies, centerX = CENTER_X, centerY = CENTER_Y) => {
+export const checkAllTorpedoCollisions = (torpedoes, rings, enemies, centerX = 0, centerY = 0) => {
   const results = []
 
   for (const torpedo of torpedoes) {

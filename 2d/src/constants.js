@@ -5,6 +5,15 @@ export const TOP_RIGHT_X = CANVAS_SIZE - 16;
 export const TOP_RIGHT_Y = 16;
 export const SCREEN_WRAP_EDGE_MARGIN = 20;
 
+export const WORLD_SIZE = 2000;
+export const WORLD_RADIUS = 1000;
+export const PLAYER_SPAWN_OUTER_RING_MIN = 800;
+export const PLAYER_SPAWN_OUTER_RING_MAX = 1000;
+
+export const RADAR_RADIUS = 80;
+export const RADAR_CENTER_X = CANVAS_SIZE - 100;
+export const RADAR_CENTER_Y = 100;
+
 export const ENEMY_SPARK_SIZE = 10;
 export const ENEMY_FLOCKING_DISTANCE = 180;
 export const ENEMY_DOCK_ARRIVAL_THRESHOLD = 5;
@@ -50,8 +59,6 @@ export const CANNON_SPARK_SIZE = 24;
 export const CANNON_COOL_OFF_TIME = 1.3;
 export const CANNON_FIRE_WARMUP_TIME = 200;
 export const CANNON_SPARK_SPEED = 300;
-export const CANNON_PROJECTILE_BOUNDS_MIN = -50;
-export const CANNON_PROJECTILE_BOUNDS_MAX = 1074;
 
 export const CANNON_SPARK_COLOR = [0.0, 1.0, 1.0, 1.0];
 export const CANNON_COLOR = [0.5, 0.5, 0.5, 1.0];
@@ -129,7 +136,6 @@ export const PLAYER_STARTING_LIVES = 4;
 
 export const PLAYER_SPAWN_FORWARD_PUSH = 60; // Initial forward velocity when respawning
 export const PLAYER_SPAWN_SIDEWAYS_PUSH = 40; // Initial sideways velocity when respawning
-export const PLAYER_SPAWN_DISTANCE_FROM_CENTER_RATIO = 0.42; // How far from center to spawn (fraction of canvas)
 export const PLAYER_RESPAWN_DELAY_SECONDS = 3.0; // Time before player respawns after death
 
 // Player SHIP Physics forces (units per second squared)
