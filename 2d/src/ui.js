@@ -34,6 +34,7 @@ import { game_state } from "./main.js";
 import { draw_player_ship, player } from "./player.js";
 import { draw_animated_text, draw_text } from "./text.js";
 import { get_castles } from "./castle.js";
+import { wingmen } from "./wingmen.js";
 
 let infoBox = document.getElementById("infoBox");
 let debug_enabled = false;
@@ -63,15 +64,27 @@ const draw_player_remaining_lives = (lives, transform) => {
 const TITLE_LINES = (transform) => {
   const cx = viewport.width / 2;
   const cy = viewport.height / 2;
+
   draw_animated_text(
-    "STARKEEPER ONE",
-    cx,
-    cy + UI_TITLE_Y_OFFSET,
+    "STARKEEPERS",
+    cx - 1,
+    cy + UI_TITLE_Y_OFFSET - 1,
+    8,
+    transform,
+    [1.0, 1.0, 0.0, 1.0],
+    3.0,
+  );
+
+  draw_animated_text(
+    "STARKEEPERS",
+    cx + 1,
+    cy + UI_TITLE_Y_OFFSET + 1,
     8,
     transform,
     [1.0, 0.0, 0.5, 1.0],
     3.0,
   );
+
   draw_animated_text(
     "BY BRIGHAM@STARKEEPER.IO",
     cx,
@@ -81,15 +94,16 @@ const TITLE_LINES = (transform) => {
     [1.0, 0.0, 0.5, 1.0],
     3.0,
   );
-  draw_animated_text(
-    "INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE",
-    cx,
-    cy + UI_TAGLINE_Y_OFFSET,
-    2,
-    transform,
-    [1.0, 0.0, 0.5, 1.0],
-    3.0,
-  );
+
+  // draw_animated_text(
+  //   "INSPIRED BY THE 1980 ARCADE CLASSIC STAR CASTLE",
+  //   cx,
+  //   cy + UI_TAGLINE_Y_OFFSET,
+  //   2,
+  //   transform,
+  //   [1.0, 0.0, 0.5, 1.0],
+  //   3.0,
+  // );
 };
 
 const draw_radar = (transform) => {
@@ -162,6 +176,28 @@ const draw_radar = (transform) => {
     transform,
     [1.0, 1.0, 1.0, 1.0],
   );
+
+  for (const wingman of wingmen) {
+    if (!wingman.alive) continue;
+    const wx = rcx + wingman.x * scale;
+    const wy = rcy + wingman.y * scale;
+    draw_line(
+      wx - xs,
+      wy - xs,
+      wx + xs,
+      wy + xs,
+      transform,
+      [0.0, 1.0, 1.0, 1.0],
+    );
+    draw_line(
+      wx + xs,
+      wy - xs,
+      wx - xs,
+      wy + xs,
+      transform,
+      [0.0, 1.0, 1.0, 1.0],
+    );
+  }
 };
 
 export const draw_ui = (lives, score, game_over, round_won) => {

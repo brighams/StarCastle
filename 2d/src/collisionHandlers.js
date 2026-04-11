@@ -13,7 +13,9 @@ import { destroy_torpedo } from './torpedoes.js'
 import { destroy_enemy, undock_one_enemy } from './enemies.js'
 import { castle_destroyed } from './castle.js'
 import { destroy_player } from './player.js'
+import { destroy_wingman, wingmen } from './wingmen.js'
 import {
+  circleCircleCollision,
   enemyPlayerCollision,
   playerRingCollision,
   projectilePlayerCollision,
@@ -140,6 +142,31 @@ export const checkAndHandleCollisions = (player, castles, player_torpedoes, enem
     if (player.alive && enemyPlayerCollision(enemy, player)) {
       handlePlayerEnemyHit(player, enemy, game_state)
       break // Player destroyed
+    }
+  }
+
+  // Check cannon projectile hit wingmen
+  for (const wingman of wingmen) {
+    if (!wingman.alive) continue
+    for (const castle of castles) {
+      if (castle.cannon_projectile && projectilePlayerCollision(castle.cannon_projectile, wingman)) {
+        castle.cannon_projectile = null
+        destroy_wingman(wingman)
+        break
+      }
+    }
+  }
+
+  // Check enemy hit wingmen
+  for (const wingman of wingmen) {
+    if (!wingman.alive) continue
+    for (const enemy of enemy_sparks) {
+      if (circleCircleCollision(enemy.x, enemy.y, enemy.size, wingman.x, wingman.y, wingman.size)) {
+        create_explosion(enemy.x, enemy.y, ENEMY_EXPLOSION_PARTICLES, ENEMY_EXPLOSION_DURATION)
+        destroy_wingman(wingman)
+        destroy_enemy(enemy)
+        break
+      }
     }
   }
 }

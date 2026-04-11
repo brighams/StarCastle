@@ -32,8 +32,9 @@ import {
 } from "./explosions.js";
 import { check_collisions } from "./collisions.js";
 import { draw_ui, toggle_debug, toggle_info_box } from "./ui.js";
-import { draw_stars } from "./stars.js";
+import { draw_boundary, draw_stars } from "./stars.js";
 import { update_brain, reset_brain, commands_to_keys } from "./brain.js";
+import { clear_wingmen, draw_wingmen, spawn_initial_wingmen, update_wingmen, wingmen } from "./wingmen.js";
 import {
   CASTLE_START_COUNT,
   ENEMY_INITIAL_SPAWN_DELAY_MS,
@@ -131,7 +132,9 @@ const reset_game = (new_game = true) => {
   clear_explosions();
   clear_enemies();
   clear_torpedoes();
+  clear_wingmen();
   reset_player();
+  spawn_initial_wingmen(game_state.round);
   reset_castle(CASTLE_START_COUNT + game_state.round);
 
   enemy_spawn_timer = ENEMY_SPAWN_INITIAL_DELAY;
@@ -196,14 +199,15 @@ document.addEventListener("keyup", (e) => {
 });
 
 const render_frame = () => {
-  update_camera(player);
   clear_screen();
   draw_stars();
+  draw_boundary();
   draw_castle();
   if (player.alive && !game_state.game_over) {
     draw_player_ship(player);
   }
   draw_enemy_sparks();
+  draw_wingmen();
   draw_torpedoes();
   draw_explosions();
   draw_ui(
@@ -218,6 +222,7 @@ const render_frame = () => {
 const update_game = (current_time) => {
   const dt = (current_time - last_time) / 1000;
   last_time = current_time;
+  update_camera(player, dt);
 
   // If player died during entice mode, restart it immediately
   if (game_state.game_over && game_state.entice_mode) {
@@ -280,8 +285,10 @@ const update_game = (current_time) => {
     game_state.game_over,
     game_state.round_won,
     game_state.enemy_speed_multiplier,
+    [player, ...wingmen.filter(w => w.alive)],
   );
   remove_destroyed_enemies();
+  update_wingmen(dt, player, game_state.round);
   check_collisions(player, game_state);
   update_explosions(dt);
 };

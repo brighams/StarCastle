@@ -31,12 +31,18 @@ The rest of the game works the same
 - destroying a castle does not advance to the next level
 - all castles must be destroyed!
 
-## Milestone 3
+## Milestone 3 - Squadrons
+When a castle is destroyed
+  Another ship will join the player.
+  the "fleet" will have flocking behavior and try to stay together but they may behave on their own.
+  wingmen will not try to shoot castle, but it could happen they are looking for sparks.
+  
+  Make it spawn randomly on the map and fly to the player and join up
+  
+  it will try to stay within X of player. It will try to shoot sparks, ignoring castles
+  May have 2 additional wingmen
+  Ships can die separately
+  wingmen do not drop space mines
+  
 - Multiple ships in the player fleet
-- When a castle is destroyed 50% chance of reinforcement
-- Extra life is used
-- Ship spawns, tries to stay in formation but plays defensively 
-
-
-
-
+- Ship spawns, tries to stay in formation but plays defensively

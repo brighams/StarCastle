@@ -5,8 +5,8 @@ export const TOP_RIGHT_X = CANVAS_SIZE - 16;
 export const TOP_RIGHT_Y = 16;
 export const SCREEN_WRAP_EDGE_MARGIN = 20;
 
-export const WORLD_SIZE = 6000;
-export const WORLD_RADIUS = 1000;
+export const WORLD_SIZE = 8000;
+export const WORLD_RADIUS = 4000;
 
 export const PLAYER_SPAWN_OUTER_RING_MIN = 950;
 export const PLAYER_SPAWN_OUTER_RING_MAX = 980;
@@ -17,6 +17,21 @@ export const CASTLE_SPAWN_RADIUS_MAX = 800;
 export const CASTLE_MIN_SEPARATION = 1000;
 
 export const RADAR_RADIUS = 80;
+
+export const WINGMAN_MAX_COUNT = 2;
+export const WINGMAN_FORMATION_RADIUS = 400;
+export const WINGMAN_JOIN_RADIUS = 80;
+export const WINGMAN_THRUST_FORCE = 80;
+export const WINGMAN_MAX_SPEED = 250;
+export const WINGMAN_ROTATION_SPEED = 2.5;
+export const WINGMAN_FIRE_COOLDOWN = 1.2;
+export const WINGMAN_AIM_TOLERANCE = 0.2;
+export const WINGMAN_VELOCITY_DAMPING = 0.98;
+export const WINGMAN_MIN_SEPARATION = 120;
+export const WINGMAN_SEPARATION_FORCE = 200;
+export const WINGMAN_COLOR = [0.0, 1.0, 1.0, 1.0];
+export const WINGMAN_TORPEDO_COLOR = [0.0, 1.0, 1.0, 1.0];
+export const WINGMAN_RESPAWN_TIME = 30;
 
 export const ENEMY_SPARK_SIZE = 10;
 export const ENEMY_FLOCKING_DISTANCE = 180;
@@ -136,7 +151,7 @@ export const DEBRIS_ALPHA_MULTIPLIER = 0.7;
 export const ALPHA_FADE_MULTIPLIER = 2;
 
 // Spawn behavior
-export const PLAYER_STARTING_LIVES = 4;
+export const PLAYER_STARTING_LIVES = 3;
 
 export const PLAYER_SPAWN_FORWARD_PUSH = 60; // Initial forward velocity when respawning
 export const PLAYER_SPAWN_SIDEWAYS_PUSH = 40; // Initial sideways velocity when respawning
@@ -259,7 +274,7 @@ export const SPARK_ROTATION_SPEED = 2.0;
 export const SPARK_LINE_COUNT = 3;
 
 // Stars
-export const STAR_COUNT = 100;
+export const STAR_COUNT = 2000;
 export const STAR_MIN_SIZE = 0.5;
 export const STAR_SIZE_RANGE = 2.5;
 export const STAR_MIN_TWINKLE_RATE = 0.2;

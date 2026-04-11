@@ -1,5 +1,5 @@
-import { draw_line } from './renderer.js'
-import { WORLD_SIZE, STAR_COUNT, STAR_MIN_SIZE, STAR_SIZE_RANGE,
+import { draw_circle, draw_line } from './renderer.js'
+import { WORLD_SIZE, WORLD_RADIUS, STAR_COUNT, STAR_MIN_SIZE, STAR_SIZE_RANGE,
   STAR_MIN_TWINKLE_RATE, STAR_TWINKLE_RATE_RANGE,
   STAR_MIN_BRIGHTNESS, STAR_BRIGHTNESS_RANGE,
   STAR_MIN_ALPHA } from './constants.js'
@@ -20,6 +20,15 @@ export const init_stars = () => {
       brightness: STAR_MIN_BRIGHTNESS + Math.random() * STAR_BRIGHTNESS_RANGE
     })
   }
+}
+
+export const draw_boundary = () => {
+  const time = performance.now() / 1000
+  const transform = world_transform()
+  const pulse = 0.5 + Math.sin(time * 1.2) * 0.15
+  draw_circle(0, 0, WORLD_RADIUS + 8, 128, transform, [0.0, 0.4, 1.0, pulse * 0.3])
+  draw_circle(0, 0, WORLD_RADIUS + 2, 128, transform, [0.2, 0.6, 1.0, pulse * 0.6])
+  draw_circle(0, 0, WORLD_RADIUS,     128, transform, [0.4, 0.8, 1.0, 0.9])
 }
 
 export const draw_stars = () => {

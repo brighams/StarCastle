@@ -163,7 +163,22 @@ const apply_docking_movement = (enemy, dt, castle_rings) => {
 }
 
 
-const update_enemy = (enemy, index, dt, player, player_is_target, enemy_speed_multiplier) => {
+const nearest_target = (x, y, targets) => {
+  let nearest = targets[0]
+  let nearest_dist_sq = Infinity
+  for (const t of targets) {
+    const dx = t.x - x
+    const dy = t.y - y
+    const dsq = dx * dx + dy * dy
+    if (dsq < nearest_dist_sq) {
+      nearest_dist_sq = dsq
+      nearest = t
+    }
+  }
+  return nearest
+}
+
+const update_enemy = (enemy, index, dt, player, player_is_target, enemy_speed_multiplier, targets) => {
   if (!enemy.alive) return
 
   const castle = get_castle(enemy.castle_index)
@@ -184,7 +199,7 @@ const update_enemy = (enemy, index, dt, player, player_is_target, enemy_speed_mu
     return
   }
 
-  update_spark_chase(enemy, index, dt, player, enemy_speed_multiplier)
+  update_spark_chase(enemy, index, dt, nearest_target(enemy.x, enemy.y, targets), enemy_speed_multiplier)
   enemy.vel_x *= ENEMY_VELOCITY_DAMPING
   enemy.vel_y *= ENEMY_VELOCITY_DAMPING
   enemy.x += enemy.vel_x * dt
@@ -206,12 +221,12 @@ const update_enemy = (enemy, index, dt, player, player_is_target, enemy_speed_mu
   }
 }
 
-const update_enemies = (dt, player, game_over, round_won, enemy_speed_multiplier) => {
+const update_enemies = (dt, player, game_over, round_won, enemy_speed_multiplier, targets) => {
   const player_is_target = player.alive && !game_over && !round_won
 
   for (let index = 0; index < enemy_sparks.length; index += 1) {
     const enemy = enemy_sparks[index]
-    update_enemy(enemy, index, dt, player, player_is_target, enemy_speed_multiplier)
+    update_enemy(enemy, index, dt, player, player_is_target, enemy_speed_multiplier, targets)
   }
 }
 export default update_enemies

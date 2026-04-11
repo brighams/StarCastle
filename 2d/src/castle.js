@@ -55,6 +55,7 @@ import { clear_torpedoes } from "./torpedoes.js";
 import { retreat_enemies_to_castle } from "./enemies.js";
 import { player } from "./player.js";
 import { checkAndUpdateHighScore } from "./score.js";
+import { spawn_wingman } from "./wingmen.js";
 
 export let castles = [];
 
@@ -129,6 +130,7 @@ export const castle_destroyed = (castle, castle_index, game_state) => {
   playSound("castle_explode");
   retreat_enemies_to_castle();
   castle.cannon.is_destroyed = true;
+  spawn_wingman(game_state.round);
   const destroyed_count = castles.filter((c) => c.is_destroyed).length;
   game_state.score = (game_state.round + 1) * destroyed_count;
   checkAndUpdateHighScore(game_state.score);
@@ -223,6 +225,25 @@ export const update_castle_rings = (dt, player, game_state) => {
   }
 };
 
+const fire_all_cannons = (player) => {
+  for (const c of castles) {
+    if (c.is_destroyed || c.cannon_projectile || c.spawn_in_progress) continue;
+    const fire_angle = Math.atan2(player.y - c.y, player.x - c.x);
+    c.cannon.angle = fire_angle;
+    setTimeout(() => {
+      c.cannon_projectile = {
+        x: c.x + Math.cos(fire_angle) * c.cannon.length,
+        y: c.y + Math.sin(fire_angle) * c.cannon.length,
+        angle: fire_angle,
+        vx: Math.cos(fire_angle) * CANNON_SPARK_SPEED,
+        vy: Math.sin(fire_angle) * CANNON_SPARK_SPEED,
+        size: CANNON_SPARK_SIZE,
+      };
+      c.cannon.cool_off_timer = CANNON_COOL_OFF_TIME;
+    }, CANNON_FIRE_WARMUP_TIME);
+  }
+};
+
 const update_single_castle = (dt, player, game_state, castle) => {
   castle.ring_glow_time += dt;
   castle.center_rotation += CASTLE_CENTER_ROTATION_SPEED * dt;
@@ -286,18 +307,7 @@ const update_single_castle = (dt, player, game_state, castle) => {
       has_clear_shot(castle, cannon.angle)
     ) {
       playSound("cannon_fire");
-      const fire_angle = cannon.angle;
-      setTimeout(() => {
-        castle.cannon_projectile = {
-          x: castle.x + Math.cos(fire_angle) * cannon.length,
-          y: castle.y + Math.sin(fire_angle) * cannon.length,
-          angle: fire_angle,
-          vx: Math.cos(fire_angle) * CANNON_SPARK_SPEED,
-          vy: Math.sin(fire_angle) * CANNON_SPARK_SPEED,
-          size: CANNON_SPARK_SIZE,
-        };
-        cannon.cool_off_timer = CANNON_COOL_OFF_TIME;
-      }, CANNON_FIRE_WARMUP_TIME);
+      fire_all_cannons(player);
     }
   }
 
