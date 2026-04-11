@@ -13,16 +13,24 @@ import { draw_ui, toggle_debug, toggle_info_box } from './ui.js'
 import { draw_stars } from './stars.js'
 import { autopilot_enabled, update_autopilot } from './autopilot.js'
 import { update_brain, reset_brain, commands_to_keys } from './brain.js'
-import { ENEMY_STARTING_COUNT,
+import { CANVAS_SIZE,
+  ENEMY_INITIAL_SPAWN_DELAY_MS,
+  ENEMY_NEW_GAME_SPEED_MULTIPLIER,
+  ENEMY_SPAWN_CHANCE,
+  ENEMY_SPAWN_INITIAL_DELAY,
+  ENEMY_SPAWN_INTERVAL,
+  ENEMY_SPEED_INCREASE_CONTINUOUS,
+  ENEMY_STARTING_COUNT,
   ENEMY_STARTING_SPEED_MULTIPLIER,
+  ENTICE_ANIM_DURATION,
+  ENTICE_DELAY,
   PLAYER_STARTING_LIVES,
+  RING_SPEED_INCREASE_PER_ROUND,
   RING_STARTING_SPEED_MULTIPLIER } from './constants.js'
 
 // ========== FEATURE FLAGS ==========
 export const ENABLE_AUTOPILOT = true
 // ===================================
-
-const STARTING_ENEMY_SPEED_MULTIPLIER = 1.0
 
 const canvas = document.getElementById('gameCanvas')
 init_renderer(canvas)
@@ -31,7 +39,7 @@ export let render_scale = 1.0
 
 const apply_display_scale = () => {
   const size = Math.min(window.innerWidth, window.innerHeight)
-  render_scale = size / 800
+  render_scale = size / CANVAS_SIZE
   canvas.width = size
   canvas.height = size
   resize_viewport(size, size)
@@ -61,11 +69,8 @@ export const game_state = {
 let keys_pressed = {}
 let brain_keys = {}
 let last_time = 0
-let enemy_spawn_timer = 1.2
+let enemy_spawn_timer = ENEMY_SPAWN_INITIAL_DELAY
 let idle_timer = 0
-
-const ENTICE_DELAY = 5
-const ENTICE_ANIM_DURATION = 1.5
 
 const start_entice_mode = () => {
   reset_game(true)
@@ -88,9 +93,9 @@ const reset_game = (new_game = true) => {
     game_state.round += 1
   }
 
-  game_state.max_enemies = 3 + game_state.round
-  game_state.enemy_speed_multiplier = new_game ? STARTING_ENEMY_SPEED_MULTIPLIER : (STARTING_ENEMY_SPEED_MULTIPLIER + game_state.round * 0.02)
-  game_state.ring_speed_modifier = new_game ? RING_STARTING_SPEED_MULTIPLIER : (RING_STARTING_SPEED_MULTIPLIER + game_state.round * 0.01)
+  game_state.max_enemies = ENEMY_STARTING_COUNT + game_state.round
+  game_state.enemy_speed_multiplier = new_game ? ENEMY_NEW_GAME_SPEED_MULTIPLIER : (ENEMY_NEW_GAME_SPEED_MULTIPLIER + game_state.round * ENEMY_SPEED_INCREASE_CONTINUOUS)
+  game_state.ring_speed_modifier = new_game ? RING_STARTING_SPEED_MULTIPLIER : (RING_STARTING_SPEED_MULTIPLIER + game_state.round * RING_SPEED_INCREASE_PER_ROUND)
 
   game_state.game_over = false
   game_state.game_started = true
@@ -105,9 +110,9 @@ const reset_game = (new_game = true) => {
   reset_player()
   reset_castle()
 
-  enemy_spawn_timer = 1.2
+  enemy_spawn_timer = ENEMY_SPAWN_INITIAL_DELAY
 
-  setTimeout(() => spawn_enemies(game_state.max_enemies / 2, 1.0), 5000)
+  setTimeout(() => spawn_enemies(game_state.max_enemies / 2, 1.0), ENEMY_INITIAL_SPAWN_DELAY_MS)
 }
 
 const check_shift_key = (e) => {
@@ -218,10 +223,10 @@ const update_game = (current_time) => {
 
   enemy_spawn_timer -= dt
   if (enemy_spawn_timer <= 0 && enemy_sparks.length < game_state.max_enemies) {
-    if (Math.random() < 0.3) {
+    if (Math.random() < ENEMY_SPAWN_CHANCE) {
       spawn_enemies(game_state.max_enemies, 0.5)
     }
-    enemy_spawn_timer = 3
+    enemy_spawn_timer = ENEMY_SPAWN_INTERVAL
   }
 
   const active_keys = game_state.entice_mode

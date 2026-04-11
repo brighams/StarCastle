@@ -121,7 +121,7 @@ export const update_explosions = (dt) => {
     explosion.life -= dt
     const progress = 1 - (explosion.life / explosion.maxLife)
     const eased_progress = 1 - Math.pow(1 - progress, 2)
-    const start_size = explosion.is_castle ? 5 : 2
+    const start_size = explosion.is_castle ? CASTLE_EXPLOSION_INITIAL_SIZE : SHIP_EXPLOSION_INITIAL_SIZE
     explosion.size = start_size + (explosion.maxSize - start_size) * eased_progress
 
     if (explosion.life <= 0) {
@@ -134,7 +134,7 @@ export const update_explosions = (dt) => {
     const progress = 1 - (castle_explosion.life / castle_explosion.maxLife)
 
     const eased_progress = 1 - Math.pow(1 - progress, 2)
-    castle_explosion.size = 5 + (castle_explosion.maxSize - 5) * eased_progress
+    castle_explosion.size = CASTLE_EXPLOSION_INITIAL_SIZE + (castle_explosion.maxSize - CASTLE_EXPLOSION_INITIAL_SIZE) * eased_progress
     if (!castle_explosion.rings_destroyed && castle_explosion.size >= castle_explosion.inner_ring_radius) {
       castle_explosion.rings_destroyed = true
     }

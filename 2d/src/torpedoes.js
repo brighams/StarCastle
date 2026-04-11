@@ -1,7 +1,8 @@
 import { identity_matrix } from './math.js'
 import { draw_spark } from './renderer.js'
 import { playSound } from './sound.js'
-import { CANVAS_SIZE, TORPEDO_JITTER_TIMER, TORPEDO_JITTER_X, TORPEDO_JITTER_Y } from './constants.js'
+import { CANVAS_SIZE, TORPEDO_INNER_SPARK_SIZE_RATIO, TORPEDO_JITTER_TIMER,
+  TORPEDO_JITTER_TIMER_MIN, TORPEDO_JITTER_X, TORPEDO_JITTER_Y } from './constants.js'
 import { draw_space_mine } from './player.js'
 
 
@@ -48,7 +49,7 @@ export const update_torpedoes = (dt) => {
         if (torpedo.jitter_timer <= 0) {
           torpedo.jitter_x = (Math.random() - 0.5) * TORPEDO_JITTER_X
           torpedo.jitter_y = (Math.random() - 0.5) * TORPEDO_JITTER_Y
-          torpedo.jitter_timer = 0.1 + Math.random() * TORPEDO_JITTER_TIMER
+          torpedo.jitter_timer = TORPEDO_JITTER_TIMER_MIN + Math.random() * TORPEDO_JITTER_TIMER
         }
         torpedo.x += torpedo.jitter_x * dt
         torpedo.y += torpedo.jitter_y * dt
@@ -73,7 +74,7 @@ export const draw_torpedo = ({ x, y, angle, size, transform, color }) => {
     x,
     y,
     angle: angle + Math.random() - 0.5,
-    size: size * 0.75,
+    size: size * TORPEDO_INNER_SPARK_SIZE_RATIO,
     transform,
     color: [Math.random(), Math.random(), Math.random(), Math.random()]
   })

@@ -1,8 +1,10 @@
 import { CANNON_COLOR,
   CANNON_COOL_OFF_TIME,
   CANNON_FIRE_WARMUP_TIME,
+  CANNON_LENGTH,
   CANNON_PROJECTILE_BOUNDS_MAX,
   CANNON_PROJECTILE_BOUNDS_MIN,
+  CANNON_ROTATION_SPEED,
   CANNON_SPARK_COLOR,
   CANNON_SPARK_SIZE,
   CANNON_SPARK_SPEED,
@@ -12,9 +14,29 @@ import { CANNON_COLOR,
   CASTLE_CENTRAL_HEX_RADIUS,
   CASTLE_CENTRAL_HEX_SIDES,
   CASTLE_DESTROYED_CHECK_DELAY,
+  CASTLE_INNER_RING_RADIUS,
   CENTER_X,
   CENTER_Y,
   ENEMY_SPEED_INCREASE_PER_ROUND,
+  RING_GLOW_BASE,
+  RING_GLOW_INNER_ALPHA,
+  RING_GLOW_OFFSET_FACTOR,
+  RING_GLOW_OFFSET_INNER,
+  RING_GLOW_OFFSET_OUTER,
+  RING_GLOW_OUTER_ALPHA,
+  RING_GLOW_PULSE_AMOUNT,
+  RING_GLOW_PULSE_SPEED,
+  RING_INNER_COLOR,
+  RING_INNER_ROTATION_SPEED,
+  RING_INNER_SEGMENTS,
+  RING_MIDDLE_COLOR,
+  RING_MIDDLE_RADIUS,
+  RING_MIDDLE_ROTATION_SPEED,
+  RING_MIDDLE_SEGMENTS,
+  RING_OUTER_COLOR,
+  RING_OUTER_RADIUS,
+  RING_OUTER_ROTATION_SPEED,
+  RING_OUTER_SEGMENTS,
   RING_RESPAWN_TIME,
   RING_SPAWN_INITIAL_RADIUS } from './constants.js'
 
@@ -34,15 +56,14 @@ export const castle_state = {
   spawn_in_progress: false,
   spawn_ring_index: 0,
   rings: [
-//  { round: 1, index: 0, radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.65, color: [0.0, 1.0, 0.0, 1.0] },
-    { round: 0, index: 0, radius: 120, segments: 12, rotation: 0, rotationSpeed: 0.65, color: [0.0, 1.0, 0.0, 1.0] },
-    { round: 1, index: 1, radius: 90, segments: 8, rotation: 0, rotationSpeed: -0.95, color: [0.0, 0.0, 1.0, 1.0] },
-    { round: 2, index: 2, radius: 60, segments: 6, rotation: 0, rotationSpeed: 1.0, color: [1.0, 1.0, 0.0, 1.0] }
+    { round: 0, index: 0, radius: RING_OUTER_RADIUS, segments: RING_OUTER_SEGMENTS, rotation: 0, rotationSpeed: RING_OUTER_ROTATION_SPEED, color: RING_OUTER_COLOR },
+    { round: 1, index: 1, radius: RING_MIDDLE_RADIUS, segments: RING_MIDDLE_SEGMENTS, rotation: 0, rotationSpeed: RING_MIDDLE_ROTATION_SPEED, color: RING_MIDDLE_COLOR },
+    { round: 2, index: 2, radius: CASTLE_INNER_RING_RADIUS, segments: RING_INNER_SEGMENTS, rotation: 0, rotationSpeed: RING_INNER_ROTATION_SPEED, color: RING_INNER_COLOR }
   ],
   cannon: {
     angle: 0,
-    rotation_speed: 2.0,
-    length: 18,
+    rotation_speed: CANNON_ROTATION_SPEED,
+    length: CANNON_LENGTH,
     is_destroyed: false,
     cool_off_timer: 0
   },
@@ -104,7 +125,7 @@ export const init_ring_faces = () => {
   for (const ring of castle_state.rings) {
     ring.faces = []
     ring.respawn_timer = 0
-    ring.spawn_radius = 0.1
+    ring.spawn_radius = RING_SPAWN_INITIAL_RADIUS
     for (let i = 0; i < ring.segments; i++) {
       ring.faces.push({
         index: i, destroyed: false
@@ -241,7 +262,7 @@ export const draw_castle = () => {
 
   const transform = identity_matrix()
 
-  const glow_pulse = 0.15 + Math.sin(castle_state.ring_glow_time * 2.5) * 0.08
+  const glow_pulse = RING_GLOW_BASE + Math.sin(castle_state.ring_glow_time * RING_GLOW_PULSE_SPEED) * RING_GLOW_PULSE_AMOUNT
 
   for (const ring of castle_state.rings) {
     const segment_angle = (Math.PI * 2) / ring.segments
@@ -257,24 +278,24 @@ export const draw_castle = () => {
       const x2 = CENTER_X + Math.cos(end_angle) * draw_radius
       const y2 = CENTER_Y + Math.sin(end_angle) * draw_radius
 
-      const glow_color = [ring.color[0], ring.color[1], ring.color[2], glow_pulse * 0.3]
-      const glow_color_inner = [ring.color[0], ring.color[1], ring.color[2], glow_pulse * 0.5]
+      const glow_color = [ring.color[0], ring.color[1], ring.color[2], glow_pulse * RING_GLOW_OUTER_ALPHA]
+      const glow_color_inner = [ring.color[0], ring.color[1], ring.color[2], glow_pulse * RING_GLOW_INNER_ALPHA]
 
       const mid_angle = (start_angle + end_angle) / 2
-      const offset_outer = 4
-      const offset_inner = 2
+      const offset_outer = RING_GLOW_OFFSET_OUTER
+      const offset_inner = RING_GLOW_OFFSET_INNER
 
-      const ox1_outer = x1 + Math.cos(start_angle) * offset_outer - Math.cos(mid_angle) * offset_outer * 0.3
-      const oy1_outer = y1 + Math.sin(start_angle) * offset_outer - Math.sin(mid_angle) * offset_outer * 0.3
-      const ox2_outer = x2 + Math.cos(end_angle) * offset_outer - Math.cos(mid_angle) * offset_outer * 0.3
-      const oy2_outer = y2 + Math.sin(end_angle) * offset_outer - Math.sin(mid_angle) * offset_outer * 0.3
+      const ox1_outer = x1 + Math.cos(start_angle) * offset_outer - Math.cos(mid_angle) * offset_outer * RING_GLOW_OFFSET_FACTOR
+      const oy1_outer = y1 + Math.sin(start_angle) * offset_outer - Math.sin(mid_angle) * offset_outer * RING_GLOW_OFFSET_FACTOR
+      const ox2_outer = x2 + Math.cos(end_angle) * offset_outer - Math.cos(mid_angle) * offset_outer * RING_GLOW_OFFSET_FACTOR
+      const oy2_outer = y2 + Math.sin(end_angle) * offset_outer - Math.sin(mid_angle) * offset_outer * RING_GLOW_OFFSET_FACTOR
 
       draw_line(ox1_outer, oy1_outer, ox2_outer, oy2_outer, transform, glow_color)
 
-      const ox1_inner = x1 + Math.cos(start_angle) * offset_inner - Math.cos(mid_angle) * offset_inner * 0.3
-      const oy1_inner = y1 + Math.sin(start_angle) * offset_inner - Math.sin(mid_angle) * offset_inner * 0.3
-      const ox2_inner = x2 + Math.cos(end_angle) * offset_inner - Math.cos(mid_angle) * offset_inner * 0.3
-      const oy2_inner = y2 + Math.sin(end_angle) * offset_inner - Math.sin(mid_angle) * offset_inner * 0.3
+      const ox1_inner = x1 + Math.cos(start_angle) * offset_inner - Math.cos(mid_angle) * offset_inner * RING_GLOW_OFFSET_FACTOR
+      const oy1_inner = y1 + Math.sin(start_angle) * offset_inner - Math.sin(mid_angle) * offset_inner * RING_GLOW_OFFSET_FACTOR
+      const ox2_inner = x2 + Math.cos(end_angle) * offset_inner - Math.cos(mid_angle) * offset_inner * RING_GLOW_OFFSET_FACTOR
+      const oy2_inner = y2 + Math.sin(end_angle) * offset_inner - Math.sin(mid_angle) * offset_inner * RING_GLOW_OFFSET_FACTOR
 
       draw_line(ox1_inner, oy1_inner, ox2_inner, oy2_inner, transform, glow_color_inner)
       draw_line(x1, y1, x2, y2, transform, ring.color)

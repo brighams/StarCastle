@@ -1,4 +1,5 @@
 import { draw_line } from './renderer.js'
+import { FONT_CHAR_WIDTH_RATIO, FONT_CHAR_SCALE } from './constants.js'
 
 
 const FONT = {
@@ -61,8 +62,8 @@ export const draw_animated_text = (text, x, y, scale, transform, color, duration
 }
 
 export const draw_text = (text, x, y, scale, transform, color) => {
-  const char_width = 0.8 * scale * 6
-  const char_height = scale * 6
+  const char_width = FONT_CHAR_WIDTH_RATIO * scale * FONT_CHAR_SCALE
+  const char_height = scale * FONT_CHAR_SCALE
   const total_width = text.length * char_width
   let cursor_x = x - total_width / 2
 

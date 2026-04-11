@@ -199,3 +199,132 @@ export const FIRE_COOLDOWN_TIME = 0.2
 export const TORPEDO_JITTER_X = 110
 export const TORPEDO_JITTER_Y = 110
 export const TORPEDO_JITTER_TIMER = 0.1
+export const TORPEDO_JITTER_TIMER_MIN = 0.1
+export const TORPEDO_INNER_SPARK_SIZE_RATIO = 0.75
+
+// Player ship
+export const PLAYER_SIZE = 12
+export const PLAYER_MAX_SPEED = 200
+export const PLAYER_MAX_REVERSE_FACTOR = 0.30
+export const PLAYER_MAX_STRAFE_FACTOR = 0.40
+export const PLAYER_SPAWN_ANIM_TIMER = 1.5
+export const PLAYER_TORPEDO_SPEED = 360
+export const PLAYER_TORPEDO_LIFE = 1800
+
+// Space mine
+export const SPACE_MINE_INNER_SIZE_RATIO = 1 / 3
+export const SPACE_MINE_INNER_SEGMENTS = 4
+export const SPACE_MINE_INNER_COLOR = [0.6, 0.6, 0.6]
+
+// Castle cannon
+export const CANNON_ROTATION_SPEED = 2.0
+export const CANNON_LENGTH = 18
+
+// Castle ring definitions
+export const RING_OUTER_RADIUS = 120
+export const RING_OUTER_SEGMENTS = 12
+export const RING_OUTER_ROTATION_SPEED = 0.65
+export const RING_OUTER_COLOR = [0.0, 1.0, 0.0, 1.0]
+export const RING_MIDDLE_RADIUS = 90
+export const RING_MIDDLE_SEGMENTS = 8
+export const RING_MIDDLE_ROTATION_SPEED = -0.95
+export const RING_MIDDLE_COLOR = [0.0, 0.0, 1.0, 1.0]
+// Inner ring radius uses existing CASTLE_INNER_RING_RADIUS = 60
+export const RING_INNER_SEGMENTS = 6
+export const RING_INNER_ROTATION_SPEED = 1.0
+export const RING_INNER_COLOR = [1.0, 1.0, 0.0, 1.0]
+
+// Castle ring glow rendering
+export const RING_GLOW_BASE = 0.15
+export const RING_GLOW_PULSE_SPEED = 2.5
+export const RING_GLOW_PULSE_AMOUNT = 0.08
+export const RING_GLOW_OUTER_ALPHA = 0.3
+export const RING_GLOW_INNER_ALPHA = 0.5
+export const RING_GLOW_OFFSET_OUTER = 4
+export const RING_GLOW_OFFSET_INNER = 2
+export const RING_GLOW_OFFSET_FACTOR = 0.3
+
+// Spark renderer
+export const SPARK_ROTATION_SPEED = 2.0
+export const SPARK_LINE_COUNT = 3
+
+// Stars
+export const STAR_COUNT = 100
+export const STAR_MIN_SIZE = 0.5
+export const STAR_SIZE_RANGE = 2.5
+export const STAR_MIN_TWINKLE_RATE = 0.2
+export const STAR_TWINKLE_RATE_RANGE = 0.8
+export const STAR_MIN_BRIGHTNESS = 0.15
+export const STAR_BRIGHTNESS_RANGE = 0.25
+export const STAR_MIN_ALPHA = 0.05
+
+// Font / text rendering
+export const FONT_CHAR_WIDTH_RATIO = 0.8
+export const FONT_CHAR_SCALE = 6
+
+// Game loop — enemy spawning
+export const ENEMY_SPAWN_INITIAL_DELAY = 1.2
+export const ENEMY_SPAWN_INTERVAL = 3
+export const ENEMY_SPAWN_CHANCE = 0.3
+export const ENEMY_NEW_GAME_SPEED_MULTIPLIER = 1.0
+export const ENEMY_SPEED_INCREASE_CONTINUOUS = 0.02
+export const RING_SPEED_INCREASE_PER_ROUND = 0.01
+export const ENEMY_INITIAL_SPAWN_DELAY_MS = 5000
+
+// Attract / entice mode
+export const ENTICE_DELAY = 5
+export const ENTICE_ANIM_DURATION = 1.5
+
+// UI layout
+export const UI_LIVES_X_START = 30
+export const UI_LIVES_X_SPACING = 25
+export const UI_LIVES_Y = 30
+export const UI_LIVES_SHIP_SIZE = 8
+export const UI_BITCOIN_Y_START = CENTER_Y + 150
+export const UI_BITCOIN_Y_END = 730
+export const UI_TITLE_Y_OFFSET = -300
+export const UI_SUBTITLE_Y_OFFSET = -220
+export const UI_TAGLINE_Y_OFFSET = -180
+export const UI_INSTRUCTIONS_Y_OFFSET = 195
+export const UI_HIGH_SCORE_Y_OFFSET = 240
+export const UI_EXIT_Y = 762
+export const UI_ROUND_WON_Y_OFFSET = -200
+export const UI_ROUND_WON_NEXT_Y_OFFSET = 200
+export const UI_ROUND_WON_SCORE_Y_OFFSET = 260
+export const UI_PYRRHIC_TITLE_Y_OFFSET = -312
+export const UI_PYRRHIC_SUBTITLE_Y_OFFSET = -262
+export const UI_PYRRHIC_HINT_Y_OFFSET = -222
+export const UI_HUD_TITLE_X_OFFSET = -32
+export const UI_HUD_TITLE_Y = 16
+export const UI_AUTOPILOT_X = 100
+export const UI_AUTOPILOT_HINT_Y_OFFSET = 25
+export const UI_HUD_SCORE_X_OFFSET = -120
+export const UI_DEBUG_Y_BASE = 758
+
+// Autopilot (player-controlled)
+export const AUTOPILOT_DECISION_INTERVAL = 0.1
+export const AUTOPILOT_OPTIMAL_DISTANCE = 220
+export const AUTOPILOT_MIN_SAFE_DISTANCE = 140
+export const AUTOPILOT_MAX_SAFE_DISTANCE = 300
+export const AUTOPILOT_SCREEN_MARGIN = 100
+export const AUTOPILOT_MINE_COOLDOWN = 2.0
+
+// Brain (demo / entice mode AI)
+export const BRAIN_TICK = 0.70
+export const BRAIN_BURST_DURATION = 0.35
+export const BRAIN_ORBIT_RADIUS = 220
+export const BRAIN_NEAR_THRESHOLD = 160
+export const BRAIN_FAR_THRESHOLD = 290
+export const BRAIN_AIM_TOLERANCE = 0.22
+export const BRAIN_AIM_JITTER = 0.08
+export const BRAIN_FIRE_CHANCE = 0.35
+
+// Spark brain (enemy chase AI)
+export const SPARK_CLOSE_THRESHOLD = 140
+export const SPARK_FAR_FORCE = 90
+export const SPARK_CLOSE_FORCE = 240
+export const SPARK_SEPARATION_DISTANCE = 50
+export const SPARK_SEPARATION_FORCE = 80
+export const SPARK_JITTER_INTERVAL_MIN = 0.3
+export const SPARK_JITTER_INTERVAL_RAND = 0.4
+export const SPARK_JITTER_STRENGTH = 100

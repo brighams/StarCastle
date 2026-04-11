@@ -1,4 +1,5 @@
 import { multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
+import { SPARK_LINE_COUNT, SPARK_ROTATION_SPEED } from './constants.js'
 
 
 const vertex_shader_source = `
@@ -125,16 +126,15 @@ export const draw_circle = (x, y, radius, segments, transform, color) => {
 
 // ===== USED FOR ENEMIES AND PLAYER PROJECTILES =====
 export const draw_spark = ({ x, y, angle, size, transform, color }) => {
-  const rotation_speed = 2.0 // radians per second
-  const animated_angle = angle + (performance.now() / 1000) * rotation_speed
+  const animated_angle = angle + (performance.now() / 1000) * SPARK_ROTATION_SPEED
 
   const spark_transform = multiply_matrices(
     multiply_matrices(transform, translate_matrix(x, y)),
     rotate_matrix(animated_angle)
   )
 
-  for (let i = 0; i < 3; i++) {
-    const line_angle = (i * Math.PI) / 3 // 0°, 60°, 120°
+  for (let i = 0; i < SPARK_LINE_COUNT; i++) {
+    const line_angle = (i * Math.PI) / SPARK_LINE_COUNT // 0°, 60°, 120°
     const cos_a = Math.cos(line_angle)
     const sin_a = Math.sin(line_angle)
 

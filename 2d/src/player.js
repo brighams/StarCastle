@@ -39,8 +39,18 @@ import { AFT_TORPEDO_COLOR,
   ROTATION_JET_LOWER_SPREAD_RATIO,
   ROTATION_JET_MOUNT_Y_RATIO,
   ROTATION_JET_UPPER_SPREAD_RATIO,
+  PLAYER_MAX_REVERSE_FACTOR,
+  PLAYER_MAX_SPEED,
+  PLAYER_MAX_STRAFE_FACTOR,
+  PLAYER_SIZE,
+  PLAYER_SPAWN_ANIM_TIMER,
+  PLAYER_TORPEDO_LIFE,
+  PLAYER_TORPEDO_SPEED,
   SCREEN_WRAP_EDGE_MARGIN,
   SHIP_HULL_WIDTH_RATIO,
+  SPACE_MINE_INNER_COLOR,
+  SPACE_MINE_INNER_SEGMENTS,
+  SPACE_MINE_INNER_SIZE_RATIO,
   SHIP_LINE_OFFSETS,
   SHIP_TAIL_NOTCH_HEIGHT_RATIO,
   SHIP_TAIL_NOTCH_WIDTH_RATIO,
@@ -68,18 +78,18 @@ export const player = {
   braking: false,
   strafing: 0, // -1 for left, 0 for none, 1 for right
   strafe_thrust: 0.0, // 0.0 to 1.0 for animation ramping
-  size: 12,
+  size: PLAYER_SIZE,
   color: [1.0, 1.0, 1.0, 1.0],
   speed: 0,
-  max_speed: 200,
-  max_reverse_factor: 0.30, // Reverse speed = max_speed * this factor (adjustable)
-  max_strafe_factor: 0.40, // Strafe speed = max_speed * this factor
+  max_speed: PLAYER_MAX_SPEED,
+  max_reverse_factor: PLAYER_MAX_REVERSE_FACTOR,
+  max_strafe_factor: PLAYER_MAX_STRAFE_FACTOR,
   alive: true,
   respawn_timer: 0,
-  spawn_anim_timer: 1.5,
+  spawn_anim_timer: PLAYER_SPAWN_ANIM_TIMER,
   spawn_thrust: { forward: 0, strafe: 0 },
-  torpedo_speed: 360,
-  torpedo_life: 1800,
+  torpedo_speed: PLAYER_TORPEDO_SPEED,
+  torpedo_life: PLAYER_TORPEDO_LIFE,
   fire_cooldown: 0
 }
 
@@ -397,7 +407,7 @@ export const update_player = (dt, keys_pressed, game_state) => {
 
 export const draw_space_mine = ({ x, y, angle, size, transform, color }) => {
   draw_spark({ x, y, angle, size, transform, color })
-  draw_circle(x, y, size / 3.0, 4, transform, [0.6, 0.6, 0.6])
+  draw_circle(x, y, size * SPACE_MINE_INNER_SIZE_RATIO, SPACE_MINE_INNER_SEGMENTS, transform, SPACE_MINE_INNER_COLOR)
 }
 
 export const draw_player_ship = (
