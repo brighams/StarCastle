@@ -1,5 +1,5 @@
 import { multiply_matrices, rotate_matrix, translate_matrix } from './math.js'
-import { SPARK_LINE_COUNT, SPARK_ROTATION_SPEED } from './constants.js'
+import { CANVAS_SIZE, SPARK_LINE_COUNT, SPARK_ROTATION_SPEED } from './constants.js'
 
 
 const vertex_shader_source = `
@@ -75,7 +75,7 @@ export const init_renderer = (canvas) => {
 
   gl.viewport(0, 0, canvas.width, canvas.height)
   gl.useProgram(program)
-  gl.uniform2f(resolutionLocation, canvas.width, canvas.height)
+  gl.uniform2f(resolutionLocation, CANVAS_SIZE, CANVAS_SIZE)
 
   return gl
 }
