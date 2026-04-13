@@ -2,20 +2,20 @@ export const CANVAS_SIZE = 800;
 export const CENTER_Y = CANVAS_SIZE / 2;
 export const TOP_RIGHT_Y = 16;
 
-export const WORLD_SIZE = 8000;
-export const WORLD_RADIUS = 4000;
+export const WORLD_SIZE = 2400;
+export const WORLD_RADIUS = 1200;
 
-export const PLAYER_SPAWN_OUTER_RING_MIN = 950;
-export const PLAYER_SPAWN_OUTER_RING_MAX = 980;
+export const PLAYER_SPAWN_OUTER_RING_MIN = 2100;
+export const PLAYER_SPAWN_OUTER_RING_MAX = 2300;
 
-export const CASTLE_START_COUNT = 2;
+export const CASTLE_START_COUNT = 5;
 export const CASTLE_SPAWN_RADIUS_MIN = 300;
 export const CASTLE_SPAWN_RADIUS_MAX = 800;
-export const CASTLE_MIN_SEPARATION = 1000;
+export const CASTLE_MIN_SEPARATION = 900;
 
 export const RADAR_RADIUS = 80;
 
-export const WINGMAN_MAX_COUNT = 2;
+export const WINGMAN_MAX_COUNT = 5;
 export const WINGMAN_FORMATION_RADIUS = 400;
 export const WINGMAN_JOIN_RADIUS = 80;
 export const WINGMAN_THRUST_FORCE = 80;
@@ -315,7 +315,7 @@ export const UI_HUD_SCORE_X_OFFSET = -120;
 export const UI_DEBUG_Y_BASE = 758;
 
 // Brain (demo / entice mode AI)
-export const BRAIN_TICK = 0.7;
+export const BRAIN_TICK = 0.5;
 export const BRAIN_BURST_DURATION = 0.35;
 export const BRAIN_NEAR_THRESHOLD = 160;
 export const BRAIN_FAR_THRESHOLD = 290;
