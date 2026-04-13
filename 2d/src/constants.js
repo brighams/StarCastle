@@ -1,9 +1,6 @@
 export const CANVAS_SIZE = 800;
-export const CENTER_X = CANVAS_SIZE / 2;
 export const CENTER_Y = CANVAS_SIZE / 2;
-export const TOP_RIGHT_X = CANVAS_SIZE - 16;
 export const TOP_RIGHT_Y = 16;
-export const SCREEN_WRAP_EDGE_MARGIN = 20;
 
 export const WORLD_SIZE = 8000;
 export const WORLD_RADIUS = 4000;
@@ -34,21 +31,12 @@ export const WINGMAN_TORPEDO_COLOR = [0.0, 1.0, 1.0, 1.0];
 export const WINGMAN_RESPAWN_TIME = 30;
 
 export const ENEMY_SPARK_SIZE = 10;
-export const ENEMY_FLOCKING_DISTANCE = 180;
 export const ENEMY_DOCK_ARRIVAL_THRESHOLD = 5;
 export const ENEMY_SPAWN_VELOCITY = 200;
 export const ENEMY_LINGER_BASE_TIME = 2;
 export const ENEMY_LINGER_RANDOM_TIME = 3;
 export const ENEMY_DOCK_VELOCITY = 100;
-export const ENEMY_FLOCKING_SEPARATION_DISTANCE = 40;
-export const ENEMY_FLOCKING_ALIGNMENT_DISTANCE = 100;
-export const ENEMY_ALIGNMENT_FACTOR = 0.5;
-export const ENEMY_SEPARATION_FORCE = 60;
-export const ENEMY_FAR_CHASE_FORCE = 40;
-export const ENEMY_CLOSE_CHASE_FORCE = 60;
-export const ENEMY_JITTER_MAGNITUDE = 120;
-export const ENEMY_JITTER_MIN_INTERVAL = 0.25;
-export const ENEMY_JITTER_RANDOM_INTERVAL = 0.5;
+
 export const ENEMY_RETREAT_VELOCITY = 100;
 export const ENEMY_VELOCITY_DAMPING = 0.98;
 
@@ -326,18 +314,9 @@ export const UI_AUTOPILOT_HINT_Y_OFFSET = 25;
 export const UI_HUD_SCORE_X_OFFSET = -120;
 export const UI_DEBUG_Y_BASE = 758;
 
-// Autopilot (player-controlled)
-export const AUTOPILOT_DECISION_INTERVAL = 0.1;
-export const AUTOPILOT_OPTIMAL_DISTANCE = 220;
-export const AUTOPILOT_MIN_SAFE_DISTANCE = 140;
-export const AUTOPILOT_MAX_SAFE_DISTANCE = 300;
-export const AUTOPILOT_SCREEN_MARGIN = 100;
-export const AUTOPILOT_MINE_COOLDOWN = 2.0;
-
 // Brain (demo / entice mode AI)
 export const BRAIN_TICK = 0.7;
 export const BRAIN_BURST_DURATION = 0.35;
-export const BRAIN_ORBIT_RADIUS = 220;
 export const BRAIN_NEAR_THRESHOLD = 160;
 export const BRAIN_FAR_THRESHOLD = 290;
 export const BRAIN_AIM_TOLERANCE = 0.22;
