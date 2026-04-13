@@ -24,7 +24,6 @@ import {
   UI_ROUND_WON_SCORE_Y_OFFSET,
   UI_ROUND_WON_Y_OFFSET,
   UI_SUBTITLE_Y_OFFSET,
-  UI_TAGLINE_Y_OFFSET,
   UI_TITLE_Y_OFFSET,
 } from "./constants.js";
 import { identity_matrix } from "./math.js";

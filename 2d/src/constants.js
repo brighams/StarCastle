@@ -8,7 +8,7 @@ export const WORLD_RADIUS = 1200;
 export const PLAYER_SPAWN_OUTER_RING_MIN = 2100;
 export const PLAYER_SPAWN_OUTER_RING_MAX = 2300;
 
-export const CASTLE_START_COUNT = 5;
+export const CASTLE_START_COUNT = 3;
 export const CASTLE_SPAWN_RADIUS_MIN = 300;
 export const CASTLE_SPAWN_RADIUS_MAX = 800;
 export const CASTLE_MIN_SEPARATION = 900;
@@ -297,7 +297,6 @@ export const UI_BITCOIN_Y_START = CENTER_Y + 150;
 export const UI_BITCOIN_Y_END = 730;
 export const UI_TITLE_Y_OFFSET = -300;
 export const UI_SUBTITLE_Y_OFFSET = -220;
-export const UI_TAGLINE_Y_OFFSET = -180;
 export const UI_INSTRUCTIONS_Y_OFFSET = 195;
 export const UI_HIGH_SCORE_Y_OFFSET = 240;
 export const UI_EXIT_Y = 762;
